@@ -16,7 +16,7 @@ export class Game {
             type: Phaser.AUTO,
             width: 1024,
             height: 768,
-            parent: 'game-container',
+            parent: 'phaser-game',
             backgroundColor: '#000000',
             physics: {
                 default: 'arcade',

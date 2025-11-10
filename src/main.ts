@@ -1,6 +1,12 @@
-import { Game } from './game/Game';
+import { createApp } from 'vue'
+import App from './App.vue'
+import { Game } from './game/Game'
 
-// Start the game when DOM is loaded
+// Create Vue app
+const app = createApp(App)
+app.mount('#app')
+
+// Initialize game when DOM is loaded
 window.addEventListener('DOMContentLoaded', () => {
-    new Game();
-});
+  new Game()
+})

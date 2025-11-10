@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GameConfig } from '../../shared/config';
 
 export class Asteroid {
+
     public sprite: Phaser.Physics.Arcade.Sprite;
     public id: string;
     private scene: Phaser.Scene;
@@ -49,6 +50,11 @@ export class Asteroid {
     }
 
     public hit(): void {
+        // Safety check - don't process hit if already destroyed
+        if (!this.sprite.active || this.health <= 0) {
+            return;
+        }
+
         this.health--;
 
         // Update health text
@@ -76,6 +82,11 @@ export class Asteroid {
     }
 
     public destroy(): void {
+        // Prevent double-destroy
+        if (!this.sprite.active) {
+            return;
+        }
+
         // Play big explosion
         const explosion = this.scene.add.sprite(this.sprite.x, this.sprite.y, 'kaboom-big');
         explosion.play('explode-big');

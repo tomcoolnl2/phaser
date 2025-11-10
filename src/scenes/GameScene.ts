@@ -31,14 +31,16 @@ export class GameScene extends Phaser.Scene {
         // Setup input
         this.setupInput();
 
-        // Authenticate player (join the game)
-        const playerName = prompt('Enter your name:') || `Player ${Math.floor(Math.random() * 1000)}`;
-        this.socket.emit(PlayerEvent.authenticate, {
-            name: playerName,
-        }, {
-            x: this.scale.width,
-            y: this.scale.height,
-        });
+        // Wait for player name from Vue modal
+        window.addEventListener('playerNameSubmitted', ((event: CustomEvent) => {
+            const playerName = event.detail.name || `Player ${Math.floor(Math.random() * 1000)}`;
+            this.socket.emit(PlayerEvent.authenticate, {
+                name: playerName,
+            }, {
+                x: this.scale.width,
+                y: this.scale.height,
+            });
+        }) as EventListener, { once: true });
     }
 
     update(): void {
@@ -79,6 +81,11 @@ export class GameScene extends Phaser.Scene {
 
             // Check asteroid collisions with local player
             this.asteroids.forEach(asteroid => {
+                // Skip destroyed asteroids
+                if (!asteroid.sprite.active) {
+                    return;
+                }
+
                 const distance = Phaser.Math.Distance.Between(
                     this.localPlayer!.sprite.x,
                     this.localPlayer!.sprite.y,
@@ -96,6 +103,11 @@ export class GameScene extends Phaser.Scene {
             // Check bullet collisions with asteroids
             if (this.localPlayer.bullets) {
                 this.asteroids.forEach(asteroid => {
+                    // Skip destroyed asteroids
+                    if (!asteroid.sprite.active) {
+                        return;
+                    }
+
                     this.localPlayer!.bullets!.children.entries.forEach((bullet: any) => {
                         if (bullet.active) {
                             const distance = Phaser.Math.Distance.Between(
@@ -122,7 +134,13 @@ export class GameScene extends Phaser.Scene {
         this.players.forEach(player => player.update());
 
         // Update asteroids
-        this.asteroids.forEach(asteroid => asteroid.update());
+        this.asteroids.forEach(asteroid => {
+            // Skip destroyed asteroids
+            if (!asteroid.sprite.active) {
+                return;
+            }
+            asteroid.update();
+        });
     }
 
     private handlePlayerDeath(player: Player): void {
@@ -134,12 +152,23 @@ export class GameScene extends Phaser.Scene {
             })
             .setOrigin(0.5);
 
-        this.add
+        const countdownText = this.add
             .text(this.scale.width / 2, this.scale.height / 2 + 60, 'Reloading in 3 seconds...', {
                 fontSize: '24px',
                 color: '#ffffff',
             })
             .setOrigin(0.5);
+
+        // Countdown timer
+        let countdown = 3;
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                countdownText.setText(`Reloading in ${countdown} second${countdown !== 1 ? 's' : ''}...`);
+            } else {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
 
         setTimeout(() => window.location.reload(), 3000);
     }

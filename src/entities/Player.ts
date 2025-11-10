@@ -23,7 +23,9 @@ export class Player {
     private readonly ACCELERATION = GameConfig.player.acceleration;
     private readonly MAX_VELOCITY = GameConfig.player.maxVelocity;
     private readonly FIRE_RATE = GameConfig.player.fireRate;
+    private readonly ROTATION_SPEED = 0.03; // Smooth rotation factor (lower = slower turning)
     private lastFired: number = 0;
+    private targetRotation: number = 0;
 
     constructor(scene: Phaser.Scene, playerData: SpaceShip, spriteKey: string, isLocal: boolean) {
         this.scene = scene;
@@ -38,8 +40,9 @@ export class Player {
 
         // Setup physics
         this.sprite.setCollideWorldBounds(true);
-        this.sprite.setBounce(0.1);
-        this.sprite.setDrag(GameConfig.player.drag);
+        this.sprite.setBounce(0);
+        this.sprite.setDamping(true);
+        this.sprite.setDrag(0.99); 
         this.sprite.setMaxVelocity(this.MAX_VELOCITY);
         this.sprite.setAngularDrag(GameConfig.player.angularDrag);
 
@@ -97,28 +100,38 @@ export class Player {
 
         if (!this.cursors || !this.sprite.active) return;
 
-        // Rotation
+        // Smooth rotation based on arrow keys
         if (this.cursors.left?.isDown) {
-            this.sprite.setAngularVelocity(-this.ANGULAR_VELOCITY);
-        } else if (this.cursors.right?.isDown) {
-            this.sprite.setAngularVelocity(this.ANGULAR_VELOCITY);
-        } else {
-            this.sprite.setAngularVelocity(0);
+            this.targetRotation -= this.ROTATION_SPEED;
+        }
+        if (this.cursors.right?.isDown) {
+            this.targetRotation += this.ROTATION_SPEED;
         }
 
-        // Thrust
+        // Apply rotation smoothly
+        this.sprite.rotation = this.targetRotation;
+
+        // Direct movement - race car style (moves in direction facing)
         if (this.cursors.up?.isDown) {
-            const acceleration = this.sprite.body as Phaser.Physics.Arcade.Body;
+            // Set velocity directly in the direction the ship is facing
             this.scene.physics.velocityFromRotation(
                 this.sprite.rotation,
-                this.ACCELERATION,
-                acceleration.acceleration as Phaser.Math.Vector2
+                this.MAX_VELOCITY,
+                this.sprite.body!.velocity
             );
             this.isMoving = true;
             this.sprite.anims.play('accelerating', true);
             this.showThrust();
+        } else if (this.cursors.down?.isDown) {
+            // Reverse/brake - stops quickly
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            body.velocity.x *= 0.85; // Fast braking when reverse is pressed
+            body.velocity.y *= 0.85;
         } else {
-            this.sprite.setAcceleration(0);
+            // Slow down gradually (drift feel) instead of instant stop
+            const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+            body.velocity.x *= 0.97; // 3% friction per frame (higher = slower stopping)
+            body.velocity.y *= 0.97;
         }
 
         // Fire
@@ -178,6 +191,7 @@ export class Player {
     public setPosition(x: number, y: number, rotation: number): void {
         this.sprite.setPosition(x, y);
         this.sprite.setRotation(rotation);
+        this.targetRotation = rotation; // Keep target rotation in sync
     }
 
     public destroy(): void {
