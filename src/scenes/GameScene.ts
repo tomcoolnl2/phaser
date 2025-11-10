@@ -6,7 +6,7 @@ import { GameConfig } from '../../shared/config';
 import { Player } from '../entities/Player';
 import { Asteroid } from '../entities/Asteroid';
 import { Pickup } from '../entities/Pickup';
-import { EntityManager, InputSystem, MovementSystem, WeaponSystem, createPlayerEntity, Entity } from '../ecs';
+import { EntityManager, InputSystem, MovementSystem, WeaponSystem, WeaponUpgradeSystem, createPlayerEntity, Entity, PlayerComponent } from '../ecs';
 
 export class GameScene extends Phaser.Scene {
     private socket!: Socket;
@@ -20,6 +20,7 @@ export class GameScene extends Phaser.Scene {
     private inputSystem!: InputSystem;
     private movementSystem!: MovementSystem;
     private weaponSystem!: WeaponSystem;
+    private weaponUpgradeSystem!: WeaponUpgradeSystem;
     private playerEntities: Map<string, Entity> = new Map(); // Maps player ID to ECS entity
 
     constructor() {
@@ -70,11 +71,13 @@ export class GameScene extends Phaser.Scene {
         this.inputSystem = new InputSystem(this);
         this.movementSystem = new MovementSystem(this);
         this.weaponSystem = new WeaponSystem(this);
+        this.weaponUpgradeSystem = new WeaponUpgradeSystem(this);
 
         // Register systems with entity manager
         this.entityManager.addSystem(this.inputSystem);
         this.entityManager.addSystem(this.movementSystem);
         this.entityManager.addSystem(this.weaponSystem);
+        this.entityManager.addSystem(this.weaponUpgradeSystem);
     }
 
     update(): void {
@@ -110,7 +113,18 @@ export class GameScene extends Phaser.Scene {
 
                     // Level up (cycle through 1-5)
                     const newLevel = (this.localPlayer.level % 5) + 1;
+                    console.log(`[GameScene] Leveling up: ${this.localPlayer.level} -> ${newLevel}`);
                     this.localPlayer.setLevel(newLevel as Level);
+
+                    // Sync level to ECS entity
+                    const playerEntity = this.playerEntities.get(this.localPlayer.id);
+                    if (playerEntity) {
+                        const playerComponent = playerEntity.getComponent(PlayerComponent);
+                        if (playerComponent) {
+                            console.log(`[GameScene] Syncing ECS PlayerComponent level to ${newLevel}`);
+                            playerComponent.setLevel(newLevel as Level);
+                        }
+                    }
 
                     this.socket.emit(PlayerEvent.pickup, {
                         uuid: this.localPlayer.id,

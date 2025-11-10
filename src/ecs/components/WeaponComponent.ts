@@ -13,11 +13,12 @@ export class WeaponComponent extends Component {
     public damage: number;
     public lastFired: number = 0;
     public bullets: Phaser.Physics.Arcade.Group;
+    public bulletSpriteKey: string = 'laser-level-1';
 
     // Input state (set by InputSystem)
     public triggerPulled: boolean = false;
 
-    constructor(bullets: Phaser.Physics.Arcade.Group, ammo: number, maxAmmo: number = 999, fireRate: number = 250, bulletSpeed: number = 400, damage: number = 1) {
+    constructor(bullets: Phaser.Physics.Arcade.Group, ammo: number, maxAmmo: number = 999, fireRate: number = 250, bulletSpeed: number = 400, damage: number = 1, bulletSpriteKey: string = 'laser-level-1') {
         super();
         this.bullets = bullets;
         this.ammo = ammo;
@@ -25,6 +26,7 @@ export class WeaponComponent extends Component {
         this.fireRate = fireRate;
         this.bulletSpeed = bulletSpeed;
         this.damage = damage;
+        this.bulletSpriteKey = bulletSpriteKey;
     }
 
     canFire(): boolean {

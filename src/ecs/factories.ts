@@ -47,13 +47,14 @@ export function createPlayerEntity(entityManager: EntityManager, player: Player,
             999,
             GameConfig.player.fireRate,
             400, // bullet speed
-            1 // base damage
+            1, // base damage
+            `laser-level-${player.level}` // initial bullet sprite based on player level
         );
         entity.addComponent(weapon);
     }
 
     // Player component
-    const playerComp = new PlayerComponent(player.id, player.name, isLocal);
+    const playerComp = new PlayerComponent(player.id, player.name, isLocal, player.level);
     entity.addComponent(playerComp);
 
     // Health component - starting with max health

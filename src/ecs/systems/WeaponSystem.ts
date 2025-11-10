@@ -31,11 +31,17 @@ export class WeaponSystem extends System {
 
         const sprite = transform.sprite;
 
-        // Get bullet from pool
-        const bullet = weapon.bullets.get(sprite.x, sprite.y, 'laser') as Phaser.Physics.Arcade.Sprite;
+        // Get bullet from pool using dynamic sprite key
+        console.log(`[WeaponSystem] Firing bullet with sprite: ${weapon.bulletSpriteKey}`);
+        const bullet = weapon.bullets.get(sprite.x, sprite.y, weapon.bulletSpriteKey) as Phaser.Physics.Arcade.Sprite;
         if (bullet) {
+            // Explicitly set the texture to ensure it's correct (Phaser pool reuse can cause issues)
+            bullet.setTexture(weapon.bulletSpriteKey);
             bullet.setActive(true);
             bullet.setVisible(true);
+            
+            // Rotate bullet to match ship direction (add 90° offset since bullet sprite points up)
+            bullet.setRotation(sprite.rotation + Math.PI / 2);
 
             // Set bullet velocity based on ship rotation
             this.scene.physics.velocityFromRotation(sprite.rotation, weapon.bulletSpeed, bullet.body!.velocity);

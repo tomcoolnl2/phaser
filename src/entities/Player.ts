@@ -83,7 +83,6 @@ export class Player {
 
     private createBullets(): void {
         this.bullets = this.scene.physics.add.group({
-            defaultKey: 'laser',
             maxSize: 10,
         });
     }
@@ -164,11 +163,17 @@ export class Player {
             this.ammo--;
         }
 
-        // Get bullet from pool
-        const bullet = this.bullets.get(this.sprite.x, this.sprite.y, 'laser') as Phaser.Physics.Arcade.Sprite;
+        // Get bullet from pool using level-based sprite
+        const bulletKey = `laser-level-${this.level}`;
+        const bullet = this.bullets.get(this.sprite.x, this.sprite.y, bulletKey) as Phaser.Physics.Arcade.Sprite;
         if (bullet) {
+            // Explicitly set the texture to ensure it's correct (Phaser pool reuse can cause issues)
+            bullet.setTexture(bulletKey);
             bullet.setActive(true);
             bullet.setVisible(true);
+            
+            // Rotate bullet to match ship direction (add 90° offset since bullet sprite points up)
+            bullet.setRotation(this.sprite.rotation + Math.PI / 2);
 
             // Set bullet velocity based on ship rotation
             this.scene.physics.velocityFromRotation(this.sprite.rotation, 400, bullet.body!.velocity);

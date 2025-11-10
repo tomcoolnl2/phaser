@@ -6,13 +6,11 @@ export class BootScene extends Phaser.Scene {
     }
 
     preload(): void {
-        // Load all game assets
+
         this.load.setBaseURL('.');
 
-        // Background
         this.load.image('space', 'assets/background.jpg');
 
-        // Ships
         this.load.spritesheet('shooter-sprite', 'assets/ship.png', {
             frameWidth: 32,
             frameHeight: 32,
@@ -23,8 +21,10 @@ export class BootScene extends Phaser.Scene {
             frameHeight: 32,
         });
 
-        // Weapons & Effects
-        this.load.image('laser', 'assets/bullet.png');
+        for (let i = 1; i <= 5; i++) {
+            this.load.image(`laser-level-${i}`, `assets/bullet/bullet${i}.png`);
+        }
+
         this.load.image('pickup', 'assets/pickup/pickup-ammo.png');
 
         this.load.spritesheet('dust', 'assets/dust.png', {
@@ -42,13 +42,11 @@ export class BootScene extends Phaser.Scene {
             frameHeight: 152,
         });
 
-        // Asteroids
         this.load.spritesheet('asteroid', 'assets/asteroids.png', {
             frameWidth: 128,
             frameHeight: 128,
         });
 
-        // Loading bar
         this.createLoadingBar();
     }
 

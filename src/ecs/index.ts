@@ -21,6 +21,7 @@ export { UpgradeSystem } from './systems/UpgradeSystem';
 export { InputSystem } from './systems/InputSystem';
 export { MovementSystem } from './systems/MovementSystem';
 export { WeaponSystem } from './systems/WeaponSystem';
+export { WeaponUpgradeSystem } from './systems/WeaponUpgradeSystem';
 
 // Factories
 export { createPlayerEntity, syncPlayerToLegacy } from './factories';
