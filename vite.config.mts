@@ -20,11 +20,17 @@ export default defineConfig({
     // Build configuration
     build: {
         outDir: 'dist',
-        sourcemap: true,
+        sourcemap: process.env.NODE_ENV !== 'production', // Only in dev/staging
+        chunkSizeWarningLimit: 1500, // Phaser is ~1.47 MB, this is expected for game engines
         rollupOptions: {
             output: {
                 manualChunks: {
+                    // Separate Phaser into its own chunk (cached separately)
                     phaser: ['phaser'],
+                    // Separate Vue into its own chunk
+                    vue: ['vue'],
+                    // Separate Socket.IO into its own chunk
+                    'socket.io': ['socket.io-client'],
                 },
             },
         },
