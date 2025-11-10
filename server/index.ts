@@ -3,9 +3,26 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
+import pino from 'pino';
 import { PlayerEvent, GameEvent, CometEvent } from '../shared/events';
 import { SpaceShip, Coordinates, Player, PickupData } from '../shared/models';
 import { GameConfig } from '../shared/config';
+
+// Create logger instance
+const logger = pino({
+    level: process.env.LOG_LEVEL || 'info',
+    transport:
+        process.env.NODE_ENV !== 'production'
+            ? {
+                  target: 'pino-pretty',
+                  options: {
+                      colorize: true,
+                      translateTime: 'HH:MM:ss',
+                      ignore: 'pid,hostname',
+                  },
+              }
+            : undefined,
+});
 
 // Extended socket type with custom properties
 interface GameSocket extends Socket {
@@ -38,14 +55,14 @@ class GameServer {
         this.app.use(express.static('public'));
 
         // Serve index.html for root route
-        this.app.get('/', (req: Request, res: Response) => {
+        this.app.get('/', (_req: Request, res: Response) => {
             res.sendFile(path.join(__dirname, '../../index.html'));
         });
     }
 
     private setupSocketIO(): void {
         this.io.on('connection', (socket: GameSocket) => {
-            console.log('Player connected:', socket.id);
+            logger.info({ socketId: socket.id }, 'Player connected');
             this.attachListeners(socket);
         });
     }
@@ -91,7 +108,7 @@ class GameServer {
     private addSignOutListener(socket: GameSocket): void {
         socket.on('disconnect', () => {
             if (socket.player) {
-                console.log('Player disconnected:', socket.player.name);
+                logger.info({ playerId: socket.player.id, playerName: socket.player.name }, 'Player disconnected');
                 socket.broadcast.emit(PlayerEvent.quit, socket.player.id);
             }
         });
@@ -136,7 +153,7 @@ class GameServer {
     private gameInitialised(socket: GameSocket): void {
         if (!this.gameHasStarted) {
             this.gameHasStarted = true;
-            console.log('Game started!');
+            logger.info('Game started');
             this.createComet(socket, GameConfig.server.cometSpawnInterval);
             this.spawnPickups(socket, GameConfig.server.pickupSpawnInterval);
         }
@@ -149,7 +166,7 @@ class GameServer {
                 socket.comet = { id: cometId };
                 this.hasComet = true;
 
-                console.log('Spawning comet:', cometId);
+                logger.debug({ cometId }, 'Spawning comet');
 
                 this.io.emit(CometEvent.create, socket.comet);
                 this.updateComet(socket);
@@ -175,7 +192,7 @@ class GameServer {
                     this.io.emit(CometEvent.destroy);
                     this.hasComet = false;
                     clearInterval(update);
-                    console.log('Comet destroyed (off screen)');
+                    logger.debug('Comet destroyed (off screen)');
                 }
             }, 25);
         }
@@ -184,7 +201,7 @@ class GameServer {
     private spawnPickups(socket: Socket, interval: number): void {
         setInterval(() => {
             const coordinates = this.generateRandomCoordinates();
-            console.log('Spawning pickup at:', coordinates);
+            logger.debug({ coordinates }, 'Spawning pickup');
             this.io.emit(GameEvent.drop, coordinates);
         }, interval);
     }
@@ -202,7 +219,7 @@ class GameServer {
 
     public start(port: number = 3000): void {
         this.httpServer.listen(port, () => {
-            console.log(`🚀 Game server running on http://localhost:${port}`);
+            logger.info({ port }, '🚀 Game server running');
         });
     }
 }
