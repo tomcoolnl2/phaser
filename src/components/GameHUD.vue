@@ -14,6 +14,25 @@
                 </div>
             </div>
 
+            <!-- Level Section -->
+            <div class="hud-section level-info">
+                <div class="hud-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                            fill="currentColor"
+                        />
+                    </svg>
+                </div>
+                <div class="hud-content">
+                    <div class="hud-label">Level</div>
+                    <div class="hud-value level-value">
+                        {{ level }}
+                        <span class="level-max">/5</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Ammo Section -->
             <div class="hud-section ammo-info">
                 <div class="hud-icon">
@@ -46,130 +65,154 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-    playerName: string;
-    ammo: number;
-    score: number;
-}>();
+    import type { Level } from '../../shared/models';
+
+    defineProps<{
+        playerName: string;
+        level: Level;
+        ammo: number;
+        score: number;
+    }>();
 </script>
 
 <style scoped>
-.game-hud {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    pointer-events: none;
-    padding: 20px;
-}
-
-.hud-container {
-    display: flex;
-    gap: 16px;
-    justify-content: flex-start;
-    align-items: flex-start;
-    flex-wrap: wrap;
-}
-
-.hud-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(30, 30, 46, 0.85);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: 12px;
-    padding: 12px 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    pointer-events: auto;
-}
-
-.hud-section:hover {
-    background: rgba(30, 30, 46, 0.95);
-    border-color: rgba(99, 102, 241, 0.5);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
-}
-
-.hud-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(99, 102, 241, 0.8);
-    transition: color 0.3s ease;
-}
-
-.hud-section:hover .hud-icon {
-    color: rgba(99, 102, 241, 1);
-}
-
-.hud-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.hud-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: rgba(199, 199, 209, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.hud-value {
-    font-size: 18px;
-    font-weight: 700;
-    color: #ffffff;
-    text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
-}
-
-.ammo-value {
-    transition: color 0.3s ease;
-}
-
-.ammo-value.low-ammo {
-    color: #ff6b6b;
-    animation: pulse 1s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.6;
-    }
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
     .game-hud {
-        padding: 12px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        pointer-events: none;
+        padding: 20px;
     }
 
     .hud-container {
-        gap: 8px;
+        display: flex;
+        gap: 16px;
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex-wrap: wrap;
     }
 
     .hud-section {
-        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(30, 30, 46, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 12px;
+        padding: 12px 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        pointer-events: auto;
     }
 
-    .hud-icon svg {
-        width: 20px;
-        height: 20px;
+    .hud-section:hover {
+        background: rgba(30, 30, 46, 0.95);
+        border-color: rgba(99, 102, 241, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
     }
 
-    .hud-value {
-        font-size: 16px;
+    .hud-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(99, 102, 241, 0.8);
+        transition: color 0.3s ease;
+    }
+
+    .hud-section:hover .hud-icon {
+        color: rgba(99, 102, 241, 1);
+    }
+
+    .hud-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
     }
 
     .hud-label {
-        font-size: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(199, 199, 209, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-}
+
+    .hud-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #ffffff;
+        text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+    }
+
+    .ammo-value {
+        transition: color 0.3s ease;
+    }
+
+    .ammo-value.low-ammo {
+        color: #ff6b6b;
+        animation: pulse 1s ease-in-out infinite;
+    }
+
+    .level-value {
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        color: #ffd700;
+    }
+
+    .level-max {
+        font-size: 12px;
+        color: rgba(199, 199, 209, 0.6);
+        font-weight: 500;
+    }
+
+    .level-info .hud-icon {
+        color: rgba(255, 215, 0, 0.8);
+    }
+
+    .level-info:hover .hud-icon {
+        color: rgba(255, 215, 0, 1);
+    }
+
+    @keyframes pulse {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .game-hud {
+            padding: 12px;
+        }
+
+        .hud-container {
+            gap: 8px;
+        }
+
+        .hud-section {
+            padding: 8px 12px;
+        }
+
+        .hud-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .hud-value {
+            font-size: 16px;
+        }
+
+        .hud-label {
+            font-size: 10px;
+        }
+    }
 </style>

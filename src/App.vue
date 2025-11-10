@@ -4,7 +4,7 @@
         <PlayerNameModal :is-visible="showNameModal" @submit="handleNameSubmit" />
 
         <!-- Game HUD -->
-        <GameHUD v-if="gameStarted && playerData" :player-name="playerData.name" :ammo="playerData.ammo" :score="playerData.score" />
+        <GameHUD v-if="gameStarted && playerData" :player-name="playerData.name" :level="playerData.level" :ammo="playerData.ammo" :score="playerData.score" />
 
         <!-- Phaser game canvas will be injected here by Phaser -->
         <div id="phaser-game"></div>
@@ -15,16 +15,18 @@
 import { ref, onMounted } from 'vue';
 import PlayerNameModal from './components/PlayerNameModal.vue';
 import GameHUD from './components/GameHUD.vue';
+import type { PlayerData } from '../shared/models';
 
 const showNameModal = ref(true);
 const gameStarted = ref(false);
-const playerData = ref<{ name: string; ammo: number; score: number } | null>(null);
+const playerData = ref<PlayerData | null>(null);
 
 const handleNameSubmit = (name: string) => {
     showNameModal.value = false;
     gameStarted.value = true;
     playerData.value = {
         name,
+        level: 1,
         ammo: 10,
         score: 0,
     };

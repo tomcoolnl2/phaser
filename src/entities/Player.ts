@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
-import { SpaceShip } from '../../shared/models';
+import { SpaceShip, Level } from '../../shared/models';
 import { GameConfig } from '../../shared/config';
 
 export class Player {
     public sprite: Phaser.Physics.Arcade.Sprite;
     public id: string;
     public name: string;
+    public level: Level = 1;
     public ammo: number = 0;
     public isFiring: boolean = false;
     public isMoving: boolean = false;
@@ -15,6 +16,7 @@ export class Player {
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private fireKey?: Phaser.Input.Keyboard.Key;
     private nameText: Phaser.GameObjects.Text;
+    private levelText: Phaser.GameObjects.Text;
     private ammoText?: Phaser.GameObjects.Text;
     private isLocal: boolean;
     private thrustParticles?: Phaser.GameObjects.Particles.ParticleEmitter;
@@ -31,6 +33,7 @@ export class Player {
         this.scene = scene;
         this.id = playerData.id;
         this.name = playerData.name;
+        this.level = playerData.level || 1;
         this.ammo = playerData.ammo || GameConfig.player.startingAmmo;
         this.isLocal = isLocal;
 
@@ -52,6 +55,14 @@ export class Player {
             .text(this.sprite.x, this.sprite.y - 30, this.name, {
                 fontSize: '12px',
                 color: '#ffffff',
+            })
+            .setOrigin(0.5);
+
+        // Create level label
+        this.levelText = scene.add
+            .text(this.sprite.x, this.sprite.y - 18, `Level: ${this.level}`, {
+                fontSize: '10px',
+                color: '#ffff00',
             })
             .setOrigin(0.5);
 
@@ -87,8 +98,9 @@ export class Player {
     }
 
     public update(): void {
-        // Update name position
+        // Update name and level position
         this.nameText.setPosition(this.sprite.x, this.sprite.y - 30);
+        this.levelText.setPosition(this.sprite.x, this.sprite.y - 18);
 
         // Only process input for local player
         if (!this.isLocal) return;
@@ -182,6 +194,11 @@ export class Player {
         }
     }
 
+    public setLevel(level: Level): void {
+        this.level = level;
+        this.levelText.setText(`Level: ${this.level}`);
+    }
+
     public setPosition(x: number, y: number, rotation: number): void {
         this.sprite.setPosition(x, y);
         this.sprite.setRotation(rotation);
@@ -196,6 +213,7 @@ export class Player {
 
         this.sprite.destroy();
         this.nameText.destroy();
+        this.levelText.destroy();
         if (this.ammoText) {
             this.ammoText.destroy();
         }

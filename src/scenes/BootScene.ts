@@ -25,7 +25,7 @@ export class BootScene extends Phaser.Scene {
 
         // Weapons & Effects
         this.load.image('laser', 'assets/bullet.png');
-        this.load.image('pickup', 'assets/pickup.png');
+        this.load.image('pickup', 'assets/pickup/pickup-ammo.png');
 
         this.load.spritesheet('dust', 'assets/dust.png', {
             frameWidth: 64,

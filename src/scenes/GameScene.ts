@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { Socket } from 'socket.io-client';
 import { PlayerEvent, GameEvent, CometEvent } from '../../shared/events';
-import { SpaceShip, Coordinates, Player as PlayerData, Comet, PickupData } from '../../shared/models';
+import { SpaceShip, Coordinates, Player as PlayerData, Comet, PickupData, Level } from '../../shared/models';
 import { GameConfig } from '../../shared/config';
 import { Player } from '../entities/Player';
 import { Asteroid } from '../entities/Asteroid';
@@ -87,6 +87,9 @@ export class GameScene extends Phaser.Scene {
             // Note: Player.update() is now handled by ECS systems
             // We just keep the network sync and collision detection here
 
+            // Emit player data to Vue HUD
+            this.emitPlayerDataToVue();
+
             // Send player state to server
             this.socket.emit(PlayerEvent.coordinates, {
                 x: this.localPlayer.sprite.x,
@@ -104,6 +107,11 @@ export class GameScene extends Phaser.Scene {
                 if (distance < GameConfig.pickup.collisionRadius) {
                     // Player collected the pickup
                     this.localPlayer.giveAmmo(GameConfig.player.ammoPerPickup);
+
+                    // Level up (cycle through 1-5)
+                    const newLevel = (this.localPlayer.level % 5) + 1;
+                    this.localPlayer.setLevel(newLevel as Level);
+
                     this.socket.emit(PlayerEvent.pickup, {
                         uuid: this.localPlayer.id,
                         ammo: true,
@@ -346,5 +354,20 @@ export class GameScene extends Phaser.Scene {
             });
             this.asteroids.clear();
         });
+    }
+
+    private emitPlayerDataToVue(): void {
+        if (!this.localPlayer) return;
+
+        window.dispatchEvent(
+            new CustomEvent('updatePlayerData', {
+                detail: {
+                    name: this.localPlayer.name,
+                    level: this.localPlayer.level,
+                    ammo: this.localPlayer.ammo,
+                    score: 0, // TODO: Add score tracking
+                },
+            })
+        );
     }
 }

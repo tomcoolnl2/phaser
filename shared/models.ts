@@ -1,9 +1,18 @@
+export type Level = 1 | 2 | 3 | 4 | 5;
+
+export interface PlayerData {
+    name: string;
+    level: Level;
+    ammo: number;
+    score: number;
+}
 export interface SpaceShip {
     name: string;
     id: string;
     x: number;
     y: number;
     ammo: number;
+    level?: Level;
 }
 
 export interface Coordinates {
