@@ -21,16 +21,10 @@ export default defineConfig({
     build: {
         outDir: 'dist',
         sourcemap: true,
-        chunkSizeWarningLimit: 1000, // Increase limit for Phaser (it's a large library)
         rollupOptions: {
             output: {
                 manualChunks: {
-                    // Separate Phaser into its own chunk (cached separately)
                     phaser: ['phaser'],
-                    // Separate Vue into its own chunk
-                    vue: ['vue'],
-                    // Separate Socket.IO into its own chunk
-                    'socket.io': ['socket.io-client'],
                 },
             },
         },
