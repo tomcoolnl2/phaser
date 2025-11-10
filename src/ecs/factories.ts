@@ -12,13 +12,38 @@ import { LegacyPlayerComponent } from './components/LegacyPlayerComponent';
 import { GameConfig } from '../../shared/config';
 
 /**
- * Factory functions to create ECS entities from existing game objects
+ * @fileoverview Factory functions for creating ECS entities from game objects.
+ * 
+ * These factories enable gradual migration from OOP to ECS by wrapping existing
+ * game objects (like Player) in ECS entities. This allows new ECS systems to
+ * operate alongside legacy code during the transition period.
  */
 
 /**
- * Creates an ECS entity from an existing Player instance
- * This allows gradual migration to ECS - the Player sprite and logic stay the same,
- * but we can add ECS components for upgrades, health, etc.
+ * Creates an ECS entity from an existing Player instance.
+ * 
+ * This factory wraps a legacy Player object in ECS components, allowing it to
+ * work with ECS systems while maintaining backwards compatibility. The entity
+ * includes all necessary components for a fully-functional player:
+ * - TransformComponent: Links to Player sprite
+ * - MovementComponent: Physics and controls
+ * - WeaponComponent: Shooting and ammo
+ * - PlayerComponent: Player metadata and level
+ * - HealthComponent: HP tracking
+ * - ColliderComponent: Collision detection
+ * - UpgradesComponent: Stat progression
+ * - LegacyPlayerComponent: Bridge to old Player class
+ * 
+ * @param entityManager - The entity manager to register the entity with
+ * @param player - The legacy Player instance to wrap
+ * @param isLocal - True if this is the local player (controlled by this client)
+ * @returns The newly created entity with all player components attached
+ * 
+ * @example
+ * ```typescript
+ * const playerEntity = createPlayerEntity(entityManager, player, true);
+ * // Player now works with ECS systems while maintaining legacy behavior
+ * ```
  */
 export function createPlayerEntity(entityManager: EntityManager, player: Player, isLocal: boolean): Entity {
     const entity = entityManager.createEntity();
@@ -76,8 +101,26 @@ export function createPlayerEntity(entityManager: EntityManager, player: Player,
 }
 
 /**
- * Syncs ECS component state back to the legacy Player instance
- * Call this during the migration period to keep both systems in sync
+ * Syncs ECS component state back to the legacy Player instance.
+ * 
+ * During the migration period, this function keeps the legacy Player object
+ * in sync with changes made by ECS systems. This ensures backwards compatibility
+ * with any legacy code that still reads Player properties directly.
+ * 
+ * Currently syncs:
+ * - Weapon ammo (ECS → Player.ammo)
+ * - Sprite rotation (ECS → Player.sprite.rotation)
+ * 
+ * @param entity - The entity containing both ECS components and LegacyPlayerComponent
+ * 
+ * @example
+ * ```typescript
+ * // After ECS systems update, sync back to legacy
+ * syncPlayerToLegacy(playerEntity);
+ * // Now Player.ammo matches WeaponComponent.ammo
+ * ```
+ * 
+ * @deprecated This function is temporary and will be removed after full ECS migration
  */
 export function syncPlayerToLegacy(entity: Entity): void {
     const legacy = entity.getComponent(LegacyPlayerComponent);

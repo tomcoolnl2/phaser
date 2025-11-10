@@ -1,21 +1,49 @@
 import { Component, ComponentClass } from './Component';
 
 /**
- * Entity class
- * An entity is just a container for components with a unique ID
+ * Entity - A container for components in the ECS architecture.
+ * 
+ * An Entity is simply a unique identifier with a collection of components attached to it.
+ * It has no behavior of its own - all logic is handled by Systems that operate on entities
+ * with specific component combinations.
+ * 
+ * @example
+ * ```typescript
+ * const entity = new Entity('player');
+ * entity.addComponent(new TransformComponent(sprite))
+ *       .addComponent(new MovementComponent(100, 200));
+ * ```
  */
 export class Entity {
+    //
     private static nextId = 0;
+    
+    /** Unique identifier for this entity */
     public readonly id: string;
+    
+    /** Map of component classes to component instances */
     private components: Map<ComponentClass<Component>, Component> = new Map();
+    
+    /** Whether this entity is active and should be processed by systems */
     public active: boolean = true;
 
+    /**
+     * Creates a new Entity.
+     * @param name - Optional name for the entity. If not provided, generates a unique ID.
+     */
     constructor(name?: string) {
         this.id = name || `entity_${Entity.nextId++}`;
     }
 
     /**
-     * Add a component to this entity
+     * Adds a component to this entity.
+     * @param component - The component instance to add
+     * @returns This entity for method chaining
+     * @example
+     * ```typescript
+     * entity.addComponent(new TransformComponent(sprite))
+     *       .addComponent(new HealthComponent(100));
+     * ```
      */
     public addComponent<T extends Component>(component: T): this {
         const componentClass = component.constructor as ComponentClass<T>;
@@ -24,35 +52,49 @@ export class Entity {
     }
 
     /**
-     * Get a component from this entity
+     * Retrieves a component from this entity.
+     * @param componentClass - The class of the component to retrieve
+     * @returns The component instance if found, undefined otherwise
+     * @example
+     * ```typescript
+     * const transform = entity.getComponent(TransformComponent);
+     * if (transform) {
+     *     console.log(transform.sprite.x, transform.sprite.y);
+     * }
+     * ```
      */
     public getComponent<T extends Component>(componentClass: ComponentClass<T>): T | undefined {
         return this.components.get(componentClass) as T | undefined;
     }
 
     /**
-     * Check if entity has a component
+     * Checks if this entity has a specific component.
+     * @param componentClass - The class of the component to check for
+     * @returns True if the entity has the component, false otherwise
      */
     public hasComponent<T extends Component>(componentClass: ComponentClass<T>): boolean {
         return this.components.has(componentClass);
     }
 
     /**
-     * Remove a component from this entity
+     * Removes a component from this entity.
+     * @param componentClass - The class of the component to remove
      */
     public removeComponent<T extends Component>(componentClass: ComponentClass<T>): void {
         this.components.delete(componentClass);
     }
 
     /**
-     * Get all components
+     * Gets all components attached to this entity.
+     * @returns Array of all component instances
      */
     public getAllComponents(): Component[] {
         return Array.from(this.components.values());
     }
 
     /**
-     * Destroy entity and clean up
+     * Deactivates and clears all components from this entity.
+     * After calling destroy(), the entity should not be used.
      */
     public destroy(): void {
         this.active = false;

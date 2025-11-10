@@ -2,14 +2,59 @@ import Phaser from 'phaser';
 import { SpaceShip, Level } from '../../shared/models';
 import { GameConfig } from '../../shared/config';
 
+/**
+ * Player - Represents a player spaceship in the game.
+ * 
+ * This class manages a player entity including its sprite, physics, controls,
+ * weapons, and visual indicators (name, level, ammo). It handles both local
+ * players (controlled by keyboard) and remote players (controlled by network).
+ * 
+ * Features:
+ * - Race car/space ship physics with momentum
+ * - Smooth rotation and directional thrust
+ * - Weapon system with level-based bullets
+ * - Visual feedback (name tag, level display, ammo counter)
+ * - Local player input handling
+ * 
+ * This is a legacy OOP class being gradually migrated to ECS. See the ECS
+ * factory in `src/ecs/factories.ts` for the bridge to the new architecture.
+ * 
+ * @example
+ * ```typescript
+ * const player = new Player(
+ *     scene,
+ *     { id: 'p1', name: 'Alice', x: 100, y: 100, level: 1 },
+ *     'shooter-sprite',
+ *     true // isLocal
+ * );
+ * 
+ * // In scene update loop
+ * player.update();
+ * ```
+ */
 export class Player {
+    /** The Phaser sprite representing this player */
     public sprite: Phaser.Physics.Arcade.Sprite;
+    
+    /** Unique player identifier */
     public id: string;
+    
+    /** Player display name */
     public name: string;
+    
+    /** Current player level (1-5) */
     public level: Level = 1;
+    
+    /** Current ammunition count */
     public ammo: number = 0;
+    
+    /** Whether player is currently firing */
     public isFiring: boolean = false;
+    
+    /** Whether player is currently moving */
     public isMoving: boolean = false;
+    
+    /** Bullet pool for this player (local players only) */
     public bullets?: Phaser.Physics.Arcade.Group;
 
     private scene: Phaser.Scene;
@@ -19,16 +64,22 @@ export class Player {
     private levelText: Phaser.GameObjects.Text;
     private ammoText?: Phaser.GameObjects.Text;
     private isLocal: boolean;
+    // TODO: Implement thrust particle effects
     private thrustParticles?: Phaser.GameObjects.Particles.ParticleEmitter;
 
-    private readonly ANGULAR_VELOCITY = GameConfig.player.angularVelocity;
-    private readonly ACCELERATION = GameConfig.player.acceleration;
     private readonly MAX_VELOCITY = GameConfig.player.maxVelocity;
     private readonly FIRE_RATE = GameConfig.player.fireRate;
-    private readonly ROTATION_SPEED = 0.03; // Smooth rotation factor (lower = slower turning)
+    private readonly ROTATION_SPEED = 0.04; // Smooth rotation factor (lower = slower turning)
     private lastFired: number = 0;
     private targetRotation: number = 0;
 
+    /**
+     * Creates a new Player instance.
+     * @param scene - The Phaser scene
+     * @param playerData - Initial player data (position, name, level, etc.)
+     * @param spriteKey - Texture key for the player sprite
+     * @param isLocal - True if this is the local player (controlled by keyboard)
+     */
     constructor(scene: Phaser.Scene, playerData: SpaceShip, spriteKey: string, isLocal: boolean) {
         this.scene = scene;
         this.id = playerData.id;
@@ -74,19 +125,36 @@ export class Player {
         }
     }
 
+    /**
+     * Sets up keyboard controls for the local player.
+     * Creates cursor keys (arrows) and space bar for firing.
+     * @private
+     */
     private setupControls(): void {
-        if (!this.scene.input.keyboard) return;
+        if (!this.scene.input.keyboard) {
+            return;
+        }
 
         this.cursors = this.scene.input.keyboard.createCursorKeys();
         this.fireKey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     }
 
+    /**
+     * Creates a bullet pool for this player's weapon.
+     * Bullets are reused from the pool for performance.
+     * @private
+     */
     private createBullets(): void {
         this.bullets = this.scene.physics.add.group({
             maxSize: 10,
         });
     }
 
+    /**
+     * Creates the ammo counter UI element (local players only).
+     * Displays in top-left corner of screen.
+     * @private
+     */
     private createAmmoDisplay(): void {
         this.ammoText = this.scene.add
             .text(16, 16, `Ammo: ${this.ammo}`, {
@@ -96,6 +164,17 @@ export class Player {
             .setScrollFactor(0);
     }
 
+    /**
+     * Updates the player's state every frame.
+     * 
+     * For all players:
+     * - Updates name and level text positions to follow sprite
+     * 
+     * For local players:
+     * - Processes keyboard input (rotation, thrust, brake, fire)
+     * - Applies physics (momentum, drift, race car feel)
+     * - Updates ammo display
+     */
     public update(): void {
         // Update name and level position
         this.nameText.setPosition(this.sprite.x, this.sprite.y - 30);
@@ -150,6 +229,16 @@ export class Player {
         }
     }
 
+    /**
+     * Fires a bullet from the player's weapon.
+     * 
+     * Checks fire rate cooldown and ammo availability before spawning a bullet.
+     * The bullet is pulled from a pool, positioned at the player's location,
+     * and given velocity in the direction the player is facing. Bullet sprite
+     * matches the player's current level.
+     * 
+     * Fire rate is limited by FIRE_RATE constant and ammo is consumed per shot.
+     */
     public fire(): void {
         const now = Date.now();
         if (now - this.lastFired < this.FIRE_RATE || !this.bullets || this.ammo <= 0) {
@@ -188,10 +277,17 @@ export class Player {
         }
     }
 
+    /**
+     * Shows thrust visual effects (placeholder for future particle effects).
+     */
     public showThrust(): void {
         // Could add particle effects here
     }
 
+    /**
+     * Adds ammunition to the player's weapon.
+     * @param amount - Amount of ammo to add
+     */
     public giveAmmo(amount: number): void {
         this.ammo = amount;
         if (this.ammoText) {
@@ -199,17 +295,31 @@ export class Player {
         }
     }
 
+    /**
+     * Updates the player's level and level display.
+     * @param level - New level (1-5)
+     */
     public setLevel(level: Level): void {
         this.level = level;
         this.levelText.setText(`Level: ${this.level}`);
     }
 
+    /**
+     * Teleports the player to a new position with rotation.
+     * @param x - X coordinate
+     * @param y - Y coordinate
+     * @param rotation - Rotation in radians
+     */
     public setPosition(x: number, y: number, rotation: number): void {
         this.sprite.setPosition(x, y);
         this.sprite.setRotation(rotation);
         this.targetRotation = rotation; // Keep target rotation in sync
     }
 
+    /**
+     * Destroys the player and all associated game objects.
+     * Plays an explosion animation at the player's final position.
+     */
     public destroy(): void {
         // Play explosion animation
         const explosion = this.scene.add.sprite(this.sprite.x, this.sprite.y, 'kaboom');

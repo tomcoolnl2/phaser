@@ -6,21 +6,57 @@ import { MovementComponent } from '../components/MovementComponent';
 import { HealthComponent } from '../components/HealthComponent';
 
 /**
- * UpgradeSystem
- * Applies upgrade effects to entity components
+ * UpgradeSystem - Applies stat upgrades to entity components.
+ * 
+ * This system provides an API for applying upgrades to entities. When an upgrade
+ * is purchased (via applyUpgrade), it immediately modifies the relevant component's
+ * stats. Supported upgrades:
+ * - Fire rate reduction (WeaponComponent)
+ * - Damage increase (WeaponComponent)
+ * - Speed boost (MovementComponent)
+ * - Max health increase (HealthComponent)
+ * - Max ammo increase (WeaponComponent)
+ * - Rotation speed boost (MovementComponent)
+ * 
+ * Unlike most systems, this doesn't process entities every frame. Instead, it
+ * provides the applyUpgrade() method that's called when upgrades are purchased.
+ * 
+ * @example
+ * ```typescript
+ * const upgradeSystem = new UpgradeSystem(scene);
+ * 
+ * // When player purchases an upgrade
+ * const success = upgradeSystem.applyUpgrade(playerEntity, UpgradeType.DAMAGE);
+ * if (success) {
+ *     console.log('Damage upgraded!');
+ * }
+ * ```
  */
 export class UpgradeSystem extends System {
     public getRequiredComponents() {
         return [UpgradesComponent];
     }
 
+    /**
+     * Empty update - upgrades are applied on-demand via applyUpgrade().
+     * @param _entity - Unused
+     * @param _deltaTime - Unused
+     */
     public update(_entity: Entity, _deltaTime: number): void {
         // This system doesn't need per-frame updates
         // Upgrades are applied when purchased via applyUpgrade()
     }
 
     /**
-     * Apply an upgrade to an entity
+     * Applies an upgrade to an entity if available.
+     * 
+     * This checks if the upgrade can be performed (hasn't reached max level),
+     * increments the upgrade level, and applies the stat changes to the
+     * appropriate component.
+     * 
+     * @param entity - The entity to upgrade
+     * @param upgradeType - The type of upgrade to apply
+     * @returns True if upgrade succeeded, false if already at max level or invalid
      */
     public applyUpgrade(entity: Entity, upgradeType: UpgradeType): boolean {
         const upgrades = entity.getComponent(UpgradesComponent);

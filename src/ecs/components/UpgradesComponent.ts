@@ -1,5 +1,8 @@
 import { Component } from '../Component';
 
+/**
+ * UpgradeType - Available upgrade categories.
+ */
 export enum UpgradeType {
     FIRE_RATE = 'FIRE_RATE',
     DAMAGE = 'DAMAGE',
@@ -9,18 +12,43 @@ export enum UpgradeType {
     ROTATION_SPEED = 'ROTATION_SPEED',
 }
 
+/**
+ * Upgrade - Configuration for a single upgrade type.
+ */
 export interface Upgrade {
+    /** Type of upgrade */
     type: UpgradeType;
+    /** Current level (0 = no upgrade) */
     level: number;
+    /** Maximum allowed level */
     maxLevel: number;
+    /** Value gained per level */
     valuePerLevel: number;
 }
 
 /**
- * Upgrades Component
- * Tracks all upgrades applied to an entity
+ * UpgradesComponent - Tracks all upgrades applied to an entity.
+ * 
+ * This component manages a progression system where entities can be upgraded
+ * across multiple categories. Each upgrade type has a level, max level, and
+ * value per level. The UpgradeSystem reads this component to apply stat changes.
+ * 
+ * @example
+ * ```typescript
+ * const upgrades = new UpgradesComponent();
+ * 
+ * // Check if upgrade is available
+ * if (upgrades.canUpgrade(UpgradeType.DAMAGE)) {
+ *     upgrades.upgrade(UpgradeType.DAMAGE);
+ * }
+ * 
+ * // Get current level
+ * const damageLevel = upgrades.getUpgradeLevel(UpgradeType.DAMAGE);
+ * console.log(`Damage is at level ${damageLevel}`);
+ * ```
  */
 export class UpgradesComponent extends Component {
+    /** Map of upgrade types to their current state */
     public upgrades: Map<UpgradeType, Upgrade> = new Map();
 
     constructor() {
@@ -28,6 +56,10 @@ export class UpgradesComponent extends Component {
         this.initializeUpgrades();
     }
 
+    /**
+     * Initializes all upgrade types with default values.
+     * @private
+     */
     private initializeUpgrades(): void {
         // Fire rate: each level reduces fire rate by 10%
         this.upgrades.set(UpgradeType.FIRE_RATE, {
@@ -78,11 +110,21 @@ export class UpgradesComponent extends Component {
         });
     }
 
+    /**
+     * Checks if an upgrade type can be upgraded further.
+     * @param type - The upgrade type to check
+     * @returns True if the upgrade hasn't reached max level
+     */
     public canUpgrade(type: UpgradeType): boolean {
         const upgrade = this.upgrades.get(type);
         return upgrade ? upgrade.level < upgrade.maxLevel : false;
     }
 
+    /**
+     * Upgrades a specific type by one level.
+     * @param type - The upgrade type to level up
+     * @returns True if upgrade succeeded, false if already at max level
+     */
     public upgrade(type: UpgradeType): boolean {
         const upgrade = this.upgrades.get(type);
         if (!upgrade || upgrade.level >= upgrade.maxLevel) {
@@ -93,14 +135,28 @@ export class UpgradesComponent extends Component {
         return true;
     }
 
+    /**
+     * Gets the full upgrade configuration for a type.
+     * @param type - The upgrade type to retrieve
+     * @returns The upgrade configuration or undefined
+     */
     public getUpgrade(type: UpgradeType): Upgrade | undefined {
         return this.upgrades.get(type);
     }
 
+    /**
+     * Gets the current level of a specific upgrade type.
+     * @param type - The upgrade type to check
+     * @returns Current level (0 if not found)
+     */
     public getUpgradeLevel(type: UpgradeType): number {
         return this.upgrades.get(type)?.level || 0;
     }
 
+    /**
+     * Calculates the total number of upgrades across all types.
+     * @returns Sum of all upgrade levels
+     */
     public getTotalUpgradeLevels(): number {
         let total = 0;
         this.upgrades.forEach(upgrade => {

@@ -5,8 +5,23 @@ import { WeaponComponent } from '../components/WeaponComponent';
 import { ComponentClass, Component } from '../Component';
 
 /**
- * WeaponSystem - Handles weapon firing
- * This system spawns bullets when the trigger is pulled and weapon can fire
+ * WeaponSystem - Handles weapon firing and bullet spawning.
+ * 
+ * This system checks if the trigger is pulled (via WeaponComponent.triggerPulled,
+ * set by InputSystem) and spawns bullets if the weapon can fire. It manages:
+ * - Fire rate limiting
+ * - Ammunition consumption
+ * - Bullet pooling from Phaser groups
+ * - Bullet positioning and velocity
+ * - Bullet rotation to match firing direction
+ * - Automatic bullet cleanup after 2 seconds
+ * 
+ * @example
+ * ```typescript
+ * const weaponSystem = new WeaponSystem(scene);
+ * entityManager.addSystem(weaponSystem);
+ * // Entities with Transform + Weapon components can now fire
+ * ```
  */
 export class WeaponSystem extends System {
     public getRequiredComponents(): ComponentClass<Component>[] {

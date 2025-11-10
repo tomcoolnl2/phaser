@@ -5,6 +5,9 @@ export { Entity } from './Entity';
 export { System } from './System';
 export { EntityManager } from './EntityManager';
 
+// Types
+export { CollisionLayer } from './types/CollisionLayer';
+
 // Components
 export { TransformComponent } from './components/TransformComponent';
 export { HealthComponent } from './components/HealthComponent';
