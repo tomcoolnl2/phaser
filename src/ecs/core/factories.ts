@@ -1,16 +1,17 @@
-import { GameConfig } from '../../../shared/config';
-import { Entity } from './Entity';
-import { EntityManager } from './EntityManager';
-import { Player } from '../../entities/Player';
-import { TransformComponent } from '../components/TransformComponent';
-import { MovementComponent } from '../components/MovementComponent';
-import { WeaponComponent } from '../components/WeaponComponent';
-import { PlayerComponent } from '../components/PlayerComponent';
-import { HealthComponent } from '../components/HealthComponent';
-import { ColliderComponent } from '../components/ColliderComponent';
-import { UpgradesComponent } from '../components/UpgradesComponent';
-import { LegacyPlayerComponent } from '../components/LegacyPlayerComponent';
-import { CollisionLayer } from '../types';
+import { GameConfig } from '@shared/config';
+import { CollisionLayer } from '@/ecs/types';
+import { Entity, EntityManager } from '@/ecs/core';
+import { Player } from '@/entities/Player';
+import { 
+    TransformComponent,
+    MovementComponent,
+    WeaponComponent,
+    PlayerComponent,
+    HealthComponent,
+    ColliderComponent,
+    UpgradesComponent,
+    LegacyPlayerComponent 
+} from '@/ecs/components';
 
 /**
  * @fileoverview Factory functions for creating ECS entities from game objects.

@@ -1,9 +1,5 @@
-import { System } from '../core/System';
-import { Entity } from '../core/Entity';
-import { PlayerComponent } from '../components/PlayerComponent';
-import { MovementComponent } from '../components/MovementComponent';
-import { WeaponComponent } from '../components/WeaponComponent';
-import { ComponentClass, Component } from '../core/Component';
+import { ComponentClass, Component, Entity, System } from '@/ecs/core';
+import { PlayerComponent, MovementComponent, WeaponComponent } from '@/ecs/components';
 
 /**
  * InputSystem - Captures player input and updates component state.

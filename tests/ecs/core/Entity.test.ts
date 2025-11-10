@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Entity, Component } from '../../src/ecs';
+import { Entity, Component } from '@/ecs';
 
 // Simple test component
 class TestComponent extends Component {

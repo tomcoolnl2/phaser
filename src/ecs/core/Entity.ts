@@ -1,4 +1,4 @@
-import { Component, ComponentClass } from './Component';
+import { Component, ComponentClass } from '@/ecs/core';
 
 /**
  * Entity - A container for components in the ECS architecture.

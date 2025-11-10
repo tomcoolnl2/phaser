@@ -1,6 +1,4 @@
-import { Entity } from './Entity';
-import { System } from './System';
-import { Component, ComponentClass } from './Component';
+import { Entity, System, Component, ComponentClass } from '@/ecs/core';
 
 /**
  * EntityManager - Central coordinator for the ECS architecture.

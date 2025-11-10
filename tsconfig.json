@@ -2,6 +2,10 @@
     "compilerOptions": {
         "allowJs": true,
         "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"],
+            "@shared/*": ["./shared/*"]
+        },
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "lib": ["dom", "dom.iterable", "ES2020"],
@@ -26,6 +30,6 @@
         "target": "ES2020",
         "jsx": "preserve"
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "tests/**/*"],
     "exclude": ["node_modules", "**/*.spec.ts", "src.old"]
 }

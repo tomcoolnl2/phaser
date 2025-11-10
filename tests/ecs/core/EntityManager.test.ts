@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { EntityManager, Entity, Component, System } from '../../src/ecs';
+import { EntityManager, Entity, Component, System } from '@/ecs';
 
 // Mock Phaser Scene
 const createMockScene = () =>
