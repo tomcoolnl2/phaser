@@ -16,7 +16,7 @@ export class ColliderComponent extends Component {
         this.collidesWithLayers = collidesWithLayers;
     }
 
-    shouldCollideWith(otherLayer: string): boolean {
+    public shouldCollideWith(otherLayer: string): boolean {
         return this.collidesWithLayers.includes(otherLayer);
     }
 }

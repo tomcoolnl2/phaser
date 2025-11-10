@@ -27,12 +27,12 @@ export class MovementComponent extends Component {
         this.rotationSpeed = rotationSpeed;
     }
 
-    upgradeSpeed(increasePercent: number): void {
+    public upgradeSpeed(increasePercent: number): void {
         this.maxVelocity *= 1 + increasePercent;
         this.acceleration *= 1 + increasePercent;
     }
 
-    upgradeRotation(increasePercent: number): void {
+    public upgradeRotation(increasePercent: number): void {
         this.rotationSpeed *= 1 + increasePercent;
     }
 }

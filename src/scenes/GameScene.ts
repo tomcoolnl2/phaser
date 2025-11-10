@@ -27,7 +27,7 @@ export class GameScene extends Phaser.Scene {
         super({ key: 'GameScene' });
     }
 
-    create(): void {
+    public create(): void {
         // Get socket from registry
         this.socket = this.registry.get('socket') as Socket;
 
@@ -80,7 +80,7 @@ export class GameScene extends Phaser.Scene {
         this.entityManager.addSystem(this.weaponUpgradeSystem);
     }
 
-    update(): void {
+    public update(): void {
         // Update ECS systems (handles input, movement, and weapons for ECS entities)
         const delta = this.game.loop.delta;
         this.entityManager.update(delta);

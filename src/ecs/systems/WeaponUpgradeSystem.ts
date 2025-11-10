@@ -11,11 +11,11 @@ import type { Level } from '../../../shared/models';
  */
 export class WeaponUpgradeSystem extends System {
     //
-    getRequiredComponents(): ComponentClass<Component>[] {
+    public getRequiredComponents(): ComponentClass<Component>[] {
         return [PlayerComponent, WeaponComponent];
     }
 
-    update(entity: Entity, _deltaTime: number): void {
+    public update(entity: Entity, _deltaTime: number): void {
         const playerComp = entity.getComponent(PlayerComponent);
         const weaponComp = entity.getComponent(WeaponComponent);
 

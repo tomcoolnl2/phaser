@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
 
 export class BootScene extends Phaser.Scene {
+    //
     constructor() {
         super({ key: 'BootScene' });
     }
 
-    preload(): void {
-
+    public preload(): void {
         this.load.setBaseURL('.');
 
         this.load.image('space', 'assets/background.jpg');
@@ -50,7 +50,7 @@ export class BootScene extends Phaser.Scene {
         this.createLoadingBar();
     }
 
-    create(): void {
+    public create(): void {
         // Create animations that will be available globally
         this.createAnimations();
 

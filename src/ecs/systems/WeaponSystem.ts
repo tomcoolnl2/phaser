@@ -9,11 +9,11 @@ import { ComponentClass, Component } from '../Component';
  * This system spawns bullets when the trigger is pulled and weapon can fire
  */
 export class WeaponSystem extends System {
-    getRequiredComponents(): ComponentClass<Component>[] {
+    public getRequiredComponents(): ComponentClass<Component>[] {
         return [TransformComponent, WeaponComponent];
     }
 
-    update(entity: Entity, _deltaTime: number): void {
+    public update(entity: Entity, _deltaTime: number): void {
         const transform = entity.getComponent(TransformComponent);
         const weapon = entity.getComponent(WeaponComponent);
 
@@ -39,7 +39,7 @@ export class WeaponSystem extends System {
             bullet.setTexture(weapon.bulletSpriteKey);
             bullet.setActive(true);
             bullet.setVisible(true);
-            
+
             // Rotate bullet to match ship direction (add 90° offset since bullet sprite points up)
             bullet.setRotation(sprite.rotation + Math.PI / 2);
 

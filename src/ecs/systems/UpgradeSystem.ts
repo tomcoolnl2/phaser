@@ -10,11 +10,11 @@ import { HealthComponent } from '../components/HealthComponent';
  * Applies upgrade effects to entity components
  */
 export class UpgradeSystem extends System {
-    getRequiredComponents() {
+    public getRequiredComponents() {
         return [UpgradesComponent];
     }
 
-    update(_entity: Entity, _deltaTime: number): void {
+    public update(_entity: Entity, _deltaTime: number): void {
         // This system doesn't need per-frame updates
         // Upgrades are applied when purchased via applyUpgrade()
     }
@@ -22,7 +22,7 @@ export class UpgradeSystem extends System {
     /**
      * Apply an upgrade to an entity
      */
-    applyUpgrade(entity: Entity, upgradeType: UpgradeType): boolean {
+    public applyUpgrade(entity: Entity, upgradeType: UpgradeType): boolean {
         const upgrades = entity.getComponent(UpgradesComponent);
         if (!upgrades || !upgrades.canUpgrade(upgradeType)) {
             return false;
@@ -94,7 +94,7 @@ export class UpgradeSystem extends System {
     /**
      * Get available upgrades for an entity
      */
-    getAvailableUpgrades(entity: Entity): UpgradeType[] {
+    public getAvailableUpgrades(entity: Entity): UpgradeType[] {
         const upgrades = entity.getComponent(UpgradesComponent);
         if (!upgrades) return [];
 

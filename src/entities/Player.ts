@@ -171,7 +171,7 @@ export class Player {
             bullet.setTexture(bulletKey);
             bullet.setActive(true);
             bullet.setVisible(true);
-            
+
             // Rotate bullet to match ship direction (add 90° offset since bullet sprite points up)
             bullet.setRotation(this.sprite.rotation + Math.PI / 2);
 

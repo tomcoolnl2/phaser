@@ -16,20 +16,20 @@ export abstract class System {
     /**
      * Define which components this system requires
      */
-    abstract getRequiredComponents(): ComponentClass<Component>[];
+    public abstract getRequiredComponents(): ComponentClass<Component>[];
 
     /**
      * Update logic for entities matching the required components
      */
-    abstract update(entity: Entity, deltaTime: number): void;
+    public abstract update(entity: Entity, deltaTime: number): void;
 
     /**
      * Optional: Called when an entity is added to this system
      */
-    onEntityAdded?(entity: Entity): void;
+    public onEntityAdded?(entity: Entity): void;
 
     /**
      * Optional: Called when an entity is removed from this system
      */
-    onEntityRemoved?(entity: Entity): void;
+    public onEntityRemoved?(entity: Entity): void;
 }

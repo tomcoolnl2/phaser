@@ -20,11 +20,11 @@ export class PlayerComponent extends Component {
         this.level = level;
     }
 
-    setLevel(level: Level): void {
+    public setLevel(level: Level): void {
         this.level = level;
     }
 
-    addScore(points: number): void {
+    public addScore(points: number): void {
         this.score += points;
     }
 }

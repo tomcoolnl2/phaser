@@ -15,22 +15,22 @@ export class HealthComponent extends Component {
         this.currentHealth = maxHealth;
     }
 
-    takeDamage(amount: number): boolean {
+    public takeDamage(amount: number): boolean {
         if (this.invulnerable) return false;
 
         this.currentHealth = Math.max(0, this.currentHealth - amount);
         return this.currentHealth <= 0;
     }
 
-    heal(amount: number): void {
+    public heal(amount: number): void {
         this.currentHealth = Math.min(this.maxHealth, this.currentHealth + amount);
     }
 
-    isDead(): boolean {
+    public isDead(): boolean {
         return this.currentHealth <= 0;
     }
 
-    getHealthPercentage(): number {
+    public getHealthPercentage(): number {
         return this.currentHealth / this.maxHealth;
     }
 }

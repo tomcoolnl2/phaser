@@ -13,27 +13,27 @@ export class TransformComponent extends Component {
         this.sprite = sprite;
     }
 
-    get x(): number {
+    public get x(): number {
         return this.sprite.x;
     }
 
-    set x(value: number) {
+    public set x(value: number) {
         this.sprite.x = value;
     }
 
-    get y(): number {
+    public get y(): number {
         return this.sprite.y;
     }
 
-    set y(value: number) {
+    public set y(value: number) {
         this.sprite.y = value;
     }
 
-    get rotation(): number {
+    public get rotation(): number {
         return this.sprite.rotation;
     }
 
-    set rotation(value: number) {
+    public set rotation(value: number) {
         this.sprite.rotation = value;
     }
 }

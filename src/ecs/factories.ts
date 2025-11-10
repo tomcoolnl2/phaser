@@ -10,7 +10,6 @@ import { ColliderComponent } from './components/ColliderComponent';
 import { UpgradesComponent } from './components/UpgradesComponent';
 import { LegacyPlayerComponent } from './components/LegacyPlayerComponent';
 import { GameConfig } from '../../shared/config';
-import { ComponentClass, Component } from './Component';
 
 /**
  * Factory functions to create ECS entities from existing game objects

@@ -78,12 +78,12 @@ export class UpgradesComponent extends Component {
         });
     }
 
-    canUpgrade(type: UpgradeType): boolean {
+    public canUpgrade(type: UpgradeType): boolean {
         const upgrade = this.upgrades.get(type);
         return upgrade ? upgrade.level < upgrade.maxLevel : false;
     }
 
-    upgrade(type: UpgradeType): boolean {
+    public upgrade(type: UpgradeType): boolean {
         const upgrade = this.upgrades.get(type);
         if (!upgrade || upgrade.level >= upgrade.maxLevel) {
             return false;
@@ -93,15 +93,15 @@ export class UpgradesComponent extends Component {
         return true;
     }
 
-    getUpgrade(type: UpgradeType): Upgrade | undefined {
+    public getUpgrade(type: UpgradeType): Upgrade | undefined {
         return this.upgrades.get(type);
     }
 
-    getUpgradeLevel(type: UpgradeType): number {
+    public getUpgradeLevel(type: UpgradeType): number {
         return this.upgrades.get(type)?.level || 0;
     }
 
-    getTotalUpgradeLevels(): number {
+    public getTotalUpgradeLevels(): number {
         let total = 0;
         this.upgrades.forEach(upgrade => {
             total += upgrade.level;

@@ -20,7 +20,6 @@ function getEnvBoolean(key: string, defaultValue: boolean): boolean {
 const isDevMode = getEnvBoolean('DEV_MODE', false);
 
 export const GameConfig = {
-
     player: {
         startingAmmo: 10,
         ammoPerPickup: 10,

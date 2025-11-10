@@ -17,7 +17,7 @@ export class Entity {
     /**
      * Add a component to this entity
      */
-    addComponent<T extends Component>(component: T): this {
+    public addComponent<T extends Component>(component: T): this {
         const componentClass = component.constructor as ComponentClass<T>;
         this.components.set(componentClass, component);
         return this;
@@ -26,35 +26,35 @@ export class Entity {
     /**
      * Get a component from this entity
      */
-    getComponent<T extends Component>(componentClass: ComponentClass<T>): T | undefined {
+    public getComponent<T extends Component>(componentClass: ComponentClass<T>): T | undefined {
         return this.components.get(componentClass) as T | undefined;
     }
 
     /**
      * Check if entity has a component
      */
-    hasComponent<T extends Component>(componentClass: ComponentClass<T>): boolean {
+    public hasComponent<T extends Component>(componentClass: ComponentClass<T>): boolean {
         return this.components.has(componentClass);
     }
 
     /**
      * Remove a component from this entity
      */
-    removeComponent<T extends Component>(componentClass: ComponentClass<T>): void {
+    public removeComponent<T extends Component>(componentClass: ComponentClass<T>): void {
         this.components.delete(componentClass);
     }
 
     /**
      * Get all components
      */
-    getAllComponents(): Component[] {
+    public getAllComponents(): Component[] {
         return Array.from(this.components.values());
     }
 
     /**
      * Destroy entity and clean up
      */
-    destroy(): void {
+    public destroy(): void {
         this.active = false;
         this.components.clear();
     }

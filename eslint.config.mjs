@@ -39,10 +39,19 @@ export default [
             '@typescript-eslint/no-explicit-any': 'warn',
             '@typescript-eslint/explicit-function-return-type': 'off',
             '@typescript-eslint/explicit-module-boundary-types': 'off',
+            '@typescript-eslint/explicit-member-accessibility': [
+                'error',
+                {
+                    accessibility: 'explicit',
+                    overrides: {
+                        constructors: 'no-public',
+                    },
+                },
+            ],
             'max-len': ['error', { code: 180, ignoreComments: true }],
             'no-bitwise': 'error',
             'no-console': ['warn', { allow: ['warn', 'error'] }],
-                        'no-empty-interface': 'off',
+            'no-empty-interface': 'off',
         },
     },
     {

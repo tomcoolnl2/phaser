@@ -25,11 +25,11 @@ export class InputSystem extends System {
         this.fireKey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     }
 
-    getRequiredComponents(): ComponentClass<Component>[] {
+    public getRequiredComponents(): ComponentClass<Component>[] {
         return [PlayerComponent, MovementComponent, WeaponComponent];
     }
 
-    update(entity: Entity, _deltaTime: number): void {
+    public update(entity: Entity, _deltaTime: number): void {
         const playerComp = entity.getComponent(PlayerComponent);
         if (!playerComp || !playerComp.isLocal) return;
 

@@ -9,11 +9,11 @@ import { ComponentClass, Component } from '../Component';
  * This system applies movement, rotation, and drag to entities
  */
 export class MovementSystem extends System {
-    getRequiredComponents(): ComponentClass<Component>[] {
+    public getRequiredComponents(): ComponentClass<Component>[] {
         return [TransformComponent, MovementComponent];
     }
 
-    update(entity: Entity, _deltaTime: number): void {
+    public update(entity: Entity, _deltaTime: number): void {
         const transform = entity.getComponent(TransformComponent);
         const movement = entity.getComponent(MovementComponent);
 
