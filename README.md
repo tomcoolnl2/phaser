@@ -57,13 +57,29 @@ npm run dev
 
 Then open http://localhost:5173 in your browser.
 
+### Production Build
+
+```bash
+# Build for production
+npm run build
+
+# Preview the production build locally
+npm run preview
+```
+
+The preview server will start on http://localhost:4173
+
 ## Available Scripts
 
 -   `npm run dev` - Start Vite dev server (client)
 -   `npm run build` - Build for production
--   `npm run preview` - Preview production build
+-   `npm run preview` - Preview production build locally
 -   `npm run server` - Start game server once
 -   `npm run server:watch` - Start game server with auto-reload
+-   `npm test` - Run tests in watch mode
+-   `npm run test:ui` - Run tests with UI dashboard
+-   `npm run test:run` - Run tests once (CI mode)
+-   `npm run test:coverage` - Run tests with coverage report
 -   `npm run lint` - Run ESLint
 -   `npm run lint:fix` - Fix ESLint errors
 -   `npm run format` - Format code with Prettier
