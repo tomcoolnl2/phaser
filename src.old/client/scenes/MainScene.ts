@@ -22,36 +22,36 @@ export class MainScene extends Phaser.Scene {
         // Load all game assets
         this.load.setBaseURL('.');
         this.load.crossOrigin = 'anonymous';
-        
+
         this.load.image('space', 'assets/background.jpg');
         this.load.image('laser', 'assets/bullet.png');
         this.load.image('pickup', 'assets/pickup.png');
-        
+
         this.load.spritesheet('dust', 'assets/dust.png', {
             frameWidth: 64,
             frameHeight: 64,
         });
-        
+
         this.load.spritesheet('kaboom', 'assets/explosions.png', {
             frameWidth: 64,
             frameHeight: 64,
         });
-        
+
         this.load.spritesheet('kaboom-big', 'assets/explosions-big.png', {
             frameWidth: 152,
             frameHeight: 152,
         });
-        
+
         this.load.spritesheet('shooter-sprite', 'assets/ship.png', {
             frameWidth: 32,
             frameHeight: 32,
         });
-        
+
         this.load.spritesheet('shooter-sprite-enemy', 'assets/ship-enemy.png', {
             frameWidth: 32,
             frameHeight: 32,
         });
-        
+
         this.load.spritesheet('asteroid', 'assets/asteroids.png', {
             frameWidth: 128,
             frameHeight: 128,
@@ -61,13 +61,13 @@ export class MainScene extends Phaser.Scene {
     create(): void {
         // Get socket from window
         this.socket = (window as unknown as GameWindow).socket;
-        
+
         // Setup game world
         this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'space').setOrigin(0, 0);
-        
+
         // Setup physics
         this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
-        
+
         // Setup socket event listeners
         this.setupSocketListeners();
     }
@@ -76,7 +76,7 @@ export class MainScene extends Phaser.Scene {
         // Update game logic
         if (this.actor && this.actor.controls) {
             this.actor.view();
-            
+
             // Emit player coordinates to server
             this.socket.emit(PlayerEvent.coordinates, {
                 x: this.actor.player.x,
@@ -87,7 +87,7 @@ export class MainScene extends Phaser.Scene {
                 a: this.actor.playerState.get('ammo'),
             });
         }
-        
+
         // Handle collisions
         this.handleCollisions();
     }
@@ -113,9 +113,7 @@ export class MainScene extends Phaser.Scene {
         });
 
         this.socket.on(PlayerEvent.quit, (playerId: string) => {
-            this.actors
-                .filter(actor => actor.player.getData('id') === playerId)
-                .forEach(actor => actor.player.destroy());
+            this.actors.filter(actor => actor.player.getData('id') === playerId).forEach(actor => actor.player.destroy());
         });
 
         this.socket.on(GameEvent.drop, (coors: Coordinates) => {
@@ -151,15 +149,11 @@ export class MainScene extends Phaser.Scene {
         });
 
         this.socket.on(PlayerEvent.hit, (enemyId: string) => {
-            this.actors
-                .filter(() => this.actor && this.actor.player.getData('id') === enemyId)
-                .forEach(() => window.location.reload());
+            this.actors.filter(() => this.actor && this.actor.player.getData('id') === enemyId).forEach(() => window.location.reload());
         });
 
         this.socket.on(PlayerEvent.pickup, (playerId: string) => {
-            this.actors
-                .filter(actor => actor.player.getData('id') === playerId)
-                .forEach(actor => actor.assignPickup(this, actor));
+            this.actors.filter(actor => actor.player.getData('id') === playerId).forEach(actor => actor.assignPickup(this, actor));
 
             if (this.projectile) {
                 this.projectile.pickup.item.destroy();
@@ -253,7 +247,7 @@ export class MainScene extends Phaser.Scene {
                     (pickup, actor) => {
                         const actorSprite = actor as Phaser.Physics.Arcade.Sprite;
                         const actorId = actorSprite.getData('id');
-                        
+
                         this.actors
                             .filter(actorInstance => actorId === actorInstance.player.getData('id'))
                             .forEach(actorInstance => actorInstance.assignPickup(this, actorInstance));

@@ -23,19 +23,19 @@ A real-time multiplayer space shooter built with Phaser 3, TypeScript, Socket.io
 
 ## Tech Stack
 
-- **Phaser 3.87.0** - Game engine
-- **TypeScript 5.6** - Type-safe JavaScript
-- **Vite 5.4** - Lightning-fast build tool
-- **Socket.io 4.8** - Real-time multiplayer
-- **Express 4.21** - Web server
-- **ESLint + Prettier** - Code quality
+-   **Phaser 3.87.0** - Game engine
+-   **TypeScript 5.6** - Type-safe JavaScript
+-   **Vite 5.4** - Lightning-fast build tool
+-   **Socket.io 4.8** - Real-time multiplayer
+-   **Express 4.21** - Web server
+-   **ESLint + Prettier** - Code quality
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js v22+ (use nvm: `nvm use`)
-- npm
+-   Node.js v22+ (use nvm: `nvm use`)
+-   npm
 
 ### Installation
 
@@ -59,19 +59,19 @@ Then open http://localhost:5173 in your browser.
 
 ## Available Scripts
 
-- `npm run dev` - Start Vite dev server (client)
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run server` - Start game server once
-- `npm run server:watch` - Start game server with auto-reload
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint errors
-- `npm run format` - Format code with Prettier
+-   `npm run dev` - Start Vite dev server (client)
+-   `npm run build` - Build for production
+-   `npm run preview` - Preview production build
+-   `npm run server` - Start game server once
+-   `npm run server:watch` - Start game server with auto-reload
+-   `npm run lint` - Run ESLint
+-   `npm run lint:fix` - Fix ESLint errors
+-   `npm run format` - Format code with Prettier
 
 ## Game Controls
 
-- **Arrow Keys** - Move ship
-- **Space** - Fire weapon (when you have ammo)
+-   **Arrow Keys** - Move ship
+-   **Space** - Fire weapon (when you have ammo)
 
 ## How It Works
 
@@ -82,37 +82,42 @@ Then open http://localhost:5173 in your browser.
 ## Assets
 
 Game assets are located in `public/assets/`:
-- Ships (player & enemy)
-- Asteroids
-- Bullets & explosions  
-- Pickups & particle effects
+
+-   Ships (player & enemy)
+-   Asteroids
+-   Bullets & explosions
+-   Pickups & particle effects
 
 ## Architecture Highlights
 
 ### Modern Phaser 3 Patterns
-- Scene-based architecture (BootScene → GameScene)
-- Entity component system
-- Physics-driven gameplay
+
+-   Scene-based architecture (BootScene → GameScene)
+-   Entity component system
+-   Physics-driven gameplay
 
 ### Multiplayer Features
-- Real-time player synchronization
-- Server-authoritative game logic
-- Collision detection & damage
-- Pickup/ammo system
+
+-   Real-time player synchronization
+-   Server-authoritative game logic
+-   Collision detection & damage
+-   Pickup/ammo system
 
 ### Clean Code
-- Strict TypeScript configuration
-- Shared types between client/server
-- Modular entity classes
-- ESLint + Prettier enforcement
+
+-   Strict TypeScript configuration
+-   Shared types between client/server
+-   Modular entity classes
+-   ESLint + Prettier enforcement
 
 ## Migration Notes
 
 This project was migrated from:
-- Phaser CE → Phaser 3
-- Webpack → Vite
-- TSLint → ESLint
-- Old Socket.io → Socket.io v4
+
+-   Phaser CE → Phaser 3
+-   Webpack → Vite
+-   TSLint → ESLint
+-   Old Socket.io → Socket.io v4
 
 Original code preserved in `src.old/` for reference.
 

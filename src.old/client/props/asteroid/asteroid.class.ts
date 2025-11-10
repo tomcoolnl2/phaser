@@ -1,5 +1,5 @@
-import { Explode } from "../explosion/explosion.class";
-import { Sprite, Game } from "phaser-ce";
+import { Explode } from '../explosion/explosion.class';
+import { Sprite, Game } from 'phaser-ce';
 
 export class Asteroid {
     public asteroid: Sprite & { id: string };
@@ -10,13 +10,9 @@ export class Asteroid {
         public cometInstance: Asteroid
     ) {
         this.gameInstance = gameInstance;
-        this.asteroid = gameInstance.add.sprite(
-            0,
-            -128,
-            "asteroid"
-        ) as Sprite & { id: string };
-        this.asteroid.animations.add("asteroid");
-        this.asteroid.animations.play("asteroid", 10, true, false);
+        this.asteroid = gameInstance.add.sprite(0, -128, 'asteroid') as Sprite & { id: string };
+        this.asteroid.animations.add('asteroid');
+        this.asteroid.animations.play('asteroid', 10, true, false);
         this.attachPhysics(gameInstance);
         this.asteroid.destroy = () => {
             new Explode(this.gameInstance, this.asteroid, true);

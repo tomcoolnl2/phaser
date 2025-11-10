@@ -1,17 +1,11 @@
-import { CometEvent, GameEvent, PlayerEvent } from "src/shared/events.model";
-import * as Phaser from "phaser-ce";
-import {
-    Window,
-    SpaceShip,
-    Coordinates,
-    Comet,
-    Player as PlayerType,
-} from "src/shared/models";
-import { Game as PhaserGame } from "phaser-ce";
-import { LoginScene } from "src/client/scenes/login";
-import { Projectile } from "src/client/props/powers/projectile/projectile.class";
-import { Player } from "src/client/actors/player/player.class";
-import { Asteroid } from "src/client/props/asteroid/asteroid.class";
+import { CometEvent, GameEvent, PlayerEvent } from 'src/shared/events.model';
+import * as Phaser from 'phaser-ce';
+import { Window, SpaceShip, Coordinates, Comet, Player as PlayerType } from 'src/shared/models';
+import { Game as PhaserGame } from 'phaser-ce';
+import { LoginScene } from 'src/client/scenes/login';
+import { Projectile } from 'src/client/props/powers/projectile/projectile.class';
+import { Player } from 'src/client/actors/player/player.class';
+import { Asteroid } from 'src/client/props/asteroid/asteroid.class';
 
 declare const window: Window;
 
@@ -32,17 +26,17 @@ export class Game {
         this.actors = [];
         this.comets = [];
         window.socket.on(PlayerEvent.joined, (player: SpaceShip) => {
-            this.actors.push(new Player(game, player, "shooter-sprite-enemy"));
+            this.actors.push(new Player(game, player, 'shooter-sprite-enemy'));
         });
 
         window.socket.on(PlayerEvent.protagonist, (player: SpaceShip) => {
-            this.actor = new Player(game, player, "shooter-sprite");
+            this.actor = new Player(game, player, 'shooter-sprite');
             this.actors.push(this.actor);
         });
 
         window.socket.on(PlayerEvent.players, (players: SpaceShip[]) => {
             players.map(player => {
-                const enemy = new Player(game, player, "shooter-sprite-enemy");
+                const enemy = new Player(game, player, 'shooter-sprite-enemy');
                 if (player.ammo) {
                     enemy.assignPickup(game, enemy);
                 }
@@ -51,9 +45,7 @@ export class Game {
         });
 
         window.socket.on(PlayerEvent.quit, (playerId: string) => {
-            this.actors
-                .filter(actor => actor.player.id === playerId)
-                .map(actor => actor.player.kill());
+            this.actors.filter(actor => actor.player.id === playerId).map(actor => actor.player.kill());
         });
 
         window.socket.on(GameEvent.drop, (coors: Coordinates) => {
@@ -90,15 +82,11 @@ export class Game {
         });
 
         window.socket.on(PlayerEvent.hit, (enemyId: string) => {
-            this.actors
-                .filter(() => this.actor.player.id === enemyId)
-                .map(() => window.location.reload(true));
+            this.actors.filter(() => this.actor.player.id === enemyId).map(() => window.location.reload(true));
         });
 
         window.socket.on(PlayerEvent.pickup, (playerId: string) => {
-            this.actors
-                .filter(actor => actor.player.id === playerId)
-                .map(actor => actor.assignPickup(game, actor));
+            this.actors.filter(actor => actor.player.id === playerId).map(actor => actor.assignPickup(game, actor));
 
             this.projectile.pickup.item.kill();
         });
@@ -119,7 +107,7 @@ export class Game {
                     }
 
                     if (player.coors.m) {
-                        actor.player.animations.play("accelerating");
+                        actor.player.animations.play('accelerating');
                     }
                 }
             });
@@ -161,9 +149,9 @@ export class Game {
                 x: this.actor.player.position.x,
                 y: this.actor.player.position.y,
                 r: this.actor.player.rotation,
-                f: this.actor.playerState.get("fire"),
-                m: this.actor.playerState.get("moving"),
-                a: this.actor.playerState.get("ammo"),
+                f: this.actor.playerState.get('fire'),
+                m: this.actor.playerState.get('moving'),
+                a: this.actor.playerState.get('ammo'),
             });
 
             game.physics.arcade.collide(
@@ -175,10 +163,7 @@ export class Game {
                 game.physics.arcade.collide(
                     this.actor.projectile.weapon.bullets,
                     this.actors.map(actor => actor.player),
-                    (
-                        enemy: Phaser.Sprite & Player,
-                        projectile: Phaser.Sprite
-                    ) => {
+                    (enemy: Phaser.Sprite & Player, projectile: Phaser.Sprite) => {
                         if (enemy.id !== this.actor.player.id) {
                             window.socket.emit(PlayerEvent.hit, enemy.id);
                             projectile.kill();
@@ -193,14 +178,7 @@ export class Game {
                     this.projectile.pickup.item,
                     this.actors.map(actor => actor.player),
                     (pickup: Phaser.Sprite, actor: Player) => {
-                        this.actors
-                            .filter(
-                                actorInstance =>
-                                    actor.id === actorInstance.player.id
-                            )
-                            .map(actorInstance =>
-                                actorInstance.assignPickup(game, actorInstance)
-                            );
+                        this.actors.filter(actorInstance => actor.id === actorInstance.player.id).map(actorInstance => actorInstance.assignPickup(game, actorInstance));
 
                         window.socket.emit(PlayerEvent.pickup, {
                             uuid: actor.id,
@@ -216,8 +194,8 @@ export class Game {
 
     protected properties(game: PhaserGame): void {
         game.stage.disableVisibilityChange = true;
-        game.add.tileSprite(0, 0, game.width, game.height, "space");
-        game.add.sprite(0, 0, "space");
+        game.add.tileSprite(0, 0, game.width, game.height, 'space');
+        game.add.sprite(0, 0, 'space');
         game.time.desiredFps = 60;
         game.renderer.clearBeforeRender = false;
         game.physics.startSystem(Phaser.Physics.ARCADE);

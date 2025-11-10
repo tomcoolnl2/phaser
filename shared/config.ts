@@ -9,51 +9,50 @@
  * @param defaultValue - Default value if env var is not set
  */
 function getEnvBoolean(key: string, defaultValue: boolean): boolean {
-  const value = (import.meta as any).env?.[`VITE_${key}`]
-  if (value === undefined) return defaultValue
-  return value === 'true' || value === '1'
+    const value = import.meta.env?.[`VITE_${key}`];
+    if (value === undefined) {
+        return defaultValue;
+    }
+    return value === 'true' || value === '1';
 }
 
 // Check if dev mode is enabled (shows all debug info)
-const isDevMode = getEnvBoolean('DEV_MODE', false)
+const isDevMode = getEnvBoolean('DEV_MODE', false);
 
 export const GameConfig = {
-  // Player settings
-  player: {
-    startingAmmo: 10,
-    ammoPerPickup: 10,
-    angularVelocity: 300,
-    acceleration: 200,
-    maxVelocity: 300,
-    fireRate: 250, // milliseconds between shots
-    drag: 100,
-    angularDrag: 200,
-  },
 
-  // Asteroid settings
-  asteroid: {
-    health: 3,
-    maxVelocity: 100,
-    collisionRadius: 70, // Distance for ship collision
-    bulletCollisionRadius: 60, // Distance for bullet collision
-  },
+    player: {
+        startingAmmo: 10,
+        ammoPerPickup: 10,
+        angularVelocity: 300,
+        acceleration: 200,
+        maxVelocity: 300,
+        fireRate: 250, // milliseconds between shots
+        drag: 100,
+        angularDrag: 200,
+    },
 
-  // Pickup settings
-  pickup: {
-    collisionRadius: 40,
-  },
+    asteroid: {
+        health: 3,
+        maxVelocity: 100,
+        collisionRadius: 70, // Distance for ship collision
+        bulletCollisionRadius: 60, // Distance for bullet collision
+    },
 
-  // Server settings
-  server: {
-    cometSpawnInterval: 10000, // milliseconds
-    pickupSpawnInterval: 15000, // milliseconds
-    cometSpeed: 2, // pixels per update
-  },
+    pickup: {
+        collisionRadius: 40,
+    },
 
-  // Debug settings - controlled by VITE_DEV_MODE or individual VITE_* flags
-  debug: {
-    showAsteroidHealth: isDevMode || getEnvBoolean('SHOW_ASTEROID_HEALTH', false),
-    showPlayerNames: isDevMode || getEnvBoolean('SHOW_PLAYER_NAMES', false),
-    showAmmo: isDevMode || getEnvBoolean('SHOW_AMMO', false),
-  },
-}
+    server: {
+        cometSpawnInterval: 10000, // milliseconds
+        pickupSpawnInterval: 15000, // milliseconds
+        cometSpeed: 2, // pixels per update
+    },
+
+    // Debug settings - controlled by VITE_DEV_MODE or individual VITE_* flags
+    debug: {
+        showAsteroidHealth: isDevMode || getEnvBoolean('SHOW_ASTEROID_HEALTH', false),
+        showPlayerNames: isDevMode || getEnvBoolean('SHOW_PLAYER_NAMES', false),
+        showAmmo: isDevMode || getEnvBoolean('SHOW_AMMO', false),
+    },
+};

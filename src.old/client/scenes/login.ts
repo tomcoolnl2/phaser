@@ -1,5 +1,5 @@
-import { GameEvent } from "src/shared/events.model";
-import { Window } from "src/shared/models";
+import { GameEvent } from 'src/shared/events.model';
+import { Window } from 'src/shared/models';
 
 declare const window: Window;
 
@@ -16,26 +16,26 @@ export class LoginScene {
     }
 
     private createForm() {
-        this.formContainer = document.createElement("div");
-        this.formContainer.className = "form-container";
+        this.formContainer = document.createElement('div');
+        this.formContainer.className = 'form-container';
 
-        this.loginPage = document.createElement("div");
-        this.loginPage.className = "login-page";
+        this.loginPage = document.createElement('div');
+        this.loginPage.className = 'login-page';
 
-        this.form = document.createElement("div");
-        this.form.className = "form";
+        this.form = document.createElement('div');
+        this.form.className = 'form';
 
-        this.loginForm = document.createElement("form");
+        this.loginForm = document.createElement('form');
 
-        this.input = document.createElement("input");
-        this.input.setAttribute("type", "text");
-        this.input.placeholder = "username";
-        this.input.id = "your-name";
+        this.input = document.createElement('input');
+        this.input.setAttribute('type', 'text');
+        this.input.placeholder = 'username';
+        this.input.id = 'your-name';
         this.input.focus();
 
-        this.button = document.createElement("button");
-        this.button.innerText = "Join game";
-        this.button.addEventListener("click", e => this.createPlayer(e));
+        this.button = document.createElement('button');
+        this.button.innerText = 'Join game';
+        this.button.addEventListener('click', e => this.createPlayer(e));
 
         this.loginForm.appendChild(this.input);
         this.loginForm.appendChild(this.button);
@@ -61,6 +61,6 @@ export class LoginScene {
     }
 
     private toggleLogin(): void {
-        this.formContainer.classList.toggle("visible");
+        this.formContainer.classList.toggle('visible');
     }
 }

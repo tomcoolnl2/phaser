@@ -1,7 +1,7 @@
-import { Particle } from "src/client/props/particle/particle.class";
-import { Game, Weapon, Sprite } from "phaser-ce";
-import { Pickup } from "src/client/props/powers/pickup/pickup.class";
-import { Coordinates } from "src/shared/models";
+import { Particle } from 'src/client/props/particle/particle.class';
+import { Game, Weapon, Sprite } from 'phaser-ce';
+import { Pickup } from 'src/client/props/powers/pickup/pickup.class';
+import { Coordinates } from 'src/shared/models';
 
 export class Projectile {
     public weapon: Weapon;
@@ -12,7 +12,7 @@ export class Projectile {
 
     public constructor(gameInstance: Game, player?: Sprite) {
         this.gameInstance = gameInstance;
-        this.weapon = gameInstance.add.weapon(this.bulletCount, "laser");
+        this.weapon = gameInstance.add.weapon(this.bulletCount, 'laser');
         this.weapon.fireLimit = this.bulletCount;
         this.weapon.fireRate = 1000;
         if (player) {

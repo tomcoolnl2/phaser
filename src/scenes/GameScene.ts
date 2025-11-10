@@ -6,6 +6,7 @@ import { GameConfig } from '../../shared/config';
 import { Player } from '../entities/Player';
 import { Asteroid } from '../entities/Asteroid';
 import { Pickup } from '../entities/Pickup';
+import { EntityManager, InputSystem, MovementSystem, WeaponSystem, createPlayerEntity, Entity } from '../ecs';
 
 export class GameScene extends Phaser.Scene {
     private socket!: Socket;
@@ -14,6 +15,13 @@ export class GameScene extends Phaser.Scene {
     private asteroids: Map<string, Asteroid> = new Map();
     private pickup: Pickup | null = null;
 
+    // ECS
+    private entityManager!: EntityManager;
+    private inputSystem!: InputSystem;
+    private movementSystem!: MovementSystem;
+    private weaponSystem!: WeaponSystem;
+    private playerEntities: Map<string, Entity> = new Map(); // Maps player ID to ECS entity
+
     constructor() {
         super({ key: 'GameScene' });
     }
@@ -21,6 +29,9 @@ export class GameScene extends Phaser.Scene {
     create(): void {
         // Get socket from registry
         this.socket = this.registry.get('socket') as Socket;
+
+        // Setup ECS
+        this.setupECS();
 
         // Setup world
         this.createWorld();
@@ -32,21 +43,49 @@ export class GameScene extends Phaser.Scene {
         this.setupInput();
 
         // Wait for player name from Vue modal
-        window.addEventListener('playerNameSubmitted', ((event: CustomEvent) => {
-            const playerName = event.detail.name || `Player ${Math.floor(Math.random() * 1000)}`;
-            this.socket.emit(PlayerEvent.authenticate, {
-                name: playerName,
-            }, {
-                x: this.scale.width,
-                y: this.scale.height,
-            });
-        }) as EventListener, { once: true });
+        window.addEventListener(
+            'playerNameSubmitted',
+            ((event: CustomEvent) => {
+                const playerName = event.detail.name || `Player ${Math.floor(Math.random() * 1000)}`;
+                this.socket.emit(
+                    PlayerEvent.authenticate,
+                    {
+                        name: playerName,
+                    },
+                    {
+                        x: this.scale.width,
+                        y: this.scale.height,
+                    }
+                );
+            }) as EventListener,
+            { once: true }
+        );
+    }
+
+    private setupECS(): void {
+        // Create entity manager
+        this.entityManager = new EntityManager(this);
+
+        // Create systems
+        this.inputSystem = new InputSystem(this);
+        this.movementSystem = new MovementSystem(this);
+        this.weaponSystem = new WeaponSystem(this);
+
+        // Register systems with entity manager
+        this.entityManager.addSystem(this.inputSystem);
+        this.entityManager.addSystem(this.movementSystem);
+        this.entityManager.addSystem(this.weaponSystem);
     }
 
     update(): void {
+        // Update ECS systems (handles input, movement, and weapons for ECS entities)
+        const delta = this.game.loop.delta;
+        this.entityManager.update(delta);
+
         // Update local player
         if (this.localPlayer) {
-            this.localPlayer.update();
+            // Note: Player.update() is now handled by ECS systems
+            // We just keep the network sync and collision detection here
 
             // Send player state to server
             this.socket.emit(PlayerEvent.coordinates, {
@@ -60,12 +99,7 @@ export class GameScene extends Phaser.Scene {
 
             // Check pickup collision
             if (this.pickup) {
-                const distance = Phaser.Math.Distance.Between(
-                    this.localPlayer.sprite.x,
-                    this.localPlayer.sprite.y,
-                    this.pickup.sprite.x,
-                    this.pickup.sprite.y
-                );
+                const distance = Phaser.Math.Distance.Between(this.localPlayer.sprite.x, this.localPlayer.sprite.y, this.pickup.sprite.x, this.pickup.sprite.y);
 
                 if (distance < GameConfig.pickup.collisionRadius) {
                     // Player collected the pickup
@@ -86,12 +120,7 @@ export class GameScene extends Phaser.Scene {
                     return;
                 }
 
-                const distance = Phaser.Math.Distance.Between(
-                    this.localPlayer!.sprite.x,
-                    this.localPlayer!.sprite.y,
-                    asteroid.sprite.x,
-                    asteroid.sprite.y
-                );
+                const distance = Phaser.Math.Distance.Between(this.localPlayer!.sprite.x, this.localPlayer!.sprite.y, asteroid.sprite.x, asteroid.sprite.y);
 
                 if (distance < GameConfig.asteroid.collisionRadius) {
                     // Player hit by asteroid - game over
@@ -110,12 +139,7 @@ export class GameScene extends Phaser.Scene {
 
                     this.localPlayer!.bullets!.children.entries.forEach((bullet: any) => {
                         if (bullet.active) {
-                            const distance = Phaser.Math.Distance.Between(
-                                bullet.x,
-                                bullet.y,
-                                asteroid.sprite.x,
-                                asteroid.sprite.y
-                            );
+                            const distance = Phaser.Math.Distance.Between(bullet.x, bullet.y, asteroid.sprite.x, asteroid.sprite.y);
 
                             if (distance < GameConfig.asteroid.bulletCollisionRadius) {
                                 // Bullet hit asteroid
@@ -143,9 +167,9 @@ export class GameScene extends Phaser.Scene {
         });
     }
 
-    private handlePlayerDeath(player: Player): void {
+    private handlePlayerDeath(_player: Player): void {
         this.scene.pause();
-        const gameOverText = this.add
+        this.add
             .text(this.scale.width / 2, this.scale.height / 2, 'YOU DIED!', {
                 fontSize: '64px',
                 color: '#ff0000',
@@ -198,6 +222,10 @@ export class GameScene extends Phaser.Scene {
             console.log('Local player:', playerData);
             this.localPlayer = new Player(this, playerData, 'shooter-sprite', true);
             this.players.set(playerData.id, this.localPlayer);
+
+            // Create ECS entity for local player
+            const entity = createPlayerEntity(this.entityManager, this.localPlayer, true);
+            this.playerEntities.set(playerData.id, entity);
         });
 
         // Existing players

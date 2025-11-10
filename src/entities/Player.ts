@@ -34,15 +34,13 @@ export class Player {
         this.ammo = playerData.ammo || GameConfig.player.startingAmmo;
         this.isLocal = isLocal;
 
-        this.sprite = scene.physics.add
-            .sprite(playerData.x, playerData.y, spriteKey)
-            .setOrigin(0.5, 0.5);
+        this.sprite = scene.physics.add.sprite(playerData.x, playerData.y, spriteKey).setOrigin(0.5, 0.5);
 
         // Setup physics
         this.sprite.setCollideWorldBounds(true);
         this.sprite.setBounce(0);
         this.sprite.setDamping(true);
-        this.sprite.setDrag(0.99); 
+        this.sprite.setDrag(0.99);
         this.sprite.setMaxVelocity(this.MAX_VELOCITY);
         this.sprite.setAngularDrag(GameConfig.player.angularDrag);
 
@@ -114,11 +112,7 @@ export class Player {
         // Direct movement - race car style (moves in direction facing)
         if (this.cursors.up?.isDown) {
             // Set velocity directly in the direction the ship is facing
-            this.scene.physics.velocityFromRotation(
-                this.sprite.rotation,
-                this.MAX_VELOCITY,
-                this.sprite.body!.velocity
-            );
+            this.scene.physics.velocityFromRotation(this.sprite.rotation, this.MAX_VELOCITY, this.sprite.body!.velocity);
             this.isMoving = true;
             this.sprite.anims.play('accelerating', true);
             this.showThrust();

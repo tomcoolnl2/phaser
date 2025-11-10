@@ -1,7 +1,6 @@
 import * as Phaser from 'phaser-ce';
 
 export class Particle {
-
     private particle: Phaser.Sprite;
 
     constructor(gameInstance: Phaser.Game, sprite: Phaser.Sprite) {

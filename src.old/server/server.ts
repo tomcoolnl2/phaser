@@ -1,22 +1,17 @@
-import { Socket } from "socket.io";
-import { Request, Response } from "express";
-import { DomainSocket, Player, SpaceShip, Coordinates } from "../shared/models";
-import {
-    ServerEvent,
-    CometEvent,
-    GameEvent,
-    PlayerEvent,
-} from "../shared/events.model";
+import { Socket } from 'socket.io';
+import { Request, Response } from 'express';
+import { DomainSocket, Player, SpaceShip, Coordinates } from '../shared/models';
+import { ServerEvent, CometEvent, GameEvent, PlayerEvent } from '../shared/events.model';
 
-const express = require("express");
+const express = require('express');
 const app = express();
-const http = require("http").Server(app);
-const io = require("socket.io")(http);
-const uuid = require("uuid");
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const uuid = require('uuid');
 
-app.use(express.static("public"));
+app.use(express.static('public'));
 
-app.get("/", (req: Request, res: Response) => {
+app.get('/', (req: Request, res: Response) => {
     res.sendfile('./index.html');
 });
 
@@ -63,20 +58,13 @@ class GameServer {
                 asteroidCoordinates.y += 1;
                 asteroidCoordinates.x -= 1;
                 socket.emit(CometEvent.coordinates, asteroidCoordinates);
-                socket.broadcast.emit(
-                    CometEvent.coordinates,
-                    asteroidCoordinates
-                );
+                socket.broadcast.emit(CometEvent.coordinates, asteroidCoordinates);
                 this.destroyComet(asteroidCoordinates, socket, update);
             }, 25);
         }
     }
 
-    private destroyComet(
-        asteroidCoordinates: Coordinates,
-        socket: Socket,
-        update: NodeJS.Timer
-    ): void {
+    private destroyComet(asteroidCoordinates: Coordinates, socket: Socket, update: NodeJS.Timer): void {
         if (asteroidCoordinates.x < -128) {
             socket.emit(CometEvent.destroy);
             socket.broadcast.emit(CometEvent.destroy);
@@ -146,23 +134,16 @@ class GameServer {
     }
 
     private addSignOnListener(socket: DomainSocket): void {
-        socket.on(
-            GameEvent.authentication,
-            (player: Player, gameSize: Coordinates) => {
-                socket.emit(PlayerEvent.players, this.getAllPlayers());
-                this.createPlayer(socket, player, gameSize);
-                socket.emit(PlayerEvent.protagonist, socket.player);
-                socket.broadcast.emit(PlayerEvent.joined, socket.player);
-                this.gameInitialised(socket);
-            }
-        );
+        socket.on(GameEvent.authentication, (player: Player, gameSize: Coordinates) => {
+            socket.emit(PlayerEvent.players, this.getAllPlayers());
+            this.createPlayer(socket, player, gameSize);
+            socket.emit(PlayerEvent.protagonist, socket.player);
+            socket.broadcast.emit(PlayerEvent.joined, socket.player);
+            this.gameInitialised(socket);
+        });
     }
 
-    private createPlayer(
-        socket: DomainSocket,
-        player: Player,
-        windowSize: Coordinates
-    ): void {
+    private createPlayer(socket: DomainSocket, player: Player, windowSize: Coordinates): void {
         socket.player = {
             name: player.name,
             id: uuid(),

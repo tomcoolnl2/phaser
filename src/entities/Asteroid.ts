@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { GameConfig } from '../../shared/config';
 
 export class Asteroid {
-
     public sprite: Phaser.Physics.Arcade.Sprite;
     public id: string;
     private scene: Phaser.Scene;

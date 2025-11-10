@@ -157,7 +157,7 @@ class GameServer {
         }, interval);
     }
 
-    private updateComet(socket: GameSocket): void {
+    private updateComet(_socket: GameSocket): void {
         if (this.hasComet) {
             const asteroidCoordinates: Coordinates & { r?: number } = {
                 x: this.randomInt(200, 800),
