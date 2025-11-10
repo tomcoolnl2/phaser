@@ -1,21 +1,21 @@
-import { System } from '../System';
-import { Entity } from '../Entity';
+import { System } from '../core/System';
+import { Entity } from '../core/Entity';
 import { TransformComponent } from '../components/TransformComponent';
 import { MovementComponent } from '../components/MovementComponent';
-import { ComponentClass, Component } from '../Component';
+import { ComponentClass, Component } from '../core/Component';
 
 /**
  * MovementSystem - Applies physics-based movement to entities.
- * 
+ *
  * This system reads movement input from MovementComponent and applies it to the
  * entity's Phaser sprite body. It handles:
  * - Smooth rotation based on rotationInput
  * - Forward thrust in the direction the entity is facing
  * - Braking for rapid deceleration
  * - Drift physics for gradual slowdown
- * 
+ *
  * Movement feels like a race car or space ship with momentum.
- * 
+ *
  * @example
  * ```typescript
  * const movementSystem = new MovementSystem(scene);

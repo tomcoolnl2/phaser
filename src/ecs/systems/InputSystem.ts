@@ -1,23 +1,23 @@
-import { System } from '../System';
-import { Entity } from '../Entity';
+import { System } from '../core/System';
+import { Entity } from '../core/Entity';
 import { PlayerComponent } from '../components/PlayerComponent';
 import { MovementComponent } from '../components/MovementComponent';
 import { WeaponComponent } from '../components/WeaponComponent';
-import { ComponentClass, Component } from '../Component';
+import { ComponentClass, Component } from '../core/Component';
 
 /**
  * InputSystem - Captures player input and updates component state.
- * 
+ *
  * This system reads keyboard input and translates it into component data that
  * other systems (MovementSystem, WeaponSystem) can act upon. It only processes
  * local player entities (isLocal = true).
- * 
+ *
  * Input mapping:
  * - Arrow Left/Right → MovementComponent.rotationInput
  * - Arrow Up → MovementComponent.thrustInput
  * - Arrow Down → MovementComponent.brakeInput
  * - Space → WeaponComponent.triggerPulled
- * 
+ *
  * @example
  * ```typescript
  * const inputSystem = new InputSystem(scene);

@@ -2,16 +2,16 @@ import Phaser from 'phaser';
 
 /**
  * Collectible pickup item with visual effects.
- * 
+ *
  * Creates an animated pickup item that floats and rotates continuously.
  * The pickup emits particle effects to make it more visually appealing
  * and easier to spot during gameplay.
- * 
+ *
  * Features:
  * - Floating animation (up/down motion)
  * - Continuous rotation
  * - Particle effects
- * 
+ *
  * @example
  * ```typescript
  * const pickup = new Pickup(scene, 400, 300);

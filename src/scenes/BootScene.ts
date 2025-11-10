@@ -2,11 +2,11 @@ import Phaser from 'phaser';
 
 /**
  * Boot scene responsible for loading all game assets and creating animations.
- * 
+ *
  * This scene loads all sprites, spritesheets, and images needed for the game,
  * displays a loading progress bar, and creates all global animations before
  * transitioning to the main GameScene.
- * 
+ *
  * Assets loaded:
  * - Background image
  * - Player and enemy ship spritesheets
@@ -15,7 +15,7 @@ import Phaser from 'phaser';
  * - Particle effects (dust)
  * - Explosion animations (regular and large)
  * - Asteroid spritesheets
- * 
+ *
  * Animations created:
  * - 'accelerating': Ship thrust animation
  * - 'explode': Standard explosion
@@ -33,7 +33,7 @@ export class BootScene extends Phaser.Scene {
 
     /**
      * Loads all game assets with a visual progress bar.
-     * 
+     *
      * Preloads images, spritesheets, and displays loading progress to the user.
      * All bullet levels (1-5) are loaded for the weapon upgrade system.
      */
@@ -83,7 +83,7 @@ export class BootScene extends Phaser.Scene {
 
     /**
      * Creates all global animations and transitions to GameScene.
-     * 
+     *
      * Called automatically after all assets finish loading. Animations
      * created here are available to all scenes.
      */
@@ -97,7 +97,7 @@ export class BootScene extends Phaser.Scene {
 
     /**
      * Creates a visual loading bar with progress percentage.
-     * 
+     *
      * Displays a progress bar and percentage text that updates as assets load.
      * The loading UI is automatically destroyed when loading completes.
      */
@@ -139,7 +139,7 @@ export class BootScene extends Phaser.Scene {
 
     /**
      * Creates all global animations used throughout the game.
-     * 
+     *
      * Animations created:
      * - 'accelerating': 2-frame ship thrust animation
      * - 'explode': 16-frame standard explosion

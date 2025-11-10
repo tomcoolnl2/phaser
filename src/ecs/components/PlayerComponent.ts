@@ -1,13 +1,13 @@
-import { Component } from '../Component';
+import { Component } from '../core/Component';
 import type { Level } from '../../../shared/models';
 
 /**
  * PlayerComponent - Marks an entity as a player and stores player-specific data.
- * 
+ *
  * This component identifies player entities and stores player metadata like ID,
  * name, level, and score. The `isLocal` flag distinguishes the local player
  * (controlled by this client) from remote players (controlled by other clients).
- * 
+ *
  * @example
  * ```typescript
  * const playerComp = new PlayerComponent(
@@ -16,7 +16,7 @@ import type { Level } from '../../../shared/models';
  *     true,  // isLocal
  *     1      // starting level
  * );
- * 
+ *
  * playerComp.setLevel(2);
  * playerComp.addScore(100);
  * ```
@@ -24,16 +24,16 @@ import type { Level } from '../../../shared/models';
 export class PlayerComponent extends Component {
     /** Unique identifier for this player */
     public playerId: string;
-    
+
     /** Display name of the player */
     public playerName: string;
-    
+
     /** Whether this is the local player (controlled by this client) */
     public isLocal: boolean;
-    
+
     /** Current player level (1-5) */
     public level: Level = 1;
-    
+
     /** Current player score */
     public score: number = 0;
 

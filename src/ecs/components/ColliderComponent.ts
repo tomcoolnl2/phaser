@@ -1,13 +1,13 @@
-import { Component } from '../Component';
+import { Component } from '../core/Component';
 import { CollisionLayer } from '../types/CollisionLayer';
 
 /**
  * ColliderComponent - Defines collision detection properties for an entity.
- * 
+ *
  * This component stores collision data including the collision radius and layer-based
  * collision filtering. Layers allow selective collision (e.g., player bullets don't
  * collide with the player who fired them).
- * 
+ *
  * @example
  * ```typescript
  * // Player collides with enemies and asteroids
@@ -16,7 +16,7 @@ import { CollisionLayer } from '../types/CollisionLayer';
  *     CollisionLayer.PLAYER,               // layer
  *     [CollisionLayer.ENEMY, CollisionLayer.ASTEROID]  // collides with these layers
  * );
- * 
+ *
  * // Check if should collide with enemy
  * if (playerCollider.shouldCollideWith(CollisionLayer.ENEMY)) {
  *     // handle collision...
@@ -26,10 +26,10 @@ import { CollisionLayer } from '../types/CollisionLayer';
 export class ColliderComponent extends Component {
     /** Collision radius in pixels */
     public radius: number;
-    
+
     /** Collision layer identifier for this entity */
     public layer: CollisionLayer;
-    
+
     /** Array of layers this entity can collide with */
     public collidesWithLayers: CollisionLayer[];
 

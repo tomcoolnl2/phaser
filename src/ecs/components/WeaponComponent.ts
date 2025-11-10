@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
-import { Component } from '../Component';
+import { Component } from '../core/Component';
 
 /**
  * WeaponComponent - Manages weapon state, ammo, and firing logic.
- * 
+ *
  * This component handles all weapon-related data including ammunition tracking,
  * fire rate limiting, bullet speed/damage, and the bullet sprite pool. It works
  * with InputSystem (which sets triggerPulled) and WeaponSystem (which spawns bullets).
- * 
+ *
  * @example
  * ```typescript
  * const weapon = new WeaponComponent(
@@ -19,7 +19,7 @@ import { Component } from '../Component';
  *     1,                  // damage
  *     'laser-level-1'     // bullet sprite key
  * );
- * 
+ *
  * if (weapon.canFire()) {
  *     weapon.fire();
  *     // spawn bullet logic...
@@ -29,25 +29,25 @@ import { Component } from '../Component';
 export class WeaponComponent extends Component {
     /** Current ammunition count */
     public ammo: number;
-    
+
     /** Maximum ammunition capacity */
     public maxAmmo: number;
-    
+
     /** Milliseconds between shots */
     public fireRate: number;
-    
+
     /** Bullet travel speed in pixels per second */
     public bulletSpeed: number;
-    
+
     /** Damage dealt per bullet */
     public damage: number;
-    
+
     /** Timestamp of last shot (for fire rate limiting) */
     public lastFired: number = 0;
-    
+
     /** Phaser group managing bullet sprites */
     public bullets: Phaser.Physics.Arcade.Group;
-    
+
     /** Current bullet sprite texture key */
     public bulletSpriteKey: string = 'laser-level-1';
 

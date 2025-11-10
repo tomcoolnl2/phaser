@@ -1,19 +1,20 @@
+import { GameConfig } from '../../../shared/config';
 import { Entity } from './Entity';
 import { EntityManager } from './EntityManager';
-import { Player } from '../entities/Player';
-import { TransformComponent } from './components/TransformComponent';
-import { MovementComponent } from './components/MovementComponent';
-import { WeaponComponent } from './components/WeaponComponent';
-import { PlayerComponent } from './components/PlayerComponent';
-import { HealthComponent } from './components/HealthComponent';
-import { ColliderComponent } from './components/ColliderComponent';
-import { UpgradesComponent } from './components/UpgradesComponent';
-import { LegacyPlayerComponent } from './components/LegacyPlayerComponent';
-import { GameConfig } from '../../shared/config';
+import { Player } from '../../entities/Player';
+import { TransformComponent } from '../components/TransformComponent';
+import { MovementComponent } from '../components/MovementComponent';
+import { WeaponComponent } from '../components/WeaponComponent';
+import { PlayerComponent } from '../components/PlayerComponent';
+import { HealthComponent } from '../components/HealthComponent';
+import { ColliderComponent } from '../components/ColliderComponent';
+import { UpgradesComponent } from '../components/UpgradesComponent';
+import { LegacyPlayerComponent } from '../components/LegacyPlayerComponent';
+import { CollisionLayer } from '../types';
 
 /**
  * @fileoverview Factory functions for creating ECS entities from game objects.
- * 
+ *
  * These factories enable gradual migration from OOP to ECS by wrapping existing
  * game objects (like Player) in ECS entities. This allows new ECS systems to
  * operate alongside legacy code during the transition period.
@@ -21,7 +22,7 @@ import { GameConfig } from '../../shared/config';
 
 /**
  * Creates an ECS entity from an existing Player instance.
- * 
+ *
  * This factory wraps a legacy Player object in ECS components, allowing it to
  * work with ECS systems while maintaining backwards compatibility. The entity
  * includes all necessary components for a fully-functional player:
@@ -33,12 +34,12 @@ import { GameConfig } from '../../shared/config';
  * - ColliderComponent: Collision detection
  * - UpgradesComponent: Stat progression
  * - LegacyPlayerComponent: Bridge to old Player class
- * 
+ *
  * @param entityManager - The entity manager to register the entity with
  * @param player - The legacy Player instance to wrap
  * @param isLocal - True if this is the local player (controlled by this client)
  * @returns The newly created entity with all player components attached
- * 
+ *
  * @example
  * ```typescript
  * const playerEntity = createPlayerEntity(entityManager, player, true);
@@ -86,7 +87,7 @@ export function createPlayerEntity(entityManager: EntityManager, player: Player,
     entity.addComponent(health);
 
     // Collider component - for collision detection
-    const collider = new ColliderComponent(GameConfig.player.maxVelocity / 2, 'player');
+    const collider = new ColliderComponent(GameConfig.player.maxVelocity / 2, CollisionLayer.PLAYER);
     entity.addComponent(collider);
 
     // Upgrades component - tracks applied upgrades
@@ -102,24 +103,24 @@ export function createPlayerEntity(entityManager: EntityManager, player: Player,
 
 /**
  * Syncs ECS component state back to the legacy Player instance.
- * 
+ *
  * During the migration period, this function keeps the legacy Player object
  * in sync with changes made by ECS systems. This ensures backwards compatibility
  * with any legacy code that still reads Player properties directly.
- * 
+ *
  * Currently syncs:
  * - Weapon ammo (ECS → Player.ammo)
  * - Sprite rotation (ECS → Player.sprite.rotation)
- * 
+ *
  * @param entity - The entity containing both ECS components and LegacyPlayerComponent
- * 
+ *
  * @example
  * ```typescript
  * // After ECS systems update, sync back to legacy
  * syncPlayerToLegacy(playerEntity);
  * // Now Player.ammo matches WeaponComponent.ammo
  * ```
- * 
+ *
  * @deprecated This function is temporary and will be removed after full ECS migration
  */
 export function syncPlayerToLegacy(entity: Entity): void {

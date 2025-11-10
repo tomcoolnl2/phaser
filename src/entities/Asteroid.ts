@@ -3,19 +3,19 @@ import { GameConfig } from '../../shared/config';
 
 /**
  * Asteroid entity with health system and visual feedback.
- * 
+ *
  * Represents a destructible asteroid that spins continuously and displays
  * health information. Asteroids start with configurable HP (default 3) and
  * provide visual feedback through color changes (green → yellow → red) as
  * they take damage. Health text is shown when debug mode is enabled.
- * 
+ *
  * Features:
  * - Continuous spin animation
  * - Health tracking with visual feedback
  * - Flash effect on damage
  * - Large explosion on destruction
  * - Debug health display
- * 
+ *
  * @example
  * ```typescript
  * const asteroid = new Asteroid(scene, 'asteroid-1');
@@ -91,13 +91,13 @@ export class Asteroid {
 
     /**
      * Damages the asteroid and updates visual feedback.
-     * 
+     *
      * Decreases health by 1 and changes the health text color based on
      * remaining health:
      * - 3 HP: Green (#00ff00)
      * - 2 HP: Yellow (#ffff00)
      * - 1 HP: Red (#ff0000)
-     * 
+     *
      * Plays a flash effect on hit and destroys the asteroid when health
      * reaches 0. Includes safety check to prevent processing hits on
      * already destroyed asteroids.
@@ -136,7 +136,7 @@ export class Asteroid {
 
     /**
      * Destroys the asteroid with a large explosion animation.
-     * 
+     *
      * Plays the 'explode-big' animation at the asteroid's final position
      * before removing the sprite from the scene.
      */

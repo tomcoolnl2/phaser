@@ -2,11 +2,11 @@ import { Component, ComponentClass } from './Component';
 
 /**
  * Entity - A container for components in the ECS architecture.
- * 
+ *
  * An Entity is simply a unique identifier with a collection of components attached to it.
  * It has no behavior of its own - all logic is handled by Systems that operate on entities
  * with specific component combinations.
- * 
+ *
  * @example
  * ```typescript
  * const entity = new Entity('player');
@@ -17,13 +17,13 @@ import { Component, ComponentClass } from './Component';
 export class Entity {
     //
     private static nextId = 0;
-    
+
     /** Unique identifier for this entity */
     public readonly id: string;
-    
+
     /** Map of component classes to component instances */
     private components: Map<ComponentClass<Component>, Component> = new Map();
-    
+
     /** Whether this entity is active and should be processed by systems */
     public active: boolean = true;
 

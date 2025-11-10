@@ -1,12 +1,12 @@
-import { System } from '../System';
-import { Entity } from '../Entity';
+import { System } from '../core/System';
+import { Entity } from '../core/Entity';
 import { TransformComponent } from '../components/TransformComponent';
 import { WeaponComponent } from '../components/WeaponComponent';
-import { ComponentClass, Component } from '../Component';
+import { ComponentClass, Component } from '../core/Component';
 
 /**
  * WeaponSystem - Handles weapon firing and bullet spawning.
- * 
+ *
  * This system checks if the trigger is pulled (via WeaponComponent.triggerPulled,
  * set by InputSystem) and spawns bullets if the weapon can fire. It manages:
  * - Fire rate limiting
@@ -15,7 +15,7 @@ import { ComponentClass, Component } from '../Component';
  * - Bullet positioning and velocity
  * - Bullet rotation to match firing direction
  * - Automatic bullet cleanup after 2 seconds
- * 
+ *
  * @example
  * ```typescript
  * const weaponSystem = new WeaponSystem(scene);

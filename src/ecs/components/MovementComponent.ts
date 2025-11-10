@@ -1,12 +1,12 @@
-import { Component } from '../Component';
+import { Component } from '../core/Component';
 
 /**
  * MovementComponent - Manages entity movement parameters and input state.
- * 
+ *
  * This component stores all data related to movement: velocity limits, acceleration,
  * drag, rotation speed, and input state. It's designed to work with the InputSystem
  * (which sets input values) and MovementSystem (which applies movement logic).
- * 
+ *
  * @example
  * ```typescript
  * const movement = new MovementComponent(
@@ -15,37 +15,37 @@ import { Component } from '../Component';
  *     0.97, // drag
  *     0.03  // rotationSpeed
  * );
- * 
+ *
  * // InputSystem sets these
  * movement.rotationInput = -1; // turning left
  * movement.thrustInput = 1;    // accelerating
- * 
+ *
  * // MovementSystem reads these and updates physics
  * ```
  */
 export class MovementComponent extends Component {
     /** Maximum velocity the entity can reach */
     public maxVelocity: number;
-    
+
     /** Acceleration force applied when thrusting */
     public acceleration: number;
-    
+
     /** Drag coefficient (0-1, lower = less friction) */
     public drag: number;
-    
+
     /** Rotation speed in radians per frame */
     public rotationSpeed: number;
-    
+
     /** Whether this entity can currently move */
     public canMove: boolean = true;
 
     // Input state (set by InputSystem)
     /** Rotation input: -1 (left), 0 (none), 1 (right) */
     public rotationInput: number = 0;
-    
+
     /** Thrust input: 0 (none), 1 (forward) */
     public thrustInput: number = 0;
-    
+
     /** Whether brake is currently applied */
     public brakeInput: boolean = false;
 

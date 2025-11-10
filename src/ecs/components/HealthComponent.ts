@@ -1,19 +1,19 @@
-import { Component } from '../Component';
+import { Component } from '../core/Component';
 
 /**
  * HealthComponent - Manages entity health points and damage tracking.
- * 
+ *
  * This component handles all health-related logic including damage application,
  * healing, and death detection. The invulnerable flag can be used for temporary
  * immunity (e.g., post-respawn grace period).
- * 
+ *
  * @example
  * ```typescript
  * const health = new HealthComponent(100);
- * 
+ *
  * const died = health.takeDamage(50);
  * console.log(health.currentHealth); // 50
- * 
+ *
  * health.heal(25);
  * console.log(health.getHealthPercentage()); // 0.75
  * ```
@@ -21,10 +21,10 @@ import { Component } from '../Component';
 export class HealthComponent extends Component {
     /** Maximum health capacity */
     public maxHealth: number;
-    
+
     /** Current health points */
     public currentHealth: number;
-    
+
     /** Whether entity is currently invulnerable to damage */
     public invulnerable: boolean = false;
 

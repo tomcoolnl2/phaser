@@ -10,7 +10,7 @@ import { EntityManager, InputSystem, MovementSystem, WeaponSystem, WeaponUpgrade
 
 /**
  * Main gameplay scene that manages all game entities and ECS systems.
- * 
+ *
  * GameScene handles:
  * - Player spawning and management (local and remote players)
  * - ECS system integration (input, movement, weapons, upgrades)
@@ -18,12 +18,12 @@ import { EntityManager, InputSystem, MovementSystem, WeaponSystem, WeaponUpgrade
  * - Pickup item spawning and collection
  * - Socket.IO networking for multiplayer synchronization
  * - HUD updates via custom events to Vue.js frontend
- * 
+ *
  * The scene uses a hybrid approach:
  * - Local player uses ECS for input/movement/weapons
  * - Remote players use traditional OOP update loop
  * - Collision detection handled via Phaser's arcade physics
- * 
+ *
  * @example
  * ```typescript
  * // Scene is automatically started by BootScene
@@ -65,7 +65,7 @@ export class GameScene extends Phaser.Scene {
 
     /**
      * Initializes the game scene: ECS systems, world, socket listeners, and input.
-     * 
+     *
      * Sets up the complete game environment and waits for the player to enter
      * their name via the Vue.js modal before authenticating with the server.
      */
@@ -107,7 +107,7 @@ export class GameScene extends Phaser.Scene {
 
     /**
      * Initializes the Entity-Component-System architecture.
-     * 
+     *
      * Creates the EntityManager and all game systems (input, movement, weapons,
      * upgrades), then registers systems with the manager for coordinated updates.
      */
@@ -130,7 +130,7 @@ export class GameScene extends Phaser.Scene {
 
     /**
      * Main update loop called every frame.
-     * 
+     *
      * Updates all ECS systems for entity processing, syncs local player state
      * to the server, updates remote players, handles collision detection, and
      * emits player data to the Vue.js HUD.
@@ -246,10 +246,10 @@ export class GameScene extends Phaser.Scene {
 
     /**
      * Handles player death with game over screen and countdown.
-     * 
+     *
      * Displays "YOU DIED!" message with a 3-second countdown before
      * reloading the page to restart the game.
-     * 
+     *
      * @param _player - The player who died (unused but kept for future extensions)
      */
     private handlePlayerDeath(_player: Player): void {
@@ -284,7 +284,7 @@ export class GameScene extends Phaser.Scene {
 
     /**
      * Creates the game world with background and physics bounds.
-     * 
+     *
      * Sets up a tiled space background and configures the physics world
      * to match the screen dimensions (1024x768).
      */
@@ -298,7 +298,7 @@ export class GameScene extends Phaser.Scene {
 
     /**
      * Sets up keyboard input handling.
-     * 
+     *
      * Input is actually handled by the InputSystem in the ECS architecture
      * and within the Player class for local players.
      */
@@ -308,7 +308,7 @@ export class GameScene extends Phaser.Scene {
 
     /**
      * Registers all Socket.IO event listeners for multiplayer synchronization.
-     * 
+     *
      * Handles events for:
      * - Player joins/leaves
      * - Local player (protagonist) spawning
@@ -458,7 +458,7 @@ export class GameScene extends Phaser.Scene {
 
     /**
      * Emits player data to the Vue.js HUD via custom event.
-     * 
+     *
      * Dispatches an 'updatePlayerData' event with the local player's current
      * name, level, ammo, and score. The Vue.js frontend listens for this
      * event to update the HUD display.

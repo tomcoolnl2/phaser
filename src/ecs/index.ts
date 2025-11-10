@@ -1,30 +1,25 @@
 // Core ECS
-export { Component } from './Component';
-export type { ComponentClass } from './Component';
-export { Entity } from './Entity';
-export { System } from './System';
-export { EntityManager } from './EntityManager';
+export { type ComponentClass, Component, Entity, System, EntityManager } from './core';
 
 // Types
 export { CollisionLayer } from './types/CollisionLayer';
 
 // Components
-export { TransformComponent } from './components/TransformComponent';
-export { HealthComponent } from './components/HealthComponent';
-export { WeaponComponent } from './components/WeaponComponent';
-export { MovementComponent } from './components/MovementComponent';
-export { PlayerComponent } from './components/PlayerComponent';
-export { UpgradesComponent, UpgradeType } from './components/UpgradesComponent';
-export type { Upgrade } from './components/UpgradesComponent';
-export { ColliderComponent } from './components/ColliderComponent';
-export { LegacyPlayerComponent } from './components/LegacyPlayerComponent';
+export {
+    TransformComponent,
+    HealthComponent,
+    WeaponComponent,
+    MovementComponent,
+    PlayerComponent,
+    UpgradesComponent,
+    UpgradeType,
+    type Upgrade,
+    ColliderComponent,
+    LegacyPlayerComponent,
+} from './components';
 
 // Systems
-export { UpgradeSystem } from './systems/UpgradeSystem';
-export { InputSystem } from './systems/InputSystem';
-export { MovementSystem } from './systems/MovementSystem';
-export { WeaponSystem } from './systems/WeaponSystem';
-export { WeaponUpgradeSystem } from './systems/WeaponUpgradeSystem';
+export { UpgradeSystem, InputSystem, MovementSystem, WeaponSystem, WeaponUpgradeSystem } from './systems';
 
 // Factories
-export { createPlayerEntity, syncPlayerToLegacy } from './factories';
+export { createPlayerEntity, syncPlayerToLegacy } from './core/factories';

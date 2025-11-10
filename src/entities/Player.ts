@@ -4,21 +4,21 @@ import { GameConfig } from '../../shared/config';
 
 /**
  * Player - Represents a player spaceship in the game.
- * 
+ *
  * This class manages a player entity including its sprite, physics, controls,
  * weapons, and visual indicators (name, level, ammo). It handles both local
  * players (controlled by keyboard) and remote players (controlled by network).
- * 
+ *
  * Features:
  * - Race car/space ship physics with momentum
  * - Smooth rotation and directional thrust
  * - Weapon system with level-based bullets
  * - Visual feedback (name tag, level display, ammo counter)
  * - Local player input handling
- * 
+ *
  * This is a legacy OOP class being gradually migrated to ECS. See the ECS
  * factory in `src/ecs/factories.ts` for the bridge to the new architecture.
- * 
+ *
  * @example
  * ```typescript
  * const player = new Player(
@@ -27,7 +27,7 @@ import { GameConfig } from '../../shared/config';
  *     'shooter-sprite',
  *     true // isLocal
  * );
- * 
+ *
  * // In scene update loop
  * player.update();
  * ```
@@ -35,25 +35,25 @@ import { GameConfig } from '../../shared/config';
 export class Player {
     /** The Phaser sprite representing this player */
     public sprite: Phaser.Physics.Arcade.Sprite;
-    
+
     /** Unique player identifier */
     public id: string;
-    
+
     /** Player display name */
     public name: string;
-    
+
     /** Current player level (1-5) */
     public level: Level = 1;
-    
+
     /** Current ammunition count */
     public ammo: number = 0;
-    
+
     /** Whether player is currently firing */
     public isFiring: boolean = false;
-    
+
     /** Whether player is currently moving */
     public isMoving: boolean = false;
-    
+
     /** Bullet pool for this player (local players only) */
     public bullets?: Phaser.Physics.Arcade.Group;
 
@@ -166,10 +166,10 @@ export class Player {
 
     /**
      * Updates the player's state every frame.
-     * 
+     *
      * For all players:
      * - Updates name and level text positions to follow sprite
-     * 
+     *
      * For local players:
      * - Processes keyboard input (rotation, thrust, brake, fire)
      * - Applies physics (momentum, drift, race car feel)
@@ -231,12 +231,12 @@ export class Player {
 
     /**
      * Fires a bullet from the player's weapon.
-     * 
+     *
      * Checks fire rate cooldown and ammo availability before spawning a bullet.
      * The bullet is pulled from a pool, positioned at the player's location,
      * and given velocity in the direction the player is facing. Bullet sprite
      * matches the player's current level.
-     * 
+     *
      * Fire rate is limited by FIRE_RATE constant and ammo is consumed per shot.
      */
     public fire(): void {

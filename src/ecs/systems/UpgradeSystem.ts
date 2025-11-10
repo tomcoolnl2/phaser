@@ -1,5 +1,5 @@
-import { System } from '../System';
-import { Entity } from '../Entity';
+import { System } from '../core/System';
+import { Entity } from '../core/Entity';
 import { UpgradesComponent, UpgradeType } from '../components/UpgradesComponent';
 import { WeaponComponent } from '../components/WeaponComponent';
 import { MovementComponent } from '../components/MovementComponent';
@@ -7,7 +7,7 @@ import { HealthComponent } from '../components/HealthComponent';
 
 /**
  * UpgradeSystem - Applies stat upgrades to entity components.
- * 
+ *
  * This system provides an API for applying upgrades to entities. When an upgrade
  * is purchased (via applyUpgrade), it immediately modifies the relevant component's
  * stats. Supported upgrades:
@@ -17,14 +17,14 @@ import { HealthComponent } from '../components/HealthComponent';
  * - Max health increase (HealthComponent)
  * - Max ammo increase (WeaponComponent)
  * - Rotation speed boost (MovementComponent)
- * 
+ *
  * Unlike most systems, this doesn't process entities every frame. Instead, it
  * provides the applyUpgrade() method that's called when upgrades are purchased.
- * 
+ *
  * @example
  * ```typescript
  * const upgradeSystem = new UpgradeSystem(scene);
- * 
+ *
  * // When player purchases an upgrade
  * const success = upgradeSystem.applyUpgrade(playerEntity, UpgradeType.DAMAGE);
  * if (success) {
@@ -49,11 +49,11 @@ export class UpgradeSystem extends System {
 
     /**
      * Applies an upgrade to an entity if available.
-     * 
+     *
      * This checks if the upgrade can be performed (hasn't reached max level),
      * increments the upgrade level, and applies the stat changes to the
      * appropriate component.
-     * 
+     *
      * @param entity - The entity to upgrade
      * @param upgradeType - The type of upgrade to apply
      * @returns True if upgrade succeeded, false if already at max level or invalid

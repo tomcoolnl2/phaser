@@ -4,30 +4,30 @@ import { Component, ComponentClass } from './Component';
 
 /**
  * EntityManager - Central coordinator for the ECS architecture.
- * 
+ *
  * The EntityManager is responsible for:
  * - Creating and tracking all entities
  * - Registering and managing systems
  * - Querying entities by component composition
  * - Running the main update loop that processes all systems
- * 
+ *
  * This is the main entry point for working with the ECS system. Typically,
  * you create one EntityManager per scene.
- * 
+ *
  * @example
  * ```typescript
  * // In your Phaser scene
  * const entityManager = new EntityManager(this);
- * 
+ *
  * // Register systems
  * entityManager.addSystem(new MovementSystem(this));
  * entityManager.addSystem(new RenderSystem(this));
- * 
+ *
  * // Create entities
  * const player = entityManager.createEntity('player');
  * player.addComponent(new TransformComponent(sprite))
  *       .addComponent(new MovementComponent(100, 200));
- * 
+ *
  * // In your scene's update method
  * update(time: number, delta: number) {
  *     entityManager.update(delta);
@@ -37,10 +37,10 @@ import { Component, ComponentClass } from './Component';
 export class EntityManager {
     /** Map of entity IDs to entity instances */
     private entities: Map<string, Entity> = new Map();
-    
+
     /** Array of registered systems that process entities */
     private systems: System[] = [];
-    
+
     /** Reference to the Phaser scene (available for future entity/system operations) */
     private scene: Phaser.Scene;
 
@@ -87,10 +87,10 @@ export class EntityManager {
 
     /**
      * Removes and destroys an entity.
-     * 
+     *
      * This will call the entity's destroy() method and remove it from the manager.
      * After removal, the entity should not be used.
-     * 
+     *
      * @param id - The unique identifier of the entity to remove
      * @returns True if the entity was found and removed, false if it didn't exist
      */
@@ -104,10 +104,10 @@ export class EntityManager {
 
     /**
      * Queries for entities that have all of the specified components.
-     * 
+     *
      * This is useful for finding entities that match specific criteria without
      * creating a dedicated system.
-     * 
+     *
      * @param componentClasses - Component classes that entities must have
      * @returns Array of entities that have all specified components
      * @example
@@ -138,10 +138,10 @@ export class EntityManager {
 
     /**
      * Registers a system with this manager.
-     * 
+     *
      * Systems are executed in the order they are registered. Consider this when
      * adding systems with dependencies (e.g., InputSystem before MovementSystem).
-     * 
+     *
      * @param system - The system to register
      * @example
      * ```typescript
@@ -166,11 +166,11 @@ export class EntityManager {
 
     /**
      * Updates all registered systems.
-     * 
+     *
      * This should be called every frame from your Phaser scene's update method.
      * For each system, it queries for entities with the required components and
      * calls the system's update method for each matching entity.
-     * 
+     *
      * @param deltaTime - Time elapsed since last frame in milliseconds
      * @example
      * ```typescript
@@ -197,7 +197,7 @@ export class EntityManager {
 
     /**
      * Destroys all entities and clears all systems.
-     * 
+     *
      * This is typically called when transitioning to a new scene or cleaning up.
      * After calling destroy(), the EntityManager should not be used.
      */

@@ -1,22 +1,22 @@
-import { System } from '../System';
-import { Entity } from '../Entity';
+import { System } from '../core/System';
+import { Entity } from '../core/Entity';
 import { PlayerComponent } from '../components/PlayerComponent';
 import { WeaponComponent } from '../components/WeaponComponent';
-import { ComponentClass, Component } from '../Component';
+import { ComponentClass, Component } from '../core/Component';
 import type { Level } from '../../../shared/models';
 
 /**
  * WeaponUpgradeSystem - Automatically updates weapon visuals based on player level.
- * 
+ *
  * This system monitors the player's level and updates the bullet sprite texture key
  * to match. As players level up (1-5), their bullets change appearance:
  * - Level 1 → 'laser-level-1' (bullet1.png)
  * - Level 2 → 'laser-level-2' (bullet2.png)
  * - ...and so on
- * 
+ *
  * The system detects level changes and updates WeaponComponent.bulletSpriteKey,
  * which WeaponSystem uses when spawning bullets.
- * 
+ *
  * @example
  * ```typescript
  * const upgradeSystem = new WeaponUpgradeSystem(scene);

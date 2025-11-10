@@ -1,4 +1,4 @@
-import { Component } from '../Component';
+import { Component } from '../core/Component';
 
 /**
  * UpgradeType - Available upgrade categories.
@@ -28,20 +28,20 @@ export interface Upgrade {
 
 /**
  * UpgradesComponent - Tracks all upgrades applied to an entity.
- * 
+ *
  * This component manages a progression system where entities can be upgraded
  * across multiple categories. Each upgrade type has a level, max level, and
  * value per level. The UpgradeSystem reads this component to apply stat changes.
- * 
+ *
  * @example
  * ```typescript
  * const upgrades = new UpgradesComponent();
- * 
+ *
  * // Check if upgrade is available
  * if (upgrades.canUpgrade(UpgradeType.DAMAGE)) {
  *     upgrades.upgrade(UpgradeType.DAMAGE);
  * }
- * 
+ *
  * // Get current level
  * const damageLevel = upgrades.getUpgradeLevel(UpgradeType.DAMAGE);
  * console.log(`Damage is at level ${damageLevel}`);

@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
-import { Component } from '../Component';
+import { Component } from '../core/Component';
 
 /**
  * TransformComponent - Manages entity position, rotation, and scale.
- * 
+ *
  * This component wraps a Phaser sprite and provides convenient getters/setters
  * for accessing and modifying its transform properties. It serves as the bridge
  * between ECS entities and Phaser's rendering system.
- * 
+ *
  * @example
  * ```typescript
  * const transform = new TransformComponent(sprite);
