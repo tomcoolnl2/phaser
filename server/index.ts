@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import { PlayerEvent, GameEvent, CometEvent } from '../shared/events';
 import { SpaceShip, Coordinates, Player, PickupData } from '../shared/models';
+import { GameConfig } from '../shared/config';
 
 // Extended socket type with custom properties
 interface GameSocket extends Socket {
@@ -111,7 +112,7 @@ class GameServer {
     private addPickupListener(socket: GameSocket): void {
         socket.on(PlayerEvent.pickup, (data: PickupData) => {
             if (socket.player) {
-                socket.player.ammo = data.ammo ? 10 : 0;
+                socket.player.ammo = data.ammo ? GameConfig.player.ammoPerPickup : 0;
             }
             socket.broadcast.emit(PlayerEvent.pickup, data.uuid);
         });
@@ -121,7 +122,7 @@ class GameServer {
         socket.player = {
             name: player.name || `Player ${Math.floor(Math.random() * 1000)}`,
             id: uuidv4(),
-            ammo: 0,
+            ammo: GameConfig.player.startingAmmo,
             x: this.randomInt(100, windowSize.x - 100),
             y: this.randomInt(100, windowSize.y - 100),
         };
@@ -136,8 +137,8 @@ class GameServer {
         if (!this.gameHasStarted) {
             this.gameHasStarted = true;
             console.log('Game started!');
-            this.createComet(socket, 10000); // Comet every 10 seconds
-            this.spawnPickups(socket, 15000); // Pickup every 15 seconds
+            this.createComet(socket, GameConfig.server.cometSpawnInterval);
+            this.spawnPickups(socket, GameConfig.server.pickupSpawnInterval);
         }
     }
 
@@ -164,7 +165,7 @@ class GameServer {
             };
 
             const update = setInterval(() => {
-                asteroidCoordinates.y += 2;
+                asteroidCoordinates.y += GameConfig.server.cometSpeed;
                 asteroidCoordinates.x -= 1;
 
                 this.io.emit(CometEvent.coordinates, asteroidCoordinates);

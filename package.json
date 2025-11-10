@@ -4,7 +4,8 @@
     "description": "Simple multiplayer using socket.io, phaser and typescript",
     "main": "index.js",
     "scripts": {
-        "dev": "vite",
+        "dev": "VITE_DEV_MODE=true vite",
+        "dev:production": "vite",
         "build": "tsc && vite build",
         "preview": "vite preview",
         "server": "tsx server/index.ts",

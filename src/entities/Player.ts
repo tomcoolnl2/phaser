@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SpaceShip } from '../../shared/models';
+import { GameConfig } from '../../shared/config';
 
 export class Player {
     public sprite: Phaser.Physics.Arcade.Sprite;
@@ -8,30 +9,29 @@ export class Player {
     public ammo: number = 0;
     public isFiring: boolean = false;
     public isMoving: boolean = false;
+    public bullets?: Phaser.Physics.Arcade.Group;
 
     private scene: Phaser.Scene;
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private fireKey?: Phaser.Input.Keyboard.Key;
-    private bullets?: Phaser.Physics.Arcade.Group;
     private nameText: Phaser.GameObjects.Text;
     private ammoText?: Phaser.GameObjects.Text;
     private isLocal: boolean;
     private thrustParticles?: Phaser.GameObjects.Particles.ParticleEmitter;
 
-    private readonly ANGULAR_VELOCITY = 300;
-    private readonly ACCELERATION = 100;
-    private readonly MAX_VELOCITY = 200;
-    private readonly FIRE_RATE = 1000;
+    private readonly ANGULAR_VELOCITY = GameConfig.player.angularVelocity;
+    private readonly ACCELERATION = GameConfig.player.acceleration;
+    private readonly MAX_VELOCITY = GameConfig.player.maxVelocity;
+    private readonly FIRE_RATE = GameConfig.player.fireRate;
     private lastFired: number = 0;
 
     constructor(scene: Phaser.Scene, playerData: SpaceShip, spriteKey: string, isLocal: boolean) {
         this.scene = scene;
         this.id = playerData.id;
         this.name = playerData.name;
-        this.ammo = playerData.ammo || 0;
+        this.ammo = playerData.ammo || GameConfig.player.startingAmmo;
         this.isLocal = isLocal;
 
-        // Create sprite
         this.sprite = scene.physics.add
             .sprite(playerData.x, playerData.y, spriteKey)
             .setOrigin(0.5, 0.5);
@@ -39,8 +39,9 @@ export class Player {
         // Setup physics
         this.sprite.setCollideWorldBounds(true);
         this.sprite.setBounce(0.1);
-        this.sprite.setDrag(80);
+        this.sprite.setDrag(GameConfig.player.drag);
         this.sprite.setMaxVelocity(this.MAX_VELOCITY);
+        this.sprite.setAngularDrag(GameConfig.player.angularDrag);
 
         // Store ID in sprite data
         this.sprite.setData('id', this.id);

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { Socket } from 'socket.io-client';
 import { PlayerEvent, GameEvent, CometEvent } from '../../shared/events';
 import { SpaceShip, Coordinates, Player as PlayerData, Comet, PickupData } from '../../shared/models';
+import { GameConfig } from '../../shared/config';
 import { Player } from '../entities/Player';
 import { Asteroid } from '../entities/Asteroid';
 import { Pickup } from '../entities/Pickup';
@@ -54,6 +55,67 @@ export class GameScene extends Phaser.Scene {
                 m: this.localPlayer.isMoving,
                 a: this.localPlayer.ammo,
             });
+
+            // Check pickup collision
+            if (this.pickup) {
+                const distance = Phaser.Math.Distance.Between(
+                    this.localPlayer.sprite.x,
+                    this.localPlayer.sprite.y,
+                    this.pickup.sprite.x,
+                    this.pickup.sprite.y
+                );
+
+                if (distance < GameConfig.pickup.collisionRadius) {
+                    // Player collected the pickup
+                    this.localPlayer.giveAmmo(GameConfig.player.ammoPerPickup);
+                    this.socket.emit(PlayerEvent.pickup, {
+                        uuid: this.localPlayer.id,
+                        ammo: true,
+                    });
+                    this.pickup.destroy();
+                    this.pickup = null;
+                }
+            }
+
+            // Check asteroid collisions with local player
+            this.asteroids.forEach(asteroid => {
+                const distance = Phaser.Math.Distance.Between(
+                    this.localPlayer!.sprite.x,
+                    this.localPlayer!.sprite.y,
+                    asteroid.sprite.x,
+                    asteroid.sprite.y
+                );
+
+                if (distance < GameConfig.asteroid.collisionRadius) {
+                    // Player hit by asteroid - game over
+                    this.socket.emit(PlayerEvent.hit, this.localPlayer!.id);
+                    this.handlePlayerDeath(this.localPlayer!);
+                }
+            });
+
+            // Check bullet collisions with asteroids
+            if (this.localPlayer.bullets) {
+                this.asteroids.forEach(asteroid => {
+                    this.localPlayer!.bullets!.children.entries.forEach((bullet: any) => {
+                        if (bullet.active) {
+                            const distance = Phaser.Math.Distance.Between(
+                                bullet.x,
+                                bullet.y,
+                                asteroid.sprite.x,
+                                asteroid.sprite.y
+                            );
+
+                            if (distance < GameConfig.asteroid.bulletCollisionRadius) {
+                                // Bullet hit asteroid
+                                bullet.setActive(false);
+                                bullet.setVisible(false);
+                                this.socket.emit(CometEvent.hit, asteroid.id);
+                                asteroid.hit();
+                            }
+                        }
+                    });
+                });
+            }
         }
 
         // Update all players
@@ -61,6 +123,25 @@ export class GameScene extends Phaser.Scene {
 
         // Update asteroids
         this.asteroids.forEach(asteroid => asteroid.update());
+    }
+
+    private handlePlayerDeath(player: Player): void {
+        this.scene.pause();
+        const gameOverText = this.add
+            .text(this.scale.width / 2, this.scale.height / 2, 'YOU DIED!', {
+                fontSize: '64px',
+                color: '#ff0000',
+            })
+            .setOrigin(0.5);
+
+        this.add
+            .text(this.scale.width / 2, this.scale.height / 2 + 60, 'Reloading in 3 seconds...', {
+                fontSize: '24px',
+                color: '#ffffff',
+            })
+            .setOrigin(0.5);
+
+        setTimeout(() => window.location.reload(), 3000);
     }
 
     private createWorld(): void {
