@@ -1,5 +1,14 @@
 // Core ECS
-export { type ComponentClass, Component, Entity, System, EntityManager } from './core';
+export { 
+    type ComponentClass, 
+    Component, 
+    Entity, 
+    System, 
+    EntityManager, 
+    createPurePlayerEntity,
+    createAsteroidEntity,
+    createPickupEntity
+} from './core';
 
 // Types
 export { CollisionLayer } from './types/CollisionLayer';
@@ -15,11 +24,19 @@ export {
     UpgradeType,
     type Upgrade,
     ColliderComponent,
-    LegacyPlayerComponent,
+    UIComponent,
+    AsteroidComponent,
+    PickupComponent,
 } from './components';
 
 // Systems
-export { UpgradeSystem, InputSystem, MovementSystem, WeaponSystem, WeaponUpgradeSystem } from './systems';
-
-// Factories
-export { createPlayerEntity, syncPlayerToLegacy } from './core/factories';
+export { 
+    UpgradeSystem, 
+    InputSystem, 
+    MovementSystem, 
+    WeaponSystem, 
+    WeaponUpgradeSystem, 
+    RenderSystem,
+    AsteroidSystem,
+    PickupSystem
+} from './systems';

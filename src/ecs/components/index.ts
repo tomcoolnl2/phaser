@@ -5,4 +5,6 @@ export { MovementComponent } from './MovementComponent';
 export { PlayerComponent } from './PlayerComponent';
 export { type Upgrade, UpgradesComponent, UpgradeType } from './UpgradesComponent';
 export { ColliderComponent } from './ColliderComponent';
-export { LegacyPlayerComponent } from './LegacyPlayerComponent';
+export { UIComponent } from './UIComponent';
+export { AsteroidComponent } from './AsteroidComponent';
+export { PickupComponent } from './PickupComponent';
