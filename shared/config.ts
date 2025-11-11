@@ -43,9 +43,9 @@ export const GameConfig = {
     },
 
     server: {
-        cometSpawnInterval: 10000, // milliseconds
+        asteroidSpeed: 2, // pixels per update
+        asteroidSpawnInterval: 10000, // milliseconds
         pickupSpawnInterval: 15000, // milliseconds
-        cometSpeed: 2, // pixels per update
     },
 
     // Debug settings - controlled by VITE_DEV_MODE or individual VITE_* flags
