@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { GameConfig } from '@shared/config';
 import type { SpaceShip } from '@shared/models';
 import { CollisionLayer, PickupType } from '@/ecs/types';

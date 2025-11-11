@@ -1,6 +1,6 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { Socket } from 'socket.io-client';
-import { PlayerEvent, GameEvent, CometEvent } from '@shared/events';
+import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
 import { SpaceShip, Coordinates, Player as PlayerData, Comet, PickupData, Level } from '@shared/models';
 import { GameConfig } from '@shared/config';
 import { 
@@ -261,7 +261,7 @@ export class GameScene extends Phaser.Scene {
                                 // Bullet hit asteroid
                                 bullet.setActive(false);
                                 bullet.setVisible(false);
-                                this.socket.emit(CometEvent.hit, asteroidComp.asteroidId);
+                                this.socket.emit(AsteroidEvent.hit, asteroidComp.asteroidId);
                                 
                                 // Damage asteroid
                                 const health = asteroidEntity.getComponent(HealthComponent);
@@ -472,8 +472,8 @@ export class GameScene extends Phaser.Scene {
             }
         });
 
-        // Comet created
-        this.socket.on(CometEvent.create, (cometData: Comet) => {
+        // Asteroid created
+        this.socket.on(AsteroidEvent.create, (cometData: Comet) => {
             console.log('Comet created:', cometData);
             const entity = createAsteroidEntity(
                 this,
@@ -485,8 +485,8 @@ export class GameScene extends Phaser.Scene {
             this.asteroidEntities.set(cometData.id, entity);
         });
 
-        // Comet coordinates
-        this.socket.on(CometEvent.coordinates, (coords: Coordinates) => {
+        // Asteroid coordinates
+        this.socket.on(AsteroidEvent.coordinates, (coords: Coordinates) => {
             this.asteroidEntities.forEach(entity => {
                 const transform = entity.getComponent(TransformComponent);
                 if (transform) {
@@ -496,7 +496,7 @@ export class GameScene extends Phaser.Scene {
         });
 
         // Comet hit
-        this.socket.on(CometEvent.hit, () => {
+        this.socket.on(AsteroidEvent.hit, () => {
             console.log('Comet hit');
             this.asteroidEntities.forEach(entity => {
                 const health = entity.getComponent(HealthComponent);
@@ -512,7 +512,7 @@ export class GameScene extends Phaser.Scene {
         });
 
         // Comet destroyed
-        this.socket.on(CometEvent.destroy, () => {
+        this.socket.on(AsteroidEvent.destroy, () => {
             console.log('Comet destroyed');
             this.asteroidEntities.forEach(entity => {
                 const transform = entity.getComponent(TransformComponent);

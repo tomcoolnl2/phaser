@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { ComponentClass, Entity, System } from '@/ecs/core';
 import { TransformComponent, UIComponent, WeaponComponent, PlayerComponent } from '@/ecs/components';
 

@@ -4,7 +4,7 @@ import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import pino from 'pino';
-import { PlayerEvent, GameEvent, CometEvent } from '../shared/events';
+import { PlayerEvent, GameEvent, AsteroidEvent } from '../shared/events';
 import { SpaceShip, Coordinates, Player, PickupData } from '../shared/models';
 import { GameConfig } from '../shared/config';
 
@@ -27,7 +27,7 @@ const logger = pino({
 // Extended socket type with custom properties
 interface GameSocket extends Socket {
     player?: SpaceShip;
-    comet?: {
+    asteroid?: {
         id: string;
     };
 }
@@ -43,7 +43,7 @@ class GameServer {
     });
 
     private gameHasStarted: boolean = false;
-    private hasComet: boolean = false;
+    private hasAsteroid: boolean = false;
 
     constructor() {
         this.setupExpress();
@@ -72,7 +72,7 @@ class GameServer {
         this.addMovementListener(socket);
         this.addSignOutListener(socket);
         this.addHitListener(socket);
-        this.addCometHitListener(socket);
+    this.addAsteroidHitListener(socket);
         this.addPickupListener(socket);
     }
 
@@ -120,9 +120,9 @@ class GameServer {
         });
     }
 
-    private addCometHitListener(socket: Socket): void {
-        socket.on(CometEvent.hit, (cometId: string) => {
-            socket.broadcast.emit(CometEvent.hit, cometId);
+    private addAsteroidHitListener(socket: Socket): void {
+        socket.on(AsteroidEvent.hit, (asteroidId: string) => {
+            socket.broadcast.emit(AsteroidEvent.hit, asteroidId);
         });
     }
 
@@ -154,45 +154,45 @@ class GameServer {
         if (!this.gameHasStarted) {
             this.gameHasStarted = true;
             logger.info('Game started');
-            this.createComet(socket, GameConfig.server.cometSpawnInterval);
+            this.createAsteroid(socket, GameConfig.server.asteroidSpawnInterval);
             this.spawnPickups(socket, GameConfig.server.pickupSpawnInterval);
         }
     }
 
-    private createComet(socket: GameSocket, interval: number): void {
+    private createAsteroid(socket: GameSocket, interval: number): void {
         setInterval(() => {
-            if (!this.hasComet) {
-                const cometId = uuidv4();
-                socket.comet = { id: cometId };
-                this.hasComet = true;
+            if (!this.hasAsteroid) {
+                const asteroidId = uuidv4();
+                socket.asteroid = { id: asteroidId };
+                this.hasAsteroid = true;
 
-                logger.debug({ cometId }, 'Spawning comet');
+                logger.debug({ asteroidId }, 'Spawning asteroid');
 
-                this.io.emit(CometEvent.create, socket.comet);
-                this.updateComet(socket);
+                this.io.emit(AsteroidEvent.create, socket.asteroid);
+                this.updateAsteroid(socket);
             }
         }, interval);
     }
 
-    private updateComet(_socket: GameSocket): void {
-        if (this.hasComet) {
+    private updateAsteroid(_socket: GameSocket): void {
+        if (this.hasAsteroid) {
             const asteroidCoordinates: Coordinates & { r?: number } = {
                 x: this.randomInt(200, 800),
                 y: -128,
             };
 
             const update = setInterval(() => {
-                asteroidCoordinates.y += GameConfig.server.cometSpeed;
+                asteroidCoordinates.y += GameConfig.server.asteroidSpeed;
                 asteroidCoordinates.x -= 1;
 
-                this.io.emit(CometEvent.coordinates, asteroidCoordinates);
+                this.io.emit(AsteroidEvent.coordinates, asteroidCoordinates);
 
                 // Destroy if off screen
                 if (asteroidCoordinates.y > 900 || asteroidCoordinates.x < -128) {
-                    this.io.emit(CometEvent.destroy);
-                    this.hasComet = false;
+                    this.io.emit(AsteroidEvent.destroy);
+                    this.hasAsteroid = false;
                     clearInterval(update);
-                    logger.debug('Comet destroyed (off screen)');
+                    logger.debug('Asteroid destroyed (off screen)');
                 }
             }, 25);
         }

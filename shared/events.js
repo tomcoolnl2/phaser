@@ -13,11 +13,11 @@ export var GameEvent;
 (function (GameEvent) {
     GameEvent["drop"] = "game:drop";
 })(GameEvent || (GameEvent = {}));
-export var CometEvent;
-(function (CometEvent) {
-    CometEvent["create"] = "comet:create";
-    CometEvent["coordinates"] = "comet:coordinates";
-    CometEvent["destroy"] = "comet:destroy";
-    CometEvent["hit"] = "comet:hit";
-})(CometEvent || (CometEvent = {}));
+export var AsteroidEvent;
+(function (AsteroidEvent) {
+    AsteroidEvent["create"] = "asteroid:create";
+    AsteroidEvent["coordinates"] = "asteroid:coordinates";
+    AsteroidEvent["destroy"] = "asteroid:destroy";
+    AsteroidEvent["hit"] = "asteroid:hit";
+})(AsteroidEvent || (AsteroidEvent = {}));
 //# sourceMappingURL=events.js.map

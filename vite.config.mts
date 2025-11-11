@@ -3,11 +3,13 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 export default defineConfig({
+    // Vite plugins
     plugins: [vue()],
 
+    // Dependency optimization
     optimizeDeps: {
-        exclude: ['phaser']
-    }
+        include: ['phaser', 'socket.io-client'],
+    },
 
     // Path resolution for aliases
     resolve: {
@@ -47,11 +49,6 @@ export default defineConfig({
                 },
             },
         },
-    },
-
-    // Optimize dependencies
-    optimizeDeps: {
-        include: ['phaser', 'socket.io-client'],
     },
 
     // Define global constants for Phaser

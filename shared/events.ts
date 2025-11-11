@@ -13,9 +13,9 @@ export enum GameEvent {
     drop = 'game:drop',
 }
 
-export enum CometEvent {
-    create = 'comet:create',
-    coordinates = 'comet:coordinates',
-    destroy = 'comet:destroy',
-    hit = 'comet:hit',
+export enum AsteroidEvent {
+    create = 'asteroid:create',
+    coordinates = 'asteroid:coordinates',
+    destroy = 'asteroid:destroy',
+    hit = 'asteroid:hit',
 }
