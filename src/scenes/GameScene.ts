@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import { Socket } from 'socket.io-client';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
-import { SpaceShip, Coordinates, Player as PlayerData, Comet, PickupData, Level } from '@shared/models';
+import { SpaceShip, Coordinates, Player as PlayerData, Level } from '@shared/models';
+import { PickupDTO } from '@shared/dto/PickupDTO';
+import { AsteroidCauseOfDeath, AsteroidDTO } from '@shared/dto/AsteroidDTO';
 import { GameConfig } from '@shared/config';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { InputSystem } from '@/ecs/systems/InputSystem';
@@ -96,9 +98,6 @@ export class GameScene extends Phaser.Scene {
         // Setup socket listeners
         this.setupSocketListeners();
 
-        // Setup input
-        this.setupInput();
-
         // Wait for player name from Vue modal
         window.addEventListener(
             'playerNameSubmitted',
@@ -187,6 +186,7 @@ export class GameScene extends Phaser.Scene {
             if (this.pickupEntity) {
                 const pickupTransform = this.pickupEntity.getComponent(TransformComponent);
                 if (pickupTransform && pickupTransform.sprite.active) {
+                    
                     const distance = Phaser.Math.Distance.Between(
                         transform.sprite.x,
                         transform.sprite.y,
@@ -258,13 +258,6 @@ export class GameScene extends Phaser.Scene {
                                 bullet.setActive(false);
                                 bullet.setVisible(false);
                                 this.socket.emit(AsteroidEvent.hit, asteroidComp.asteroidId);
-                                
-                                // Damage asteroid
-                                const health = asteroidEntity.getComponent(HealthComponent);
-                                if (health) {
-                                    health.takeDamage(1);
-                                }
-                                
                                 // Flash effect
                                 this.asteroidSystem.flashAsteroid(asteroidTransform.sprite);
                             }
@@ -322,19 +315,8 @@ export class GameScene extends Phaser.Scene {
     private createWorld(): void {
         // Add background
         this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'space').setOrigin(0, 0);
-
         // Setup world bounds
         this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
-    }
-
-    /**
-     * Sets up keyboard input handling.
-     *
-     * Input is actually handled by the InputSystem in the ECS architecture
-     * and within the Player class for local players.
-     */
-    private setupInput(): void {
-        // Input is handled in Player class
     }
 
     /**
@@ -351,14 +333,14 @@ export class GameScene extends Phaser.Scene {
     private setupSocketListeners(): void {
         // Player joined
         this.socket.on(PlayerEvent.joined, (playerData: SpaceShip) => {
-            console.log('Player joined:', playerData);
+            console.log('[Client]', 'Player joined:', playerData);
             const entity = createPlayerEntity(this, this.entityManager, playerData, 'shooter-sprite-enemy', false);
             this.playerEntities.set(playerData.id, entity);
         });
 
         // Local player (protagonist)
         this.socket.on(PlayerEvent.protagonist, (playerData: SpaceShip) => {
-            console.log('Local player:', playerData);
+            console.log('[Client]', 'Local player:', playerData);
             const entity = createPlayerEntity(this, this.entityManager, playerData, 'shooter-sprite', true);
             this.playerEntities.set(playerData.id, entity);
             this.localPlayerId = playerData.id;
@@ -366,7 +348,7 @@ export class GameScene extends Phaser.Scene {
 
         // Existing players
         this.socket.on(PlayerEvent.players, (players: SpaceShip[]) => {
-            console.log('Existing players:', players);
+            console.log('[Client]', 'Existing players:', players);
             players.forEach(playerData => {
                 const entity = createPlayerEntity(this, this.entityManager, playerData, 'shooter-sprite-enemy', false);
                 this.playerEntities.set(playerData.id, entity);
@@ -375,7 +357,7 @@ export class GameScene extends Phaser.Scene {
 
         // Player quit
         this.socket.on(PlayerEvent.quit, (playerId: string) => {
-            console.log('Player quit:', playerId);
+            console.log('[Client]', 'Player quit:', playerId);
             const entity = this.playerEntities.get(playerId);
             if (entity) {
                 this.entityManager.removeEntity(entity.id);
@@ -410,7 +392,7 @@ export class GameScene extends Phaser.Scene {
 
         // Player hit
         this.socket.on(PlayerEvent.hit, (playerId: string) => {
-            console.log('Player hit:', playerId);
+            console.log('[Client]', 'Player hit:', playerId);
             const entity = this.playerEntities.get(playerId);
             if (entity) {
                 if (playerId === this.localPlayerId) {
@@ -433,7 +415,7 @@ export class GameScene extends Phaser.Scene {
 
         // Pickup drop
         this.socket.on(GameEvent.drop, (coords: Coordinates) => {
-            console.log('Pickup dropped:', coords);
+            console.log('[Client]', 'Pickup dropped:', coords);
             if (this.pickupEntity) {
                 const transform = this.pickupEntity.getComponent(TransformComponent);
                 if (transform) {
@@ -445,9 +427,9 @@ export class GameScene extends Phaser.Scene {
         });
 
         // Player pickup
-        this.socket.on(PlayerEvent.pickup, (data: PickupData) => {
-            console.log('Player picked up:', data);
-            const entity = this.playerEntities.get(data.uuid);
+        this.socket.on(PlayerEvent.pickup, (pickupDTO: PickupDTO) => {
+            console.log('[Client]', 'Player picked up:', pickupDTO);
+            const entity = this.playerEntities.get(pickupDTO.uuid);
             if (entity) {
                 const weapon = entity.getComponent(WeaponComponent);
                 if (weapon) {
@@ -469,55 +451,62 @@ export class GameScene extends Phaser.Scene {
         });
 
         // Asteroid created
-        this.socket.on(AsteroidEvent.create, (cometData: Comet) => {
-            console.log('Comet created:', cometData);
+        this.socket.on(AsteroidEvent.create, (asteroidDTO: AsteroidDTO) => {
+            console.log('[Client]', 'Asteroid created:', asteroidDTO);
             const entity = createAsteroidEntity(
                 this,
                 this.entityManager,
-                cometData.id,
-                0,
-                -128
+                asteroidDTO.id,
+                asteroidDTO.x,
+                asteroidDTO.y
             );
-            this.asteroidEntities.set(cometData.id, entity);
+            // Set HP and maxHp if HealthComponent exists
+            const health = entity.getComponent(HealthComponent);
+            if (health) {
+                health.currentHealth = asteroidDTO.hp;
+                if (asteroidDTO.maxHp !== undefined) health.maxHealth = asteroidDTO.maxHp;
+            }
+            this.asteroidEntities.set(asteroidDTO.id, entity);
         });
 
         // Asteroid coordinates
-        this.socket.on(AsteroidEvent.coordinates, (coords: Coordinates) => {
-            this.asteroidEntities.forEach(entity => {
+        this.socket.on(AsteroidEvent.coordinates, (asteroidDTO: AsteroidDTO) => {
+            const entity = this.asteroidEntities.get(asteroidDTO.id);
+            if (entity) {
                 const transform = entity.getComponent(TransformComponent);
                 if (transform) {
-                    transform.sprite.setPosition(coords.x, coords.y);
+                    transform.sprite.setPosition(asteroidDTO.x, asteroidDTO.y);
                 }
-            });
-        });
-
-        // Comet hit
-        this.socket.on(AsteroidEvent.hit, () => {
-            console.log('Comet hit');
-            this.asteroidEntities.forEach(entity => {
                 const health = entity.getComponent(HealthComponent);
                 if (health) {
-                    health.takeDamage(1);
+                    health.currentHealth = asteroidDTO.hp;
+                    if (asteroidDTO.maxHp !== undefined) health.maxHealth = asteroidDTO.maxHp;
                 }
-                // Trigger flash effect
+            }
+        });
+
+        // Asteroid hit
+        this.socket.on(AsteroidEvent.hit, (asteroidDTO: AsteroidDTO) => {
+            console.log('[Client]', 'Asteroid hit', asteroidDTO);
+            const entity = this.asteroidEntities.get(asteroidDTO.id);
+            if (entity) {
+                const health = entity.getComponent(HealthComponent);
+                if (health) {
+                    health.currentHealth = asteroidDTO.hp;
+                    if (asteroidDTO.maxHp !== undefined) health.maxHealth = asteroidDTO.maxHp;
+                }
                 const transform = entity.getComponent(TransformComponent);
                 if (transform) {
                     this.asteroidSystem.flashAsteroid(transform.sprite);
                 }
-            });
+            }
         });
 
-        // Comet destroyed
-        this.socket.on(AsteroidEvent.destroy, () => {
-            console.log('Comet destroyed');
-            this.asteroidEntities.forEach(entity => {
-                const transform = entity.getComponent(TransformComponent);
-                if (transform) {
-                    transform.sprite.destroy();
-                }
-                this.entityManager.removeEntity(entity.id);
-            });
-            this.asteroidEntities.clear();
+        // Asteroid destroyed
+        this.socket.on(AsteroidEvent.destroy, (asteroidDTO: AsteroidDTO) => {
+            console.log('[Client]', 'Asteroid destroyed', asteroidDTO.id, asteroidDTO);
+            this.asteroidSystem.destroyAsteroidById(asteroidDTO.id,);
+            this.asteroidEntities.delete(asteroidDTO.id,);
         });
     }
 
@@ -528,15 +517,22 @@ export class GameScene extends Phaser.Scene {
      * to be consumed by the Vue frontend components.
      */
     private emitPlayerDataToVue(): void {
-        if (!this.localPlayerId) return;
+
+        if (!this.localPlayerId) {
+            return;
+        }
 
         const entity = this.playerEntities.get(this.localPlayerId);
-        if (!entity) return;
+        if (!entity) {
+            return;
+        }
 
         const playerComp = entity.getComponent(PlayerComponent);
         const weapon = entity.getComponent(WeaponComponent);
 
-        if (!playerComp) return;
+        if (!playerComp) {
+            return;
+        }
 
         window.dispatchEvent(
             new CustomEvent('updatePlayerData', {

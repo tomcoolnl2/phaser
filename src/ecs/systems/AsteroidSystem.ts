@@ -41,6 +41,29 @@ export class AsteroidSystem extends System {
     }
 
     /**
+     * Public method to destroy an asteroid by its ID, with explosion and cleanup.
+     * Used by GameScene when receiving AsteroidEvent.destroy from the server.
+     *
+     * @param asteroidId - Unique identifier for the asteroid
+     */
+    public destroyAsteroidById(asteroidId: string): void {
+        // Find the entity with this asteroidId
+        const entities = this.scene.entityManager.queryEntities(AsteroidComponent, TransformComponent);
+        const entity = entities.find((e: Entity) => {
+            const asteroid = e.getComponent(AsteroidComponent);
+            return asteroid && asteroid.asteroidId === asteroidId;
+        });
+        if (!entity) {
+            return;
+        }
+        const transform = entity.getComponent(TransformComponent);
+        if (!transform) {
+            return;
+        }
+        this.destroyAsteroid(entity, transform, asteroidId);
+    }
+
+    /**
      * Updates a single asteroid entity.
      *
      * - Updates health text position to follow asteroid
@@ -80,11 +103,6 @@ export class AsteroidSystem extends System {
             } else if (health.currentHealth >= 3) {
                 healthText.setColor('#00ff00'); // Green
             }
-        }
-
-        // Check if asteroid should be destroyed
-        if (health.isDead()) {
-            this.destroyAsteroid(entity, transform, asteroid.asteroidId);
         }
     }
 
@@ -152,6 +170,7 @@ export class AsteroidSystem extends System {
 
         // Cleanup health text
         this.cleanupHealthText(asteroidId);
+        
         this.scene.entityManager.removeEntity(entity.id);
     }
 

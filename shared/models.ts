@@ -39,14 +39,3 @@ export interface Player {
     };
     coors?: PlayerUpdate;
 }
-
-export interface Comet {
-    id: string;
-    x?: number;
-    y?: number;
-}
-
-export interface PickupData {
-    uuid: string;
-    ammo: boolean;
-}
