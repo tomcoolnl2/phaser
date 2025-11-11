@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { WeaponUpgradeSystem } from '@/ecs/systems';
-import { EntityManager } from '@/ecs/core';
-import { PlayerComponent, WeaponComponent } from '@/ecs/components';
+import { WeaponUpgradeSystem } from '@/ecs/systems/WeaponUpgradeSystem';
+import { EntityManager } from '@/ecs/core/EntityManager';
+import { PlayerComponent } from '@/ecs/components/PlayerComponent';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 
 describe('WeaponUpgradeSystem', () => {
     let mockScene: any;

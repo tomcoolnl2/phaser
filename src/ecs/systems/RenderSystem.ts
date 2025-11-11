@@ -1,6 +1,11 @@
 import Phaser from 'phaser';
-import { ComponentClass, Entity, System } from '@/ecs/core';
-import { TransformComponent, UIComponent, WeaponComponent, PlayerComponent } from '@/ecs/components';
+import { ComponentClass } from '@/ecs/core/Component';
+import { Entity } from '@/ecs/core/Entity';
+import { System } from '@/ecs/core/System';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { UIComponent } from '@/ecs/components/UIComponent';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
+import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 
 /**
  * RenderSystem - Updates UI text elements to follow sprites and display current state.

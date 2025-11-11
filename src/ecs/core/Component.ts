@@ -21,7 +21,7 @@
 export abstract class Component {
     /** Whether this component is currently enabled and should be processed */
     public enabled: boolean = true;
-    sprite: any;
+    public sprite: Phaser.GameObjects.Sprite;
 }
 
 /**
@@ -35,4 +35,5 @@ export abstract class Component {
  *
  * @see {@link https://www.typescriptlang.org/docs/handbook/2/generics.html TypeScript Generics}
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ComponentClass<T extends Component = Component> = abstract new (...args: any[]) => T;

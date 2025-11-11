@@ -119,6 +119,7 @@ export default [
     },
     {
         ignores: [
+            '**/*.js',
             'node_modules/**',
             'dist/**',
             '*.spec.ts',

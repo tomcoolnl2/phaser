@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Component } from '@/ecs/core';
+import { Component } from '@/ecs/core/Component';
 
 /**
  * UIComponent - Manages UI text elements attached to a player entity.

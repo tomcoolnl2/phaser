@@ -1,13 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { UpgradeSystem } from '@/ecs/systems';
-import { EntityManager } from '@/ecs/core';
-import {
-    UpgradesComponent,
-    WeaponComponent,
-    MovementComponent,
-    HealthComponent,
-    UpgradeType,
-} from '@/ecs/components';
+import { UpgradeSystem } from '@/ecs/systems/UpgradeSystem';
+import { EntityManager } from '@/ecs/core/EntityManager';
+import { UpgradesComponent, UpgradeType } from '@/ecs/components/UpgradesComponent';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
+import { MovementComponent } from '@/ecs/components/MovementComponent';
+import { HealthComponent } from '@/ecs/components/HealthComponent';
 
 describe('UpgradeSystem', () => {
     let mockScene: any;

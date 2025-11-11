@@ -1,12 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RenderSystem } from '@/ecs/systems';
-import { Entity, EntityManager } from '@/ecs/core';
-import {
-    TransformComponent,
-    UIComponent,
-    WeaponComponent,
-    PlayerComponent,
-} from '@/ecs/components';
+import { RenderSystem } from '@/ecs/systems/RenderSystem';
+import { EntityManager } from '@/ecs/core/EntityManager';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { UIComponent } from '@/ecs/components/UIComponent';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
+import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 
 describe('RenderSystem', () => {
     let mockScene: any;

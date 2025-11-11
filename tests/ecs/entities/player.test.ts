@@ -1,15 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { EntityManager, createPlayerEntity } from '@/ecs/core';
-import {
-    TransformComponent,
-    MovementComponent,
-    WeaponComponent,
-    PlayerComponent,
-    HealthComponent,
-    ColliderComponent,
-    UpgradesComponent,
-    UIComponent,
-} from '@/ecs/components';
+import { EntityManager } from '@/ecs/core/EntityManager';
+import { createPlayerEntity } from '@/ecs/core/factories';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { MovementComponent } from '@/ecs/components/MovementComponent';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
+import { PlayerComponent } from '@/ecs/components/PlayerComponent';
+import { HealthComponent } from '@/ecs/components/HealthComponent';
+import { ColliderComponent } from '@/ecs/components/ColliderComponent';
+import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
+import { UIComponent } from '@/ecs/components/UIComponent';
 import type { SpaceShip } from '@shared/models';
 
 describe('Player ECS Entity', () => {

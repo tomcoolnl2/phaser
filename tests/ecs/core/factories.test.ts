@@ -3,16 +3,14 @@ import { GameConfig } from '@shared/config';
 import type { Level, SpaceShip } from '@shared/models';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { createPlayerEntity } from '@/ecs/core/factories';
-import {
-    TransformComponent,
-    MovementComponent,
-    WeaponComponent,
-    PlayerComponent,
-    HealthComponent,
-    ColliderComponent,
-    UpgradesComponent,
-    UIComponent,
-} from '@/ecs/components';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { MovementComponent } from '@/ecs/components/MovementComponent';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
+import { PlayerComponent } from '@/ecs/components/PlayerComponent';
+import { HealthComponent } from '@/ecs/components/HealthComponent';
+import { ColliderComponent } from '@/ecs/components/ColliderComponent';
+import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
+import { UIComponent } from '@/ecs/components/UIComponent';
 import { CollisionLayer } from '@/ecs/types';
 
 // Mock Phaser Scene

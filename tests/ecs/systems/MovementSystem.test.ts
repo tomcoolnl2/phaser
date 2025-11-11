@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { MovementSystem } from '@/ecs/systems';
-import { EntityManager } from '@/ecs/core';
-import { TransformComponent, MovementComponent } from '@/ecs/components';
+import { MovementSystem } from '@/ecs/systems/MovementSystem';
+import { EntityManager } from '@/ecs/core/EntityManager';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { MovementComponent } from '@/ecs/components/MovementComponent';
 
 describe('MovementSystem', () => {
     let mockScene: any;

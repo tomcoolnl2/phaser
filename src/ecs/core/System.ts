@@ -1,4 +1,6 @@
-import { ComponentClass, Component, Entity } from '@/ecs/core';
+import { ComponentClass } from '@/ecs/core/Component';
+import { Component } from '@/ecs/core/Component';
+import { Entity } from '@/ecs/core/Entity';
 
 /**
  * System - Base class for all ECS systems.

@@ -3,11 +3,8 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 export default defineConfig({
+    // Vite plugins
     plugins: [vue()],
-
-    optimizeDeps: {
-        exclude: ['phaser']
-    },
 
     // Path resolution for aliases
     resolve: {

@@ -3,27 +3,25 @@ import { Socket } from 'socket.io-client';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
 import { SpaceShip, Coordinates, Player as PlayerData, Comet, PickupData, Level } from '@shared/models';
 import { GameConfig } from '@shared/config';
-import { 
-    EntityManager, 
-    InputSystem, 
-    MovementSystem, 
-    WeaponSystem, 
-    WeaponUpgradeSystem,
-    RenderSystem,
-    AsteroidSystem,
-    PickupSystem,
-    createPlayerEntity,
-    createAsteroidEntity,
-    createPickupEntity,
-    Entity, 
-    PlayerComponent,
-    TransformComponent,
-    WeaponComponent,
-    MovementComponent,
-    HealthComponent,
-    AsteroidComponent,
-    PickupType
-} from '../ecs';
+import { EntityManager } from '../ecs/core/EntityManager';
+import { InputSystem } from '../ecs/systems/InputSystem';
+import { MovementSystem } from '../ecs/systems/MovementSystem';
+import { WeaponSystem } from '../ecs/systems/WeaponSystem';
+import { WeaponUpgradeSystem } from '../ecs/systems/WeaponUpgradeSystem';
+import { RenderSystem } from '../ecs/systems/RenderSystem';
+import { AsteroidSystem } from '../ecs/systems/AsteroidSystem';
+import { PickupSystem } from '../ecs/systems/PickupSystem';
+import { createPlayerEntity } from '../ecs/core/factories';
+import { createAsteroidEntity } from '../ecs/core/factories';
+import { createPickupEntity } from '../ecs/core/factories';
+import { Entity } from '../ecs/core/Entity';
+import { PlayerComponent } from '../ecs/components/PlayerComponent';
+import { TransformComponent } from '../ecs/components/TransformComponent';
+import { WeaponComponent } from '../ecs/components/WeaponComponent';
+import { MovementComponent } from '../ecs/components/MovementComponent';
+import { HealthComponent } from '../ecs/components/HealthComponent';
+import { AsteroidComponent } from '../ecs/components/AsteroidComponent';
+import { PickupType } from '../ecs/types/PickupType';
 
 /**
  * Main gameplay scene that manages all game entities and ECS systems.

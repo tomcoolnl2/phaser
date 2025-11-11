@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { InputSystem } from '@/ecs/systems';
-import { EntityManager } from '@/ecs/core';
-import { PlayerComponent, MovementComponent, WeaponComponent } from '@/ecs/components';
+import { InputSystem } from '@/ecs/systems/InputSystem';
+import { EntityManager } from '@/ecs/core/EntityManager';
+import { PlayerComponent } from '@/ecs/components/PlayerComponent';
+import { MovementComponent } from '@/ecs/components/MovementComponent';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 
 // Mock Phaser global
 global.Phaser = {
