@@ -201,6 +201,10 @@ export class EntityManager {
             const matchingEntities = this.queryEntities(...requiredComponents);
 
             for (const entity of matchingEntities) {
+                // Skip entities that have been removed from the manager during this update cycle
+                if (!this.entities.has(entity.id)) {
+                    continue;
+                }
                 system.update(entity, deltaTime);
             }
         }

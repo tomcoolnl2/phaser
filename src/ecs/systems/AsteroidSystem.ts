@@ -1,10 +1,11 @@
-import { System } from '../core/System';
-import { Entity } from '../core/Entity';
-import { TransformComponent } from '../components/TransformComponent';
-import { AsteroidComponent } from '../components/AsteroidComponent';
-import { HealthComponent } from '../components/HealthComponent';
-import { ComponentClass } from '../core/Component';
-import { GameConfig } from '../../../shared/config';
+import { System } from '@/ecs/core/System';
+import { Entity } from '@/ecs/core/Entity';
+import { ComponentClass } from '@/ecs/core/Component';
+import { GameConfig } from '@shared/config';
+import { GameScene } from '@/scenes/GameScene';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
+import { HealthComponent } from '@/ecs/components/HealthComponent';
 
 /**
  * System that manages asteroid behavior and visual feedback.
@@ -24,8 +25,13 @@ import { GameConfig } from '../../../shared/config';
  * ```
  */
 export class AsteroidSystem extends System {
+
     /** Map of asteroid IDs to their health text displays */
     private healthTexts: Map<string, Phaser.GameObjects.Text> = new Map();
+
+    constructor(protected scene: GameScene) {
+        super(scene);
+    }
 
     /**
      * Returns the components required by this system.
@@ -129,11 +135,8 @@ export class AsteroidSystem extends System {
      * @param transform - Transform component containing sprite
      * @param asteroidId - Unique identifier for the asteroid
      */
-    private destroyAsteroid(
-        entity: Entity,
-        transform: TransformComponent,
-        asteroidId: string
-    ): void {
+    private destroyAsteroid(entity: Entity, transform: TransformComponent, asteroidId: string): void {
+
         // Prevent double-destroy
         if (!transform.sprite.active) {
             return;
@@ -149,6 +152,7 @@ export class AsteroidSystem extends System {
 
         // Cleanup health text
         this.cleanupHealthText(asteroidId);
+        this.scene.entityManager.removeEntity(entity.id);
     }
 
     /**

@@ -1,3 +1,4 @@
+import { GameScene } from '@/scenes/GameScene';
 import { ComponentClass } from '@/ecs/core/Component';
 import { Component } from '@/ecs/core/Component';
 import { Entity } from '@/ecs/core/Entity';
@@ -27,6 +28,8 @@ import { WeaponComponent } from '@/ecs/components/WeaponComponent';
  * ```
  */
 export class InputSystem extends System {
+
+    // Keyboard input references
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private fireKey?: Phaser.Input.Keyboard.Key;
 
@@ -34,7 +37,7 @@ export class InputSystem extends System {
      * Creates a new InputSystem and sets up keyboard listeners.
      * @param scene - The Phaser scene
      */
-    constructor(scene: Phaser.Scene) {
+    constructor(protected scene: GameScene) {
         super(scene);
         this.setupInput();
     }
@@ -44,7 +47,7 @@ export class InputSystem extends System {
      * @private
      */
     private setupInput(): void {
-        if (!this.scene.input.keyboard) {
+        if (!this.scene.input?.keyboard) {
             return;
         }
 

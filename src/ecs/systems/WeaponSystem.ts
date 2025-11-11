@@ -24,6 +24,10 @@ import { ComponentClass, Component } from '../core/Component';
  * ```
  */
 export class WeaponSystem extends System {
+    /**
+     *  Specifies required components: PlayerComponent and WeaponComponent.
+     * @returns The array of required component classes.
+     */
     public getRequiredComponents(): ComponentClass<Component>[] {
         return [TransformComponent, WeaponComponent];
     }

@@ -33,6 +33,10 @@ import { HealthComponent } from '../components/HealthComponent';
  * ```
  */
 export class UpgradeSystem extends System {
+    /**
+     *  Specifies required components: PlayerComponent and WeaponComponent.
+     * @returns The array of required component classes.
+     */
     public getRequiredComponents() {
         return [UpgradesComponent];
     }

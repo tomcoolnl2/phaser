@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import { GameScene } from '@/scenes/GameScene';
 import { ComponentClass } from '@/ecs/core/Component';
 import { Entity } from '@/ecs/core/Entity';
 import { System } from '@/ecs/core/System';
@@ -28,7 +28,7 @@ export class RenderSystem extends System {
      * Creates a new RenderSystem.
      * @param scene - The Phaser scene (not used but required by base System class)
      */
-    constructor(scene: Phaser.Scene) {
+    constructor(protected scene: GameScene) {
         super(scene);
     }
 

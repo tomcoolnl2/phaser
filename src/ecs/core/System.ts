@@ -1,6 +1,7 @@
 import { ComponentClass } from '@/ecs/core/Component';
 import { Component } from '@/ecs/core/Component';
 import { Entity } from '@/ecs/core/Entity';
+import { GameScene } from '@/scenes/GameScene';
 
 /**
  * System - Base class for all ECS systems.
@@ -30,8 +31,6 @@ import { Entity } from '@/ecs/core/Entity';
  * ```
  */
 export abstract class System {
-    /** Reference to the Phaser scene for accessing game objects and physics */
-    protected scene: Phaser.Scene;
 
     /** Whether this system is currently enabled and should process entities */
     public enabled: boolean = true;
@@ -40,7 +39,7 @@ export abstract class System {
      * Creates a new System.
      * @param scene - The Phaser scene this system operates in
      */
-    constructor(scene: Phaser.Scene) {
+    constructor(protected scene: GameScene) {
         this.scene = scene;
     }
 

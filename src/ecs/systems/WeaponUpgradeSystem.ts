@@ -25,7 +25,10 @@ import type { Level } from '../../../shared/models';
  * ```
  */
 export class WeaponUpgradeSystem extends System {
-    //
+    /**
+     *  Specifies required components: PlayerComponent and WeaponComponent.
+     * @returns The array of required component classes.
+     */
     public getRequiredComponents(): ComponentClass<Component>[] {
         return [PlayerComponent, WeaponComponent];
     }
