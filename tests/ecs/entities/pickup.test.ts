@@ -123,7 +123,7 @@ describe('Pickup ECS', () => {
 
             const pickup = entity.getComponent(PickupComponent);
             expect(pickup).toBeDefined();
-            expect(pickup!.type).toBe('health');
+            expect(pickup!.type).toBe(PickupType.HEALTH);
             expect(pickup!.value).toBe(25);
         });
 

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { GameConfig } from '@shared/config';
 import type { SpaceShip } from '@shared/models';
-import { CollisionLayer } from '@/ecs/types';
+import { CollisionLayer, PickupType } from '@/ecs/types';
 import { Entity, EntityManager } from '@/ecs/core';
 import { 
     TransformComponent,
@@ -17,18 +17,16 @@ import {
 } from '@/ecs/components';
 
 /**
- * @fileoverview Factory functions for creating pure ECS entities.
+ * @fileoverview Factory functions for creating ECS entities.
  *
- * These factories create fully functional ECS entities without dependencies on
- * legacy OOP classes. All game logic is handled by ECS components and systems.
+ * These factories create fully functional ECS entities with all necessary
+ * components. All game logic is handled by ECS components and systems.
  */
 
 /**
- * Creates a pure ECS player entity without legacy OOP dependencies.
+ * Creates a player entity with all necessary components.
  *
- * This is the new recommended way to create player entities. It creates a fully
- * functional player using only ECS components and systems, with no dependency on
- * the legacy Player class.
+ * Creates a fully functional player using ECS components and systems.
  *
  * The entity includes:
  * - TransformComponent: Manages the player sprite
@@ -45,11 +43,11 @@ import {
  * @param playerData - Player initialization data (id, name, position, level)
  * @param spriteKey - Texture key for the player sprite
  * @param isLocal - True if this is the local player (controlled by this client)
- * @returns The newly created pure ECS entity
+ * @returns The newly created player entity
  *
  * @example
  * ```typescript
- * const playerEntity = createPurePlayerEntity(
+ * const playerEntity = createPlayerEntity(
  *     scene,
  *     entityManager,
  *     { id: 'p1', name: 'Alice', x: 100, y: 100, level: 1 },
@@ -58,13 +56,8 @@ import {
  * );
  * ```
  */
-export function createPurePlayerEntity(
-    scene: Phaser.Scene,
-    entityManager: EntityManager,
-    playerData: SpaceShip,
-    spriteKey: string,
-    isLocal: boolean
-): Entity {
+export function createPlayerEntity(scene: Phaser.Scene, entityManager: EntityManager, playerData: SpaceShip, spriteKey: string, isLocal: boolean): Entity {
+    // Create the entity
     const entity = entityManager.createEntity();
 
     // Create player sprite
@@ -150,7 +143,7 @@ export function createPurePlayerEntity(
 }
 
 /**
- * Creates a pure ECS asteroid entity.
+ * Creates an asteroid entity with health and collision.
  *
  * Creates a destructible asteroid entity with health tracking and visual feedback.
  * Asteroids spin continuously, take damage when hit by bullets, and explode when destroyed.
@@ -223,41 +216,22 @@ export function createAsteroidEntity(
 }
 
 /**
- * Creates a pure ECS pickup entity.
+ * Creates a pickup entity with physics and rendering.
  *
- * Creates a collectible pickup item with animations and particle effects.
- * Pickups float, rotate, and emit particles to attract player attention.
- *
- * The entity includes:
- * - TransformComponent: Manages the pickup sprite
- * - PickupComponent: Type and value data
- *
- * @param scene - The Phaser scene to create objects in
- * @param entityManager - The entity manager to register the entity with
- * @param x - Initial X position
- * @param y - Initial Y position
- * @param type - Type of pickup ('ammo', 'health', etc.)
- * @param value - Amount to grant when collected
- * @returns The newly created pickup entity
- *
- * @example
- * ```typescript
- * const pickup = createPickupEntity(
- *     scene,
- *     entityManager,
- *     400,
- *     300,
- *     'ammo',
- *     10
- * );
- * ```
+ * @param scene - Phaser scene to add sprite to
+ * @param entityManager - Entity manager to create entity in
+ * @param x - X position
+ * @param y - Y position
+ * @param type - Type of pickup (PickupType enum)
+ * @param value - Value to grant when collected
+ * @returns Created pickup entity
  */
 export function createPickupEntity(
     scene: Phaser.Scene,
     entityManager: EntityManager,
     x: number,
     y: number,
-    type: string = 'ammo',
+    type: PickupType = PickupType.AMMO,
     value: number = 10
 ): Entity {
     const entity = entityManager.createEntity();

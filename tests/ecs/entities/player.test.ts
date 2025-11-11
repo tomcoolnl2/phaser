@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { EntityManager, createPurePlayerEntity } from '@/ecs/core';
+import { EntityManager, createPlayerEntity } from '@/ecs/core';
 import {
     TransformComponent,
     MovementComponent,
@@ -86,7 +86,7 @@ describe('Player ECS Entity', () => {
         entityManager = new EntityManager(mockScene);
     });
 
-    describe('createPurePlayerEntity', () => {
+    describe('createPlayerEntity', () => {
         const playerData: SpaceShip = {
             id: 'player-1',
             name: 'TestPlayer',
@@ -97,7 +97,7 @@ describe('Player ECS Entity', () => {
         };
 
         it('should create entity with all required components', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             expect(entity.hasComponent(TransformComponent)).toBe(true);
             expect(entity.hasComponent(MovementComponent)).toBe(true);
@@ -109,7 +109,7 @@ describe('Player ECS Entity', () => {
         });
 
         it('should create WeaponComponent for local player', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             expect(entity.hasComponent(WeaponComponent)).toBe(true);
 
@@ -118,13 +118,13 @@ describe('Player ECS Entity', () => {
         });
 
         it('should not create WeaponComponent for remote player', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', false);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', false);
 
             expect(entity.hasComponent(WeaponComponent)).toBe(false);
         });
 
         it('should initialize sprite at correct position', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const transform = entity.getComponent(TransformComponent)!;
             expect(transform.sprite.x).toBe(100);
@@ -132,7 +132,7 @@ describe('Player ECS Entity', () => {
         });
 
         it('should configure sprite physics properties', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const transform = entity.getComponent(TransformComponent)!;
             expect(transform.sprite.setCollideWorldBounds).toHaveBeenCalledWith(true);
@@ -142,7 +142,7 @@ describe('Player ECS Entity', () => {
         });
 
         it('should initialize PlayerComponent with correct data', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const player = entity.getComponent(PlayerComponent)!;
             expect(player.playerId).toBe('player-1');
@@ -152,7 +152,7 @@ describe('Player ECS Entity', () => {
         });
 
         it('should initialize HealthComponent with default health', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const health = entity.getComponent(HealthComponent)!;
             expect(health.currentHealth).toBe(100);
@@ -160,7 +160,7 @@ describe('Player ECS Entity', () => {
         });
 
         it('should initialize MovementComponent with correct values', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const movement = entity.getComponent(MovementComponent)!;
             expect(movement.maxVelocity).toBeGreaterThan(0);
@@ -168,7 +168,7 @@ describe('Player ECS Entity', () => {
         });
 
         it('should create UIComponent for local player', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const ui = entity.getComponent(UIComponent)!;
             expect(ui.isLocal).toBe(true);
@@ -176,7 +176,7 @@ describe('Player ECS Entity', () => {
         });
 
         it('should create UIComponent for remote player', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', false);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', false);
 
             const ui = entity.getComponent(UIComponent)!;
             expect(ui.isLocal).toBe(false);
@@ -188,7 +188,7 @@ describe('Player ECS Entity', () => {
                 level: 3,
             };
 
-            const entity = createPurePlayerEntity(mockScene, entityManager, highLevelPlayer, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, highLevelPlayer, 'shooter-sprite', true);
 
             const player = entity.getComponent(PlayerComponent)!;
             expect(player.level).toBe(3);
@@ -206,7 +206,7 @@ describe('Player ECS Entity', () => {
                 ammo: 0,
             };
 
-            const entity = createPurePlayerEntity(mockScene, entityManager, noLevelPlayer, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, noLevelPlayer, 'shooter-sprite', true);
 
             const player = entity.getComponent(PlayerComponent)!;
             expect(player.level).toBe(1);
@@ -218,28 +218,28 @@ describe('Player ECS Entity', () => {
                 ammo: 0,
             };
 
-            const entity = createPurePlayerEntity(mockScene, entityManager, noAmmoPlayer, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, noAmmoPlayer, 'shooter-sprite', true);
 
             const weapon = entity.getComponent(WeaponComponent)!;
             expect(weapon.ammo).toBe(0);
         });
 
         it('should set sprite data with player ID', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const transform = entity.getComponent(TransformComponent)!;
             expect(transform.sprite.setData).toHaveBeenCalledWith('id', 'player-1');
         });
 
         it('should initialize ColliderComponent with correct layer', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const collider = entity.getComponent(ColliderComponent)!;
             expect(collider.layer).toBeDefined();
         });
 
         it('should initialize UpgradesComponent', () => {
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const upgrades = entity.getComponent(UpgradesComponent)!;
             expect(upgrades).toBeDefined();
@@ -309,7 +309,7 @@ describe('Player ECS Entity', () => {
                 ammo: 100,
             };
 
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             // Verify all components are present and functional
             const transform = entity.getComponent(TransformComponent)!;
@@ -335,7 +335,7 @@ describe('Player ECS Entity', () => {
                 ammo: 0,
             };
 
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', false);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', false);
 
             // Remote player should not have weapon
             expect(entity.hasComponent(WeaponComponent)).toBe(false);
@@ -357,7 +357,7 @@ describe('Player ECS Entity', () => {
                 ammo: 50,
             };
 
-            const entity = createPurePlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
 
             const player = entity.getComponent(PlayerComponent)!;
 
