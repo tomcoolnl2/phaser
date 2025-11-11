@@ -21,8 +21,7 @@ import {
     WeaponComponent,
     MovementComponent,
     HealthComponent,
-    AsteroidComponent,
-    PickupComponent
+    AsteroidComponent
 } from '../ecs';
 
 /**
