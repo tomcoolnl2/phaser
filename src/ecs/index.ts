@@ -5,13 +5,14 @@ export {
     Entity, 
     System, 
     EntityManager, 
-    createPurePlayerEntity,
+    createPlayerEntity,
     createAsteroidEntity,
     createPickupEntity
 } from './core';
 
 // Types
 export { CollisionLayer } from './types/CollisionLayer';
+export { PickupType } from './types/PickupType';
 
 // Components
 export {

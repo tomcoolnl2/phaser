@@ -12,7 +12,7 @@ import {
     RenderSystem,
     AsteroidSystem,
     PickupSystem,
-    createPurePlayerEntity,
+    createPlayerEntity,
     createAsteroidEntity,
     createPickupEntity,
     Entity, 
@@ -21,7 +21,8 @@ import {
     WeaponComponent,
     MovementComponent,
     HealthComponent,
-    AsteroidComponent
+    AsteroidComponent,
+    PickupType
 } from '../ecs';
 
 /**
@@ -355,14 +356,14 @@ export class GameScene extends Phaser.Scene {
         // Player joined
         this.socket.on(PlayerEvent.joined, (playerData: SpaceShip) => {
             console.log('Player joined:', playerData);
-            const entity = createPurePlayerEntity(this, this.entityManager, playerData, 'shooter-sprite-enemy', false);
+            const entity = createPlayerEntity(this, this.entityManager, playerData, 'shooter-sprite-enemy', false);
             this.playerEntities.set(playerData.id, entity);
         });
 
         // Local player (protagonist)
         this.socket.on(PlayerEvent.protagonist, (playerData: SpaceShip) => {
             console.log('Local player:', playerData);
-            const entity = createPurePlayerEntity(this, this.entityManager, playerData, 'shooter-sprite', true);
+            const entity = createPlayerEntity(this, this.entityManager, playerData, 'shooter-sprite', true);
             this.playerEntities.set(playerData.id, entity);
             this.localPlayerId = playerData.id;
         });
@@ -371,7 +372,7 @@ export class GameScene extends Phaser.Scene {
         this.socket.on(PlayerEvent.players, (players: SpaceShip[]) => {
             console.log('Existing players:', players);
             players.forEach(playerData => {
-                const entity = createPurePlayerEntity(this, this.entityManager, playerData, 'shooter-sprite-enemy', false);
+                const entity = createPlayerEntity(this, this.entityManager, playerData, 'shooter-sprite-enemy', false);
                 this.playerEntities.set(playerData.id, entity);
             });
         });
@@ -444,7 +445,7 @@ export class GameScene extends Phaser.Scene {
                 }
                 this.entityManager.removeEntity(this.pickupEntity.id);
             }
-            this.pickupEntity = createPickupEntity(this, this.entityManager, coords.x, coords.y, 'ammo', 10);
+            this.pickupEntity = createPickupEntity(this, this.entityManager, coords.x, coords.y, PickupType.AMMO, 10);
         });
 
         // Player pickup

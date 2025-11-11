@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EntityManager, createPickupEntity } from '@/ecs/core';
 import { TransformComponent, PickupComponent } from '@/ecs/components';
+import { PickupType } from '@/ecs/types';
 import { PickupSystem } from '@/ecs/systems';
 
 describe('Pickup ECS', () => {
@@ -62,20 +63,20 @@ describe('Pickup ECS', () => {
 
     describe('PickupComponent', () => {
         it('should store type and value', () => {
-            const component = new PickupComponent('ammo', 10);
-            expect(component.type).toBe('ammo');
+            const component = new PickupComponent(PickupType.AMMO, 10);
+            expect(component.type).toBe(PickupType.AMMO);
             expect(component.value).toBe(10);
         });
 
         it('should use default values', () => {
             const component = new PickupComponent();
-            expect(component.type).toBe('ammo');
+            expect(component.type).toBe(PickupType.AMMO);
             expect(component.value).toBe(10);
         });
 
         it('should store health pickup type', () => {
-            const component = new PickupComponent('health', 25);
-            expect(component.type).toBe('health');
+            const component = new PickupComponent(PickupType.HEALTH, 25);
+            expect(component.type).toBe(PickupType.HEALTH);
             expect(component.value).toBe(25);
         });
     });
@@ -87,7 +88,7 @@ describe('Pickup ECS', () => {
                 entityManager,
                 100,
                 200,
-                'ammo',
+                PickupType.AMMO,
                 10
             );
 
@@ -116,7 +117,7 @@ describe('Pickup ECS', () => {
                 entityManager,
                 100,
                 100,
-                'health',
+                PickupType.HEALTH,
                 25
             );
 
@@ -135,7 +136,7 @@ describe('Pickup ECS', () => {
             );
 
             const pickup = entity.getComponent(PickupComponent);
-            expect(pickup!.type).toBe('ammo');
+            expect(pickup!.type).toBe(PickupType.AMMO);
             expect(pickup!.value).toBe(10);
         });
     });
@@ -330,7 +331,7 @@ describe('Pickup ECS', () => {
                 entityManager,
                 100,
                 100,
-                'ammo',
+                PickupType.AMMO,
                 10
             );
 
@@ -358,12 +359,12 @@ describe('Pickup ECS', () => {
                 entityManager,
                 200,
                 300,
-                'health',
+                PickupType.HEALTH,
                 50
             );
 
             const pickup = entity.getComponent(PickupComponent)!;
-            expect(pickup.type).toBe('health');
+            expect(pickup.type).toBe(PickupType.HEALTH);
             expect(pickup.value).toBe(50);
         });
     });

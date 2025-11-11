@@ -1,4 +1,5 @@
-import { Component } from '../core/Component';
+import { Component } from '@/ecs/core';
+import { PickupType } from '@/ecs/types';
 
 /**
  * Component that marks an entity as a collectible pickup.
@@ -9,13 +10,13 @@ import { Component } from '../core/Component';
  *
  * @example
  * ```typescript
- * const pickupComp = new PickupComponent('ammo', 10);
+ * const pickupComp = new PickupComponent(PickupType.AMMO, 10);
  * entity.addComponent(pickupComp);
  * ```
  */
 export class PickupComponent extends Component {
-    /** Type of pickup (e.g., 'ammo', 'health') */
-    public type: string;
+    /** Type of pickup */
+    public type: PickupType;
 
     /** Value to grant when collected (e.g., ammo amount, health points) */
     public value: number;
@@ -25,10 +26,10 @@ export class PickupComponent extends Component {
 
     /**
      * Creates a new PickupComponent.
-     * @param type - Type of pickup ('ammo', 'health', etc.)
+     * @param type - Type of pickup (PickupType.AMMO, PickupType.HEALTH, etc.)
      * @param value - Amount to grant when collected
      */
-    constructor(type: string = 'ammo', value: number = 10) {
+    constructor(type: PickupType = PickupType.AMMO, value: number = 10) {
         super();
         this.type = type;
         this.value = value;
