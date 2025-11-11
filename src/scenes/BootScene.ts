@@ -1,4 +1,4 @@
-import * as Phaser from 'phaser';
+import Phaser from 'phaser';
 
 /**
  * Boot scene responsible for loading all game assets and creating animations.

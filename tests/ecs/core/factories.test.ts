@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GameConfig } from '@shared/config';
 import type { Level, SpaceShip } from '@shared/models';
-import { createPlayerEntity, EntityManager } from '@/ecs/core';
+import { EntityManager } from '@/ecs/core/EntityManager';
+import { createPlayerEntity } from '@/ecs/core/factories';
 import {
     TransformComponent,
     MovementComponent,

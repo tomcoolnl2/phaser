@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { UIComponent } from '@/ecs/components';
+import { UIComponent } from '@/ecs/components/UIComponent';
 import type Phaser from 'phaser';
 
 describe('UIComponent', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { WeaponComponent } from '@/ecs/components';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 
 describe('WeaponComponent', () => {
     let mockBulletGroup: any;

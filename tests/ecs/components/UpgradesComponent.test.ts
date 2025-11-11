@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { UpgradesComponent, UpgradeType } from '@/ecs/components';
+import { UpgradesComponent, UpgradeType } from '@/ecs/components/UpgradesComponent';
 
 describe('UpgradesComponent', () => {
     describe('Initialization', () => {

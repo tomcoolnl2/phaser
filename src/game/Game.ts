@@ -1,4 +1,4 @@
-import * as Phaser from 'phaser';
+import Phaser from 'phaser';
 import { io, Socket } from 'socket.io-client';
 import { BootScene } from '../scenes/BootScene';
 import { GameScene } from '../scenes/GameScene';

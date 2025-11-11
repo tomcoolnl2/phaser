@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MovementComponent } from '@/ecs/components';
+import { MovementComponent } from '@/ecs/components/MovementComponent';
 
 describe('MovementComponent', () => {
     describe('constructor', () => {

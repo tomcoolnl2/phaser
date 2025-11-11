@@ -21,6 +21,7 @@
 export abstract class Component {
     /** Whether this component is currently enabled and should be processed */
     public enabled: boolean = true;
+    sprite: any;
 }
 
 /**
@@ -34,4 +35,4 @@ export abstract class Component {
  *
  * @see {@link https://www.typescriptlang.org/docs/handbook/2/generics.html TypeScript Generics}
  */
-export type ComponentClass<T extends Component = Component> = abstract new (...args: never[]) => T;
+export type ComponentClass<T extends Component = Component> = abstract new (...args: any[]) => T;

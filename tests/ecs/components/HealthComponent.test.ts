@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { HealthComponent } from '@/ecs/components';
+import { HealthComponent } from '@/ecs/components/HealthComponent';
 
 describe('HealthComponent', () => {
     describe('Initialization', () => {

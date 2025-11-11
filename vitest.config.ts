@@ -12,6 +12,7 @@ export default defineConfig({
             reporter: ['text', 'json', 'html'],
             exclude: ['node_modules/', 'dist/', '**/*.d.ts', '**/*.config.*', '**/mockData', 'tests/'],
         },
+        setupFiles: ['./vitest.setup.ts'],
     },
     resolve: {
         alias: {

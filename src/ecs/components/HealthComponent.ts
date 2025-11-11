@@ -1,4 +1,4 @@
-import { Component } from '../core/Component';
+import { Component } from '@/ecs/core/Component';
 
 /**
  * HealthComponent - Manages entity health points and damage tracking.
@@ -19,8 +19,6 @@ import { Component } from '../core/Component';
  * ```
  */
 export class HealthComponent extends Component {
-    /** Maximum health capacity */
-    public maxHealth: number;
 
     /** Current health points */
     public currentHealth: number;
@@ -32,9 +30,8 @@ export class HealthComponent extends Component {
      * Creates a new HealthComponent.
      * @param maxHealth - Maximum health capacity (also sets initial health)
      */
-    constructor(maxHealth: number) {
+    constructor(public maxHealth: number) {
         super();
-        this.maxHealth = maxHealth;
         this.currentHealth = maxHealth;
     }
 

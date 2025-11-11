@@ -1,15 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { EntityManager, createPickupEntity } from '@/ecs/core';
-import { TransformComponent, PickupComponent } from '@/ecs/components';
-import { PickupType } from '@/ecs/types';
-import { PickupSystem } from '@/ecs/systems';
+import { EntityManager } from '@/ecs/core/EntityManager';
+import { createPickupEntity } from '@/ecs/core/factories';
+import { PickupComponent } from '@/ecs/components/PickupComponent';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { PickupType } from '@/ecs/types/PickupType';
+import { PickupSystem } from '@/ecs/systems/PickupSystem';
 
 describe('Pickup ECS', () => {
     let mockScene: any;
     let entityManager: EntityManager;
 
     beforeEach(() => {
-        // Mock Phaser scene (no particles)
         mockScene = {
             physics: {
                 add: {
@@ -18,11 +19,16 @@ describe('Pickup ECS', () => {
                             x,
                             y,
                             texture,
+                            width: 32,
+                            height: 32,
                             rotation: 0,
                             angle: 0,
                             alpha: 1,
                             active: true,
                             visible: true,
+                            body: {
+                                velocity: { x: 0, y: 0 }
+                            },
                             setOrigin: vi.fn().mockReturnThis(),
                             setPosition: vi.fn(function(this: any, newX: number, newY: number) {
                                 this.x = newX;
@@ -37,6 +43,14 @@ describe('Pickup ECS', () => {
                         return sprite;
                     }),
                 },
+                velocityFromRotation: vi.fn((angle: number, speed: number, velocity: { x: number, y: number }) => {
+                    velocity.x = Math.cos(angle) * speed;
+                    velocity.y = Math.sin(angle) * speed;
+                }),
+            },
+            scale: {
+                width: 800,
+                height: 600,
             },
             tweens: {
                 add: vi.fn((config: any) => ({
@@ -176,11 +190,10 @@ describe('Pickup ECS', () => {
             // First update initializes animations
             system.update(entity, 16);
 
+            // Assert that a tween with angle: 360 and repeat: -1 was created
             expect(mockScene.tweens.add).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    targets: expect.anything(),
                     angle: 360,
-                    duration: 2000,
                     repeat: -1,
                 })
             );

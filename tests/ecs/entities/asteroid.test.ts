@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { EntityManager, createAsteroidEntity } from '@/ecs/core';
-import { TransformComponent, HealthComponent, ColliderComponent, AsteroidComponent } from '@/ecs/components';
-import { AsteroidSystem } from '@/ecs/systems';
+import { EntityManager } from '@/ecs/core/EntityManager';
+import { createAsteroidEntity } from '@/ecs/core/factories';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { HealthComponent } from '@/ecs/components/HealthComponent';
+import { ColliderComponent } from '@/ecs/components/ColliderComponent';
+import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
+import { AsteroidSystem } from '@/ecs/systems/AsteroidSystem';
 import { GameConfig } from '@shared/config';
 
 describe('Asteroid ECS', () => {
@@ -129,7 +133,7 @@ describe('Asteroid ECS', () => {
                 100
             );
 
-            const health = entity.getComponent(HealthComponent);
+            const health = entity.getComponent(HealthComponent) as HealthComponent;
             expect(health).toBeDefined();
             expect(health!.currentHealth).toBe(GameConfig.asteroid.health);
             expect(health!.maxHealth).toBe(GameConfig.asteroid.health);
@@ -144,9 +148,9 @@ describe('Asteroid ECS', () => {
                 100
             );
 
-            const asteroid = entity.getComponent(AsteroidComponent);
+            const asteroid = entity.getComponent(AsteroidComponent) as AsteroidComponent;
             expect(asteroid).toBeDefined();
-            expect(asteroid!.asteroidId).toBe('asteroid-xyz');
+            expect(asteroid?.asteroidId).toBe('asteroid-xyz');
         });
 
         it('should set sprite to play asteroid-spin animation', () => {
@@ -228,13 +232,13 @@ describe('Asteroid ECS', () => {
             expect(textCall.setColor).toHaveBeenCalledWith('#00ff00');
 
             // Damage to 2 HP
-            const health = entity.getComponent(HealthComponent)!;
+            const health = entity.getComponent(HealthComponent) as HealthComponent;
             health.takeDamage(1);
             system.update(entity, 16);
             expect(textCall.setColor).toHaveBeenCalledWith('#ffff00'); // Yellow
 
             // Damage to 1 HP
-            health.takeDamage(1);
+            (health as HealthComponent).takeDamage(1);
             system.update(entity, 16);
             expect(textCall.setColor).toHaveBeenCalledWith('#ff0000'); // Red
         });
@@ -249,8 +253,8 @@ describe('Asteroid ECS', () => {
                 100
             );
 
-            const transform = entity.getComponent(TransformComponent)!;
-            const health = entity.getComponent(HealthComponent)!;
+            const transform = entity.getComponent(TransformComponent) as TransformComponent;
+            const health = entity.getComponent(HealthComponent) as HealthComponent;
 
             // Damage to death
             health.takeDamage(3);
@@ -298,8 +302,8 @@ describe('Asteroid ECS', () => {
                 100
             );
 
-            const health = entity.getComponent(HealthComponent)!;
-            const transform = entity.getComponent(TransformComponent)!;
+            const health = entity.getComponent(HealthComponent) as HealthComponent;
+            const transform = entity.getComponent(TransformComponent) as TransformComponent;
 
             // Entity starts with full health
             expect(health.currentHealth).toBe(3);
