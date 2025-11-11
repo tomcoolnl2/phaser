@@ -43,14 +43,27 @@ export class PickupSystem extends System {
      */
     public update(entity: Entity, _deltaTime: number): void {
         const transform = entity.getComponent(TransformComponent)!;
+        const sprite = transform.sprite;
 
         // Initialize animations on first update if not already done
-        if (!this.tweens.has(entity) && transform.sprite.active) {
+        if (!this.tweens.has(entity) && sprite.active) {
             this.initializePickup(entity, transform);
         }
 
+        // Destroy pickup if it moves off-screen
+        if (
+            sprite.x < -sprite.width ||
+            sprite.x > this.scene.scale.width + sprite.width ||
+            sprite.y < -sprite.height ||
+            sprite.y > this.scene.scale.height + sprite.height
+        ) {
+            console.log(`[PickupSystem] Destroying pickup for moving off-screen at (${sprite.x.toFixed(1)}, ${sprite.y.toFixed(1)})`);
+            sprite.destroy();
+            this.cleanupPickup(entity);
+        }
+
         // Check if sprite was destroyed
-        if (!transform.sprite.active) {
+        if (!sprite.active) {
             this.cleanupPickup(entity);
         }
     }
@@ -73,7 +86,7 @@ export class PickupSystem extends System {
         const rotateTween = this.scene.tweens.add({
             targets: transform.sprite,
             angle: 360,
-            duration: 2000,
+            duration: 25000,
             repeat: -1,
         });
         this.tweens.set(entity, [floatTween, rotateTween]);

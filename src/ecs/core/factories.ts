@@ -239,9 +239,21 @@ export function createPickupEntity(
     // Create pickup sprite
     const sprite = scene.physics.add.sprite(x, y, 'pickup').setOrigin(0.5, 0.5);
 
+    // Give the pickup a random velocity (like a comet)
+    const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    const speed = Phaser.Math.Between(80, 140); // adjust as needed
+    scene.physics.velocityFromRotation(angle, speed, sprite.body.velocity);
+
     // Transform component - owns the sprite
     const transform = new TransformComponent(sprite);
     entity.addComponent(transform);
+
+    // Add movement component for ECS movement system (optional, but for consistency)
+    // These values are not used for input, but allow the MovementSystem to apply drag
+    const movement = new MovementComponent(speed, 0, 0.99, 0);
+    movement.targetRotation = angle;
+    movement.canMove = false; // disables input-based movement
+    entity.addComponent(movement);
 
     // Pickup component
     const pickup = new PickupComponent(type, value);
