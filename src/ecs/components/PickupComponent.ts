@@ -21,9 +21,6 @@ export class PickupComponent extends Component {
     /** Value to grant when collected (e.g., ammo amount, health points) */
     public value: number;
 
-    /** Reference to particle emitter for visual effects */
-    public particles: Phaser.GameObjects.Particles.ParticleEmitter | null = null;
-
     /**
      * Creates a new PickupComponent.
      * @param type - Type of pickup (PickupType.AMMO, PickupType.HEALTH, etc.)

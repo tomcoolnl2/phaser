@@ -86,7 +86,7 @@ export class EntityManager {
     /**
      * Removes and destroys an entity.
      *
-     * This will call the entity's destroy() method and remove it from the manager.
+     * This will notify all systems, call the entity's destroy() method, and remove it from the manager.
      * After removal, the entity should not be used.
      *
      * @param id - The unique identifier of the entity to remove
@@ -95,6 +95,18 @@ export class EntityManager {
     public removeEntity(id: string): boolean {
         const entity = this.entities.get(id);
         if (entity) {
+            // Notify systems that this entity is being removed
+            for (const system of this.systems) {
+                const requiredComponents = system.getRequiredComponents();
+                const hasAllComponents = requiredComponents.every(componentClass => entity.hasComponent(componentClass));
+                
+                // Only notify systems that were tracking this entity
+                if (hasAllComponents && system.onEntityRemoved) {
+                    system.onEntityRemoved(entity);
+                }
+            }
+            
+            // Destroy the entity
             entity.destroy();
         }
         return this.entities.delete(id);

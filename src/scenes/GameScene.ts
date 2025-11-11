@@ -459,11 +459,15 @@ export class GameScene extends Phaser.Scene {
                 }
             }
             if (this.pickupEntity) {
+                // Remove entity first to trigger cleanup in systems
+                this.entityManager.removeEntity(this.pickupEntity.id);
+                
+                // Then destroy the sprite
                 const transform = this.pickupEntity.getComponent(TransformComponent);
                 if (transform) {
                     transform.sprite.destroy();
                 }
-                this.entityManager.removeEntity(this.pickupEntity.id);
+                
                 this.pickupEntity = null;
             }
         });

@@ -5,12 +5,11 @@ import { PickupComponent } from '../components/PickupComponent';
 import { ComponentClass } from '../core/Component';
 
 /**
- * System that manages pickup animations and visual effects.
+ * System that manages pickup animations.
  *
  * Handles:
  * - Floating animation (up/down motion)
  * - Rotation animation
- * - Particle effects
  * - Cleanup when pickup is destroyed
  *
  * Note: Collection detection is handled in GameScene via collision logic
@@ -44,42 +43,25 @@ export class PickupSystem extends System {
      */
     public update(entity: Entity, _deltaTime: number): void {
         const transform = entity.getComponent(TransformComponent)!;
-        const pickup = entity.getComponent(PickupComponent)!;
 
         // Initialize animations on first update if not already done
-        if (!pickup.particles && transform.sprite.active) {
-            this.initializePickup(entity, transform, pickup);
+        if (!this.tweens.has(entity) && transform.sprite.active) {
+            this.initializePickup(entity, transform);
         }
 
         // Check if sprite was destroyed
         if (!transform.sprite.active) {
-            this.cleanupPickup(entity, pickup);
+            this.cleanupPickup(entity);
         }
     }
 
     /**
-     * Initializes animations and particle effects for a pickup.
+     * Initializes animations for a pickup.
      *
      * @param entity - The pickup entity
      * @param transform - The transform component
-     * @param pickup - The pickup component
      */
-    private initializePickup(entity: Entity, transform: TransformComponent, pickup: PickupComponent): void {
-        // Create particle effect
-        pickup.particles = this.scene.add.particles(
-            transform.sprite.x,
-            transform.sprite.y,
-            'dust',
-            {
-                speed: 20,
-                scale: { start: 0.3, end: 0 },
-                alpha: { start: 0.8, end: 0 },
-                lifespan: 1000,
-                frequency: 100,
-            }
-        );
-
-        // Add floating animation
+    private initializePickup(entity: Entity, transform: TransformComponent): void {
         const floatTween = this.scene.tweens.add({
             targets: transform.sprite,
             y: transform.sprite.y - 10,
@@ -87,46 +69,32 @@ export class PickupSystem extends System {
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut',
-            onUpdate: () => {
-                // Update particles to follow sprite
-                if (pickup.particles) {
-                    pickup.particles.setPosition(transform.sprite.x, transform.sprite.y);
-                }
-            },
         });
-
-        // Add rotation animation
         const rotateTween = this.scene.tweens.add({
             targets: transform.sprite,
             angle: 360,
             duration: 2000,
             repeat: -1,
         });
-
-        // Store tweens for cleanup
         this.tweens.set(entity, [floatTween, rotateTween]);
     }
 
     /**
      * Called when an entity is removed from this system.
-     * Cleans up animations and particle effects.
+     * Cleans up animations.
      *
      * @param entity - The pickup entity being removed
      */
     public onEntityRemoved(entity: Entity): void {
-        const pickup = entity.getComponent(PickupComponent);
-        if (pickup) {
-            this.cleanupPickup(entity, pickup);
-        }
+        this.cleanupPickup(entity);
     }
 
     /**
-     * Cleans up animations and particle effects for a pickup.
+     * Cleans up animations for a pickup.
      *
      * @param entity - The pickup entity
-     * @param pickup - The pickup component
      */
-    private cleanupPickup(entity: Entity, pickup: PickupComponent): void {
+    private cleanupPickup(entity: Entity): void {
         // Stop and remove tweens
         const entityTweens = this.tweens.get(entity);
         if (entityTweens) {
@@ -138,17 +106,11 @@ export class PickupSystem extends System {
             });
             this.tweens.delete(entity);
         }
-
-        // Destroy particles
-        if (pickup.particles) {
-            pickup.particles.destroy();
-            pickup.particles = null;
-        }
     }
 
     /**
      * Cleanup method called when system is removed.
-     * Stops all tweens and destroys all particle emitters.
+     * Stops all tweens.
      */
     public destroy(): void {
         this.tweens.forEach(tweenArray => {
