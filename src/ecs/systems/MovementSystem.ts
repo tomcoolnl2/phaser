@@ -24,6 +24,9 @@ import { ComponentClass, Component } from '../core/Component';
  * ```
  */
 export class MovementSystem extends System {
+    /**
+     * Returns the components required by this system.
+     */
     public getRequiredComponents(): ComponentClass<Component>[] {
         return [TransformComponent, MovementComponent];
     }
