@@ -15,6 +15,7 @@ describe('Asteroid ECS', () => {
     beforeEach(() => {
         // Mock Phaser scene
         mockScene = {
+            entityManager: new EntityManager({} as Phaser.Scene), 
             physics: {
                 add: {
                     sprite: vi.fn((x: number, y: number, texture: string) => {
