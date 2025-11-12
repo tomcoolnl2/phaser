@@ -27,8 +27,20 @@ import { HealthManager } from './HealthManager';
  *   server.start(3000);
  */
 export class GameServer {
+
+    /**
+     * Express application instance for HTTP server.
+     */
     private app = express();
+
+    /**
+     * Node.js HTTP server wrapping Express app.
+     */
     private httpServer = createServer(this.app);
+
+    /**
+     * Socket.IO server for real-time multiplayer communication.
+     */
     private io = new Server(this.httpServer, {
         cors: {
             origin: '*',
@@ -36,10 +48,26 @@ export class GameServer {
         },
     });
 
+    /**
+     * Indicates if the game has started.
+     */
     private gameHasStarted: boolean = false;
+
+    /**
+     * True if an asteroid is currently active in the game.
+     */
     private hasAsteroid: boolean = false;
+
+    /**
+     * Manages health state for all asteroids.
+     */
     private healthManager = new HealthManager();
+
+    /**
+     * Tracks destroyed asteroid IDs to prevent duplicate events.
+     */
     private destroyedAsteroids: Set<string> = new Set();
+
     private asteroidMap: Map<string, AsteroidDTO> = new Map();
 
     /**
