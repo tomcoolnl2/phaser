@@ -15,7 +15,7 @@
 import { ref, onMounted } from 'vue';
 import PlayerNameModal from './components/PlayerNameModal.vue';
 import GameHUD from './components/GameHUD.vue';
-import type { PlayerData } from '../shared/models';
+import type { PlayerData } from '../shared/model';
 
 const showNameModal = ref(true);
 const gameStarted = ref(false);

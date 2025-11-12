@@ -27,6 +27,7 @@ import { Component } from '../core/Component';
  * ```
  */
 export class WeaponComponent extends Component {
+
     /** Current ammunition count */
     public ammo: number;
 
@@ -68,8 +69,8 @@ export class WeaponComponent extends Component {
         bullets: Phaser.Physics.Arcade.Group,
         ammo: number,
         maxAmmo: number = 999,
-        fireRate: number = 250,
-        bulletSpeed: number = 400,
+        fireRate: number = 300,
+        bulletSpeed: number = 600,
         damage: number = 1,
         bulletSpriteKey: string = 'laser-level-1'
     ) {

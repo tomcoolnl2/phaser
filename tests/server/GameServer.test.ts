@@ -3,7 +3,7 @@ import { Socket } from 'socket.io';
 import { GameServer } from '../../server/GameServer';
 import { HealthManager } from '../../server/HealthManager';
 import { GameSocket } from '../../server/model';
-import { Player, SpaceShip } from '../../shared/models';
+import { Player, SpaceShip } from '../../shared/model';
 import { AsteroidDTO } from '../../shared/dto/AsteroidDTO';
 import { PickupDTO } from '../../shared/dto/PickupDTO';
 import { PickupType } from '../../shared/dto/PickupDTO';

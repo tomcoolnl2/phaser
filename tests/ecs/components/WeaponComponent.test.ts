@@ -30,8 +30,8 @@ describe('WeaponComponent', () => {
             const weapon = new WeaponComponent(mockBulletGroup, 50);
 
             expect(weapon.maxAmmo).toBe(999);
-            expect(weapon.fireRate).toBe(250);
-            expect(weapon.bulletSpeed).toBe(400);
+            expect(weapon.fireRate).toBe(300);
+            expect(weapon.bulletSpeed).toBe(600);
             expect(weapon.damage).toBe(1);
             expect(weapon.bulletSpriteKey).toBe('laser-level-1');
         });

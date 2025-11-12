@@ -1,5 +1,5 @@
 import { Component } from '../core/Component';
-import type { Level } from '../../../shared/models';
+import type { Level } from '../../../shared/model';
 
 /**
  * PlayerComponent - Marks an entity as a player and stores player-specific data.

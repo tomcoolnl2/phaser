@@ -3,7 +3,7 @@ import { Entity } from '../core/Entity';
 import { PlayerComponent } from '../components/PlayerComponent';
 import { WeaponComponent } from '../components/WeaponComponent';
 import { ComponentClass, Component } from '../core/Component';
-import type { Level } from '../../../shared/models';
+import type { Level } from '../../../shared/model';
 
 /**
  * WeaponUpgradeSystem - Automatically updates weapon visuals based on player level.

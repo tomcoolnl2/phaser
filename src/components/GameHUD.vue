@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Level } from '../../shared/models';
+import type { Level } from '../../shared/model';
 
 defineProps<{
     playerName: string;
