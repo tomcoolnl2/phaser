@@ -16,6 +16,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
             node-version: '22.11.0'
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - run: npm ci
       - run: npm run build
 
@@ -27,6 +34,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.11.0'
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - run: npm ci
       - run: npm run test
 
@@ -38,6 +52,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.11.0'
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - run: npm ci
       - run: npx semantic-release
         env:
