@@ -249,7 +249,7 @@ class GameServer {
                     x, y, dx, dy,
                     hp: 3, maxHp: 3,
                 };
-                
+
                 this.asteroidMap.set(asteroidId, asteroidDTO);
                 this.io.emit(AsteroidEvent.create, asteroidDTO);
                 this.updateAsteroid(socket, asteroidDTO);
@@ -267,7 +267,7 @@ class GameServer {
                 this.asteroidMap.set(asteroidDTO.id, asteroidDTO);
                 this.io.emit(AsteroidEvent.coordinates, asteroidDTO);
 
-                // Destroy if off screen
+                // Destroy when off screen
                 if (
                     (asteroidDTO.x < -64 || asteroidDTO.x > 1024 + 64 || // TODO: use GameConfig
                     asteroidDTO.y < -64 || asteroidDTO.y > 768 + 64) &&
