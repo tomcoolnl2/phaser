@@ -321,6 +321,7 @@ describe('Asteroid ECS', () => {
 
             health.takeDamage(1);
             entityManager.update(16);
+            expect(health.currentHealth).toBe(0);
 
             // Should be destroyed
             expect(health.isDead()).toBe(true);

@@ -3,7 +3,7 @@ import { Socket } from 'socket.io-client';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
 import { SpaceShip, Coordinates, Player as PlayerData, Level } from '@shared/models';
 import { PickupDTO } from '@shared/dto/PickupDTO';
-import { AsteroidCauseOfDeath, AsteroidDTO } from '@shared/dto/AsteroidDTO';
+import { AsteroidDTO } from '@shared/dto/AsteroidDTO';
 import { GameConfig } from '@shared/config';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { InputSystem } from '@/ecs/systems/InputSystem';
