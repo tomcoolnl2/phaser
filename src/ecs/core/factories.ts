@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { GameConfig } from '@shared/config';
-import type { SpaceShip } from '@shared/models';
+import type { SpaceShip } from '@shared/model';
 import { CollisionLayer, PickupType } from '@/ecs/types';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { Entity } from '@/ecs/core/Entity';

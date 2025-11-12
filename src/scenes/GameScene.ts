@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { Socket } from 'socket.io-client';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
-import { SpaceShip, Coordinates, Player as PlayerData, Level } from '@shared/models';
+import { SpaceShip, Coordinates, Player as PlayerData, Level } from '@shared/model';
 import { PickupDTO } from '@shared/dto/PickupDTO';
 import { AsteroidDTO } from '@shared/dto/AsteroidDTO';
 import { GameConfig } from '@shared/config';

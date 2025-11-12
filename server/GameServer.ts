@@ -4,7 +4,7 @@ import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '../shared/events';
-import { SpaceShip, Coordinates, Player } from '../shared/models';
+import { SpaceShip, Coordinates, Player } from '../shared/model';
 import { GameConfig } from '../shared/config';
 import { AsteroidCauseOfDeath, AsteroidDTO } from '../shared/dto/AsteroidDTO';
 import { PickupDTO, PickupType } from '../shared/dto/PickupDTO';
@@ -125,7 +125,7 @@ export class GameServer {
             socket.emit(PlayerEvent.players, this.getAllPlayers());
 
             // Create new player
-            const windowSize = gameSize || { x: 1024, y: 768 };
+            const windowSize = gameSize || { x: GameConfig.playArea.width, y: GameConfig.playArea.height };
             this.createPlayer(socket, player, windowSize);
 
             // Send new player data to them
@@ -279,56 +279,59 @@ export class GameServer {
     private createAsteroid(socket: GameSocket, interval: number): void {
         setInterval(() => {
             if (!this.hasAsteroid) {
+                const initialAsteroidHealth = 3;
                 const asteroidId = uuidv4();
                 socket.asteroid = { id: asteroidId };
                 this.hasAsteroid = true;
-                this.healthManager.setHealth(asteroidId, 3, 3);
+                this.healthManager.setHealth(asteroidId, initialAsteroidHealth, initialAsteroidHealth);
                 this.destroyedAsteroids.delete(asteroidId); // ensure not marked destroyed
 
                 logger.debug({ asteroidId }, 'Spawning asteroid');
 
                 // Randomize spawn edge and direction
-                const width = 1024; // TODO: use GameConfig
-                const height = 768; // TODO: use GameConfig
-                const speed = GameConfig.server.asteroidSpeed;
+                const { width, height } = GameConfig.playArea;
+                const { asteroidSpeed } = GameConfig.server;
+                const theshhold = 32;
 
-                // TODO: util function?
                 // Pick a random edge: 0=top, 1=bottom, 2=left, 3=right
                 const edge = Math.floor(Math.random() * 4);
                 let x = 0,
                     y = 0,
                     dx = 0,
                     dy = 0;
-                if (edge === 0) {
-                    // top
-                    x = Math.random() * width;
-                    y = -32;
-                    dx = (Math.random() - 0.5) * speed;
-                    dy = speed;
-                } else if (edge === 1) {
-                    // bottom
-                    x = Math.random() * width;
-                    y = height + 32;
-                    dx = (Math.random() - 0.5) * speed;
-                    dy = -speed;
-                } else if (edge === 2) {
-                    // left
-                    x = -32;
-                    y = Math.random() * height;
-                    dx = speed;
-                    dy = (Math.random() - 0.5) * speed;
-                } else {
-                    // right
-                    x = width + 32;
-                    y = Math.random() * height;
-                    dx = -speed;
-                    dy = (Math.random() - 0.5) * speed;
+
+                switch (edge) {
+                    case 0: // top
+                        x = Math.random() * width;
+                        y = -theshhold;
+                        dx = (Math.random() - 0.5) * asteroidSpeed;
+                        dy = asteroidSpeed;
+                        break;
+                    case 1: // bottom
+                        x = Math.random() * width;
+                        y = height + theshhold;
+                        dx = (Math.random() - 0.5) * asteroidSpeed;
+                        dy = -asteroidSpeed;
+                        break;
+                    case 2: // left
+                        x = -theshhold;
+                        y = Math.random() * height;
+                        dx = asteroidSpeed;
+                        dy = (Math.random() - 0.5) * asteroidSpeed;
+                        break;
+                    case 3: // right
+                    default:
+                        x = width + theshhold;
+                        y = Math.random() * height;
+                        dx = -asteroidSpeed;
+                        dy = (Math.random() - 0.5) * asteroidSpeed;
+                        break;
                 }
 
                 // Normalize direction to ensure it crosses the play area
                 const norm = Math.sqrt(dx * dx + dy * dy);
-                dx = (dx / norm) * speed;
-                dy = (dy / norm) * speed;
+                dx = (dx / norm) * asteroidSpeed;
+                dy = (dy / norm) * asteroidSpeed;
 
                 const asteroidDTO: AsteroidDTO = {
                     id: asteroidId,
@@ -336,8 +339,8 @@ export class GameServer {
                     y,
                     dx,
                     dy,
-                    hp: 3,
-                    maxHp: 3,
+                    hp: initialAsteroidHealth,
+                    maxHp: initialAsteroidHealth,
                 };
 
                 this.asteroidMap.set(asteroidId, asteroidDTO);
@@ -363,12 +366,11 @@ export class GameServer {
                 this.io.emit(AsteroidEvent.coordinates, asteroidDTO);
 
                 // Destroy when off screen
+                const { width, height } = GameConfig.playArea;
+                const threshhold = 64;
                 if (
-                    (asteroidDTO.x < -64 ||
-                        asteroidDTO.x > 1024 + 64 || // TODO: use GameConfig
-                        asteroidDTO.y < -64 ||
-                        asteroidDTO.y > 768 + 64) &&
-                    !this.destroyedAsteroids.has(asteroidDTO.id)
+                    (asteroidDTO.x < -threshhold || asteroidDTO.x > width + threshhold || asteroidDTO.y < -threshhold || asteroidDTO.y > height + threshhold) 
+                    && !this.destroyedAsteroids.has(asteroidDTO.id)
                 ) {
                     asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.OFFSCREEN;
                     this.io.emit(AsteroidEvent.destroy, asteroidDTO);

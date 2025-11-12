@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { io, Socket } from 'socket.io-client';
-import { BootScene } from '../scenes/BootScene';
-import { GameScene } from '../scenes/GameScene';
+import { GameConfig } from '@shared/config';
+import { BootScene } from '@/scenes/BootScene';
+import { GameScene } from '@/scenes/GameScene';
 
 /**
  * Main game class that initializes Phaser and Socket.IO connection.
@@ -38,8 +39,8 @@ export class Game {
         // Phaser 3 game configuration
         const config: Phaser.Types.Core.GameConfig = {
             type: Phaser.AUTO,
-            width: 1024,
-            height: 768,
+            width: GameConfig.playArea.width,
+            height: GameConfig.playArea.height,
             parent: 'phaser-game',
             backgroundColor: '#000000',
             physics: {

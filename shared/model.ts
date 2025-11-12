@@ -1,3 +1,12 @@
+/**
+ * EntityBounds - Defines the rectangular bounds for play area or entity checks.
+ */
+export type EntityBounds = {
+    xMin?: number;
+    xMax?: number;
+    yMin?: number;
+    yMax?: number;
+};
 
 export type Level = 1 | 2 | 3 | 4 | 5;
 

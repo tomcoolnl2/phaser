@@ -33,6 +33,11 @@ export const GameConfig = {
         rotationSpeedMultiplier: 1.5, // Multiplier for rotation speed
     },
 
+    playArea: {
+        width: 1024,
+        height: 768,
+    },
+
     asteroid: {
         health: 3,
         maxVelocity: 100,

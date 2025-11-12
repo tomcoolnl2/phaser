@@ -1,8 +1,9 @@
-import { System } from '../core/System';
-import { Entity } from '../core/Entity';
-import { TransformComponent } from '../components/TransformComponent';
-import { WeaponComponent } from '../components/WeaponComponent';
-import { ComponentClass, Component } from '../core/Component';
+import { GameConfig } from '@shared/config';
+import { System } from '@/ecs/core/System';
+import { Entity } from '@/ecs/core/Entity';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
+import { ComponentClass, Component } from '@/ecs/core/Component';
 
 /**
  * WeaponSystem - Handles weapon firing and bullet spawning.
@@ -46,12 +47,13 @@ export class WeaponSystem extends System {
     }
 
     private fireWeapon(transform: TransformComponent, weapon: WeaponComponent): void {
+
         weapon.fire();
 
         const sprite = transform.sprite;
 
         // Get bullet from pool using dynamic sprite key
-        console.log(`[WeaponSystem] Firing bullet with sprite: ${weapon.bulletSpriteKey}`);
+        console.log(`[Client] [WeaponSystem] Firing bullet with sprite: ${weapon.bulletSpriteKey}`);
         const bullet = weapon.bullets.get(sprite.x, sprite.y, weapon.bulletSpriteKey) as Phaser.Physics.Arcade.Sprite;
         if (bullet) {
             // Explicitly set the texture to ensure it's correct (Phaser pool reuse can cause issues)
@@ -68,7 +70,25 @@ export class WeaponSystem extends System {
             // Store damage in bullet data for collision system
             bullet.setData('damage', weapon.damage);
 
-            // Kill bullet after traveling off screen
+            // Only deactivate bullet if it leaves the play area
+            const { width, height } = GameConfig.playArea;
+            const threshold = 64;
+            const bounds = { xMin: -threshold, xMax: width + threshold, yMin: -threshold, yMax: height + threshold };
+            bullet.update = function () {
+                if (
+                    this.active && (
+                        this.x < bounds.xMin ||
+                        this.x > bounds.xMax ||
+                        this.y < bounds.yMin ||
+                        this.y > bounds.yMax
+                    )
+                ) {
+                    this.setActive(false);
+                    this.setVisible(false);
+                }
+            };
+
+            // Optionally, keep the 2-second timeout as a backup
             this.scene.time.delayedCall(2000, () => {
                 if (bullet.active) {
                     bullet.setActive(false);
