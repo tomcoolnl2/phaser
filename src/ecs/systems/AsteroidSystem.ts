@@ -104,6 +104,11 @@ export class AsteroidSystem extends System {
                 healthText.setColor('#00ff00'); // Green
             }
         }
+
+        // Destroy asteroid if health reaches 0
+        if (health.isDead() && transform.sprite.active) {
+            this.destroyAsteroid(entity, transform, asteroid.asteroidId);
+        }
     }
 
     /**
