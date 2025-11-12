@@ -8,7 +8,6 @@ import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
-import { UIComponent } from '@/ecs/components/UIComponent';
 import type { SpaceShip } from '@shared/models';
 
 describe('Player ECS Entity', () => {
@@ -104,7 +103,6 @@ describe('Player ECS Entity', () => {
             expect(entity.hasComponent(HealthComponent)).toBe(true);
             expect(entity.hasComponent(ColliderComponent)).toBe(true);
             expect(entity.hasComponent(UpgradesComponent)).toBe(true);
-            expect(entity.hasComponent(UIComponent)).toBe(true);
         });
 
         it('should create WeaponComponent for local player', () => {
@@ -164,21 +162,6 @@ describe('Player ECS Entity', () => {
             const movement = entity.getComponent(MovementComponent)!;
             expect(movement.maxVelocity).toBeGreaterThan(0);
             expect(movement.acceleration).toBeGreaterThan(0);
-        });
-
-        it('should create UIComponent for local player', () => {
-            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', true);
-
-            const ui = entity.getComponent(UIComponent)!;
-            expect(ui.isLocal).toBe(true);
-            expect(mockScene.add.text).toHaveBeenCalled();
-        });
-
-        it('should create UIComponent for remote player', () => {
-            const entity = createPlayerEntity(mockScene, entityManager, playerData, 'shooter-sprite', false);
-
-            const ui = entity.getComponent(UIComponent)!;
-            expect(ui.isLocal).toBe(false);
         });
 
         it('should handle player with different level', () => {
@@ -315,13 +298,11 @@ describe('Player ECS Entity', () => {
             const player = entity.getComponent(PlayerComponent)!;
             const weapon = entity.getComponent(WeaponComponent)!;
             const health = entity.getComponent(HealthComponent)!;
-            const ui = entity.getComponent(UIComponent)!;
 
             expect(transform.sprite.x).toBe(400);
             expect(player.isLocal).toBe(true);
             expect(weapon.ammo).toBe(100);
             expect(health.currentHealth).toBe(100);
-            expect(ui.isLocal).toBe(true);
         });
 
         it('should create functional remote player entity', () => {
@@ -340,10 +321,8 @@ describe('Player ECS Entity', () => {
             expect(entity.hasComponent(WeaponComponent)).toBe(false);
 
             const player = entity.getComponent(PlayerComponent)!;
-            const ui = entity.getComponent(UIComponent)!;
 
             expect(player.isLocal).toBe(false);
-            expect(ui.isLocal).toBe(false);
         });
 
         it('should handle player level progression', () => {
