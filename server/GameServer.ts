@@ -291,7 +291,7 @@ export class GameServer {
                 // Randomize spawn edge and direction
                 const { width, height } = GameConfig.playArea;
                 const { asteroidSpeed } = GameConfig.server;
-                const theshhold = 32;
+                const threshold = 32;
 
                 // Pick a random edge: 0=top, 1=bottom, 2=left, 3=right
                 const edge = Math.floor(Math.random() * 4);
@@ -303,25 +303,25 @@ export class GameServer {
                 switch (edge) {
                     case 0: // top
                         x = Math.random() * width;
-                        y = -theshhold;
+                        y = -threshold;
                         dx = (Math.random() - 0.5) * asteroidSpeed;
                         dy = asteroidSpeed;
                         break;
                     case 1: // bottom
                         x = Math.random() * width;
-                        y = height + theshhold;
+                        y = height + threshold;
                         dx = (Math.random() - 0.5) * asteroidSpeed;
                         dy = -asteroidSpeed;
                         break;
                     case 2: // left
-                        x = -theshhold;
+                        x = -threshold;
                         y = Math.random() * height;
                         dx = asteroidSpeed;
                         dy = (Math.random() - 0.5) * asteroidSpeed;
                         break;
                     case 3: // right
                     default:
-                        x = width + theshhold;
+                        x = width + threshold;
                         y = Math.random() * height;
                         dx = -asteroidSpeed;
                         dy = (Math.random() - 0.5) * asteroidSpeed;
@@ -367,9 +367,9 @@ export class GameServer {
 
                 // Destroy when off screen
                 const { width, height } = GameConfig.playArea;
-                const threshhold = 64;
+                const threshold = 64;
                 if (
-                    (asteroidDTO.x < -threshhold || asteroidDTO.x > width + threshhold || asteroidDTO.y < -threshhold || asteroidDTO.y > height + threshhold) 
+                    (asteroidDTO.x < -threshold || asteroidDTO.x > width + threshold || asteroidDTO.y < -threshold || asteroidDTO.y > height + threshold) 
                     && !this.destroyedAsteroids.has(asteroidDTO.id)
                 ) {
                     asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.OFFSCREEN;
