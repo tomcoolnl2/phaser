@@ -3,9 +3,10 @@ import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
+import * as Utils from '../shared/utils';
+import { GameConfig } from '../shared/config';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '../shared/events';
 import { SpaceShip, Coordinates, Player } from '../shared/model';
-import { GameConfig } from '../shared/config';
 import { AsteroidCauseOfDeath, AsteroidDTO } from '../shared/dto/AsteroidDTO';
 import { PickupDTO, PickupType } from '../shared/dto/PickupDTO';
 import { GameSocket } from './model';
@@ -366,12 +367,7 @@ export class GameServer {
                 this.io.emit(AsteroidEvent.coordinates, asteroidDTO);
 
                 // Destroy when off screen
-                const { width, height } = GameConfig.playArea;
-                const threshold = 64;
-                if (
-                    (asteroidDTO.x < -threshold || asteroidDTO.x > width + threshold || asteroidDTO.y < -threshold || asteroidDTO.y > height + threshold) 
-                    && !this.destroyedAsteroids.has(asteroidDTO.id)
-                ) {
+                if (Utils.isOutOfBounds(asteroidDTO.x, asteroidDTO.y, 64) && !this.destroyedAsteroids.has(asteroidDTO.id)) {
                     asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.OFFSCREEN;
                     this.io.emit(AsteroidEvent.destroy, asteroidDTO);
                     this.destroyedAsteroids.add(asteroidDTO.id);

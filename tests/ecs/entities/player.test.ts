@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import type { SpaceShip } from '@shared/model';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { createPlayerEntity } from '@/ecs/core/factories';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
@@ -8,7 +9,6 @@ import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
-import type { SpaceShip } from '@shared/models';
 
 describe('Player ECS Entity', () => {
     let mockScene: any;

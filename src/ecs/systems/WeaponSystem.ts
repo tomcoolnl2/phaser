@@ -1,4 +1,4 @@
-import { GameConfig } from '@shared/config';
+import * as Utils from '@shared/utils';
 import { System } from '@/ecs/core/System';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
@@ -37,10 +37,14 @@ export class WeaponSystem extends System {
         const transform = entity.getComponent(TransformComponent);
         const weapon = entity.getComponent(WeaponComponent);
 
-        if (!transform?.sprite || !weapon?.triggerPulled) return;
+        if (!transform?.sprite || !weapon?.triggerPulled) {
+            return;
+        }
 
         // Check if weapon can fire
-        if (!weapon.canFire()) return;
+        if (!weapon.canFire()) {
+            return;
+        }
 
         // Fire weapon
         this.fireWeapon(transform, weapon);
@@ -71,18 +75,8 @@ export class WeaponSystem extends System {
             bullet.setData('damage', weapon.damage);
 
             // Only deactivate bullet if it leaves the play area
-            const { width, height } = GameConfig.playArea;
-            const threshold = 64;
-            const bounds = { xMin: -threshold, xMax: width + threshold, yMin: -threshold, yMax: height + threshold };
             bullet.update = function () {
-                if (
-                    this.active && (
-                        this.x < bounds.xMin ||
-                        this.x > bounds.xMax ||
-                        this.y < bounds.yMin ||
-                        this.y > bounds.yMax
-                    )
-                ) {
+                if (this.active && Utils.isOutOfBounds({ x: this.x, y: this.y, threshold: 64 })) {
                     this.setActive(false);
                     this.setVisible(false);
                 }

@@ -231,7 +231,9 @@ export class GameScene extends Phaser.Scene {
                 this.asteroidEntities.forEach(asteroidEntity => {
                     const asteroidTransform = asteroidEntity.getComponent(TransformComponent);
                     const asteroidComp = asteroidEntity.getComponent(AsteroidComponent);
-                    if (!asteroidTransform || !asteroidTransform.sprite.active || !asteroidComp) return;
+                    if (!asteroidTransform || !asteroidTransform.sprite.active || !asteroidComp) {
+                        return;
+                    }
 
                     weapon.bullets.children.entries.forEach((bullet: any) => {
                         if (bullet.active) {
