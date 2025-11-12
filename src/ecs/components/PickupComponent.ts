@@ -20,7 +20,10 @@ export class PickupComponent extends Component {
      * @param type - Type of pickup (PickupType.AMMO, PickupType.HEALTH, etc.)
      * @param value - Amount to grant when collected
      */
-    constructor(public type: PickupType = PickupType.AMMO, public value: number = 10) {
+    constructor(
+        public type: PickupType = PickupType.AMMO,
+        public value: number = 10
+    ) {
         super();
     }
 }

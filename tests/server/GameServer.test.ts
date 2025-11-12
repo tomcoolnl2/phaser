@@ -85,7 +85,7 @@ describe('GameServer', () => {
                 socketsJoin: () => {},
                 socketsLeave: () => {},
                 disconnectSockets: () => {},
-            } as any
+            } as any,
         };
         (server as GameServer)['io'].emit = vi.fn();
         (server as GameServer)['setupSocketIO']();
@@ -102,7 +102,6 @@ describe('GameServer', () => {
         const mockSocket: Partial<GameSocket> = { on: mockOn };
         server['io'].emit = vi.fn();
         server['addAsteroidHitListener'](mockSocket as Socket);
-        
 
         const asteroidHitHandler = mockOn.mock.calls[0][1] as (id: string) => void;
         asteroidHitHandler(asteroidId);
@@ -128,7 +127,7 @@ describe('GameServer', () => {
         const mockSocket: Partial<GameSocket> = {
             player: { id: 'player-1', name: 'Test', x: 0, y: 0, ammo: 0 },
             broadcast: mockBroadcast as any,
-            on: mockOn
+            on: mockOn,
         };
 
         server['addSignOutListener'](mockSocket as GameSocket);
@@ -154,14 +153,14 @@ describe('GameServer', () => {
         const mockSocket: Partial<GameSocket> = {
             player: { id: 'player-1', name: 'Test', x: 0, y: 0, ammo: 0 },
             broadcast: mockBroadcast as any,
-            on: mockOn
+            on: mockOn,
         };
         server['addPickupListener'](mockSocket as GameSocket);
         const pickupDTO: PickupDTO = { type: PickupType.AMMO, uuid: 'pickup-1', amount: true };
-        
+
         const pickupHandler = mockOn.mock.calls[0][1] as (dto: PickupDTO) => void;
         pickupHandler(pickupDTO);
-        
+
         expect(mockSocket.player?.ammo).toBeGreaterThan(0);
         expect(mockEmit).toHaveBeenCalledWith(expect.stringContaining('pickup'), pickupDTO);
     });
@@ -173,7 +172,7 @@ describe('GameServer', () => {
         server['io'].emit = vi.fn();
         server['createAsteroid'](mockSocket as GameSocket, 10);
         vi.runOnlyPendingTimers();
-        
+
         expect(server['hasAsteroid']).toBe(true);
         expect(mockSocket.asteroid).toBeDefined();
         vi.useRealTimers();

@@ -27,7 +27,7 @@ import { Component } from '../core/Component';
 export class MovementComponent extends Component {
     /** Current velocity in pixels per second */
     public currentVelocity: number = 0;
-    
+
     /** Maximum velocity the entity can reach */
     public maxVelocity: number;
 

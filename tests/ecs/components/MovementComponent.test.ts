@@ -62,38 +62,38 @@ describe('MovementComponent', () => {
         it('should increase acceleration by the given percentage', () => {
             movement.upgradeSpeed(0.1); // 10% increase
 
-                expect(movement.acceleration).toBe(500 * GameConfig.player.accelerationMultiplier * 1.1); // (500 * GameConfig.player.accelerationMultiplier) * 1.1
+            expect(movement.acceleration).toBe(500 * GameConfig.player.accelerationMultiplier * 1.1); // (500 * GameConfig.player.accelerationMultiplier) * 1.1
         });
 
         it('should increase both maxVelocity and acceleration by the same percentage', () => {
             movement.upgradeSpeed(0.2); // 20% increase
 
-                expect(movement.maxVelocity).toBe(240); // 200 * GameConfig.player.accelerationMultiplier
-                expect(movement.acceleration).toBe(500 * GameConfig.player.accelerationMultiplier * GameConfig.player.accelerationMultiplier); // (500 * GameConfig.player.accelerationMultiplier) * GameConfig.player.accelerationMultiplier
+            expect(movement.maxVelocity).toBe(240); // 200 * GameConfig.player.accelerationMultiplier
+            expect(movement.acceleration).toBe(500 * GameConfig.player.accelerationMultiplier * GameConfig.player.accelerationMultiplier); // (500 * GameConfig.player.accelerationMultiplier) * GameConfig.player.accelerationMultiplier
         });
 
         it('should handle small percentage increases', () => {
             movement.upgradeSpeed(0.01); // 1% increase
 
-                expect(movement.maxVelocity).toBeCloseTo(202, 1); // 200 * 1.01
-                expect(movement.acceleration).toBeCloseTo(500 * GameConfig.player.accelerationMultiplier * 1.01, 1); // (500 * GameConfig.player.accelerationMultiplier) * 1.01
+            expect(movement.maxVelocity).toBeCloseTo(202, 1); // 200 * 1.01
+            expect(movement.acceleration).toBeCloseTo(500 * GameConfig.player.accelerationMultiplier * 1.01, 1); // (500 * GameConfig.player.accelerationMultiplier) * 1.01
         });
 
         it('should handle large percentage increases', () => {
             movement.upgradeSpeed(1.0); // 100% increase (double)
 
-                expect(movement.maxVelocity).toBe(400); // 200 * 2
-                expect(movement.acceleration).toBe(500 * GameConfig.player.accelerationMultiplier * 2); // (500 * GameConfig.player.accelerationMultiplier) * 2
+            expect(movement.maxVelocity).toBe(400); // 200 * 2
+            expect(movement.acceleration).toBe(500 * GameConfig.player.accelerationMultiplier * 2); // (500 * GameConfig.player.accelerationMultiplier) * 2
         });
 
         it('should compound with multiple upgrades', () => {
             movement.upgradeSpeed(0.1); // 10% increase
             movement.upgradeSpeed(0.1); // another 10% increase
 
-                // 200 * 1.1 * 1.1 = 242
-                expect(movement.maxVelocity).toBeCloseTo(242, 1);
-                // (500 * GameConfig.player.accelerationMultiplier) * 1.1 * 1.1
-                expect(movement.acceleration).toBeCloseTo(500 * GameConfig.player.accelerationMultiplier * 1.1 * 1.1, 1);
+            // 200 * 1.1 * 1.1 = 242
+            expect(movement.maxVelocity).toBeCloseTo(242, 1);
+            // (500 * GameConfig.player.accelerationMultiplier) * 1.1 * 1.1
+            expect(movement.acceleration).toBeCloseTo(500 * GameConfig.player.accelerationMultiplier * 1.1 * 1.1, 1);
         });
 
         it('should handle zero percentage (no change)', () => {
@@ -126,8 +126,8 @@ describe('MovementComponent', () => {
 
             movement.upgradeSpeed(0.15); // 15% increase
 
-                expect(movement.maxVelocity).toBeCloseTo(115, 1); // 100 * 1.15
-                expect(movement.acceleration).toBeCloseTo(300 * 1.15, 1); // 300 * 1.15
+            expect(movement.maxVelocity).toBeCloseTo(115, 1); // 100 * 1.15
+            expect(movement.acceleration).toBeCloseTo(300 * 1.15, 1); // 300 * 1.15
         });
 
         it('should work from very low base values', () => {
@@ -136,8 +136,8 @@ describe('MovementComponent', () => {
 
             movement.upgradeSpeed(0.5); // 50% increase
 
-                expect(movement.maxVelocity).toBe(1.5);
-                expect(movement.acceleration).toBe(1.5);
+            expect(movement.maxVelocity).toBe(1.5);
+            expect(movement.acceleration).toBe(1.5);
         });
 
         it('should work from very high base values', () => {
@@ -146,8 +146,8 @@ describe('MovementComponent', () => {
 
             movement.upgradeSpeed(0.1); // 10% increase
 
-                expect(movement.maxVelocity).toBe(11000);
-                expect(movement.acceleration).toBe(22000);
+            expect(movement.maxVelocity).toBe(11000);
+            expect(movement.acceleration).toBe(22000);
         });
     });
 
@@ -161,27 +161,30 @@ describe('MovementComponent', () => {
         it('should increase rotationSpeed by the given percentage', () => {
             movement.upgradeRotation(0.1); // 10% increase
 
-                expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.1, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.1
+            expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.1, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.1
         });
 
         it('should handle small percentage increases', () => {
             movement.upgradeRotation(0.05); // 5% increase
 
-                expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.05, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.05
+            expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.05, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.05
         });
 
         it('should handle large percentage increases', () => {
             movement.upgradeRotation(1.0); // 100% increase (double)
 
-                expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 2, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 2
+            expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 2, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 2
         });
 
         it('should compound with multiple upgrades', () => {
             movement.upgradeRotation(0.2); // 20% increase
             movement.upgradeRotation(0.2); // another 20% increase
 
-                // (0.03 * GameConfig.player.rotationSpeedMultiplier) * GameConfig.player.accelerationMultiplier * GameConfig.player.accelerationMultiplier
-                expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * GameConfig.player.accelerationMultiplier * GameConfig.player.accelerationMultiplier, 4);
+            // (0.03 * GameConfig.player.rotationSpeedMultiplier) * GameConfig.player.accelerationMultiplier * GameConfig.player.accelerationMultiplier
+            expect(movement.rotationSpeed).toBeCloseTo(
+                0.03 * GameConfig.player.rotationSpeedMultiplier * GameConfig.player.accelerationMultiplier * GameConfig.player.accelerationMultiplier,
+                4
+            );
         });
 
         it('should handle zero percentage (no change)', () => {
@@ -234,8 +237,8 @@ describe('MovementComponent', () => {
             movement.upgradeRotation(0.2); // 20% increase
             movement.upgradeRotation(0.05); // 5% increase
 
-                // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.1 * GameConfig.player.accelerationMultiplier * 1.05
-                expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.1 * GameConfig.player.accelerationMultiplier * 1.05, 4);
+            // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.1 * GameConfig.player.accelerationMultiplier * 1.05
+            expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.1 * GameConfig.player.accelerationMultiplier * 1.05, 4);
         });
     });
 
@@ -301,9 +304,9 @@ describe('MovementComponent', () => {
             movement.upgradeSpeed(0.2); // 20% speed increase
             movement.upgradeRotation(0.3); // 30% rotation increase
 
-                expect(movement.maxVelocity).toBe(240); // 200 * GameConfig.player.accelerationMultiplier
-                expect(movement.acceleration).toBe(500 * GameConfig.player.accelerationMultiplier * GameConfig.player.accelerationMultiplier); // (500 * GameConfig.player.accelerationMultiplier) * GameConfig.player.accelerationMultiplier
-                expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.3, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.3
+            expect(movement.maxVelocity).toBe(240); // 200 * GameConfig.player.accelerationMultiplier
+            expect(movement.acceleration).toBe(500 * GameConfig.player.accelerationMultiplier * GameConfig.player.accelerationMultiplier); // (500 * GameConfig.player.accelerationMultiplier) * GameConfig.player.accelerationMultiplier
+            expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.3, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.3
         });
 
         it('should maintain separate upgrade multipliers', () => {
@@ -314,10 +317,10 @@ describe('MovementComponent', () => {
             // Upgrade rotation once
             movement.upgradeRotation(0.2);
 
-                // Speed: 200 * 1.1 * 1.1 = 242
-                expect(movement.maxVelocity).toBeCloseTo(242, 1);
-                // Rotation: (0.03 * GameConfig.player.rotationSpeedMultiplier) * GameConfig.player.accelerationMultiplier
-                expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * GameConfig.player.accelerationMultiplier, 4);
+            // Speed: 200 * 1.1 * 1.1 = 242
+            expect(movement.maxVelocity).toBeCloseTo(242, 1);
+            // Rotation: (0.03 * GameConfig.player.rotationSpeedMultiplier) * GameConfig.player.accelerationMultiplier
+            expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * GameConfig.player.accelerationMultiplier, 4);
         });
 
         it('should handle alternating upgrades correctly', () => {
@@ -326,10 +329,10 @@ describe('MovementComponent', () => {
             movement.upgradeSpeed(0.1);
             movement.upgradeRotation(0.1);
 
-                // Speed: 200 * 1.1 * 1.1 = 242
-                expect(movement.maxVelocity).toBeCloseTo(242, 1);
-                // Rotation: (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.1 * 1.1
-                expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.1 * 1.1, 4);
+            // Speed: 200 * 1.1 * 1.1 = 242
+            expect(movement.maxVelocity).toBeCloseTo(242, 1);
+            // Rotation: (0.03 * GameConfig.player.rotationSpeedMultiplier) * 1.1 * 1.1
+            expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 1.1 * 1.1, 4);
         });
     });
 
@@ -339,8 +342,8 @@ describe('MovementComponent', () => {
 
             movement.upgradeSpeed(-0.1); // 10% decrease
 
-                expect(movement.maxVelocity).toBeCloseTo(180, 1); // 200 * 0.9
-                expect(movement.acceleration).toBeCloseTo(500 * GameConfig.player.accelerationMultiplier * 0.9, 1); // (500 * GameConfig.player.accelerationMultiplier) * 0.9
+            expect(movement.maxVelocity).toBeCloseTo(180, 1); // 200 * 0.9
+            expect(movement.acceleration).toBeCloseTo(500 * GameConfig.player.accelerationMultiplier * 0.9, 1); // (500 * GameConfig.player.accelerationMultiplier) * 0.9
         });
 
         it('should handle rotation downgrade', () => {
@@ -348,7 +351,7 @@ describe('MovementComponent', () => {
 
             movement.upgradeRotation(-0.2); // 20% decrease
 
-                expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 0.8, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 0.8
+            expect(movement.rotationSpeed).toBeCloseTo(0.03 * GameConfig.player.rotationSpeedMultiplier * 0.8, 4); // (0.03 * GameConfig.player.rotationSpeedMultiplier) * 0.8
         });
 
         it('should handle upgrading from zero base values', () => {

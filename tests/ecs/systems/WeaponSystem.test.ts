@@ -309,11 +309,7 @@ describe('WeaponSystem', () => {
 
             weaponSystem.update(entity, 16);
 
-            expect(mockScene.physics.velocityFromRotation).toHaveBeenCalledWith(
-                0,
-                400,
-                mockBullet.body.velocity
-            );
+            expect(mockScene.physics.velocityFromRotation).toHaveBeenCalledWith(0, 400, mockBullet.body.velocity);
         });
 
         it('should store damage in bullet data', () => {
@@ -345,10 +341,7 @@ describe('WeaponSystem', () => {
 
             weaponSystem.update(entity, 16);
 
-            expect(mockScene.time.delayedCall).toHaveBeenCalledWith(
-                2000,
-                expect.any(Function)
-            );
+            expect(mockScene.time.delayedCall).toHaveBeenCalledWith(2000, expect.any(Function));
         });
     });
 

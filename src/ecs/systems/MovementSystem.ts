@@ -61,11 +61,7 @@ export class MovementSystem extends System {
             if (movement.currentVelocity > movement.maxVelocity) {
                 movement.currentVelocity = movement.maxVelocity;
             }
-            this.scene.physics.velocityFromRotation(
-                sprite.rotation,
-                movement.currentVelocity,
-                body.velocity
-            );
+            this.scene.physics.velocityFromRotation(sprite.rotation, movement.currentVelocity, body.velocity);
         } else if (movement.brakeInput) {
             // Brake - stops quickly
             movement.currentVelocity *= 0.85;

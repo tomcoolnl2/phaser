@@ -1,5 +1,3 @@
-
-
 /**
  * HealthManager tracks and manages health for all game entities (asteroids, players, etc).
  *
@@ -14,10 +12,9 @@
  *   healthManager.remove('asteroid-1');
  */
 export class HealthManager {
-
     /** Map of entity IDs to current health values */
     private healthMap = new Map<string, number>();
-    
+
     /** Map of entity IDs to maximum health values */
     private maxHealthMap = new Map<string, number>();
 

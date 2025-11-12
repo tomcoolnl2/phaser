@@ -113,10 +113,10 @@ describe('Pure ECS Factories', () => {
 
             const movement = entity.getComponent(MovementComponent);
             expect(movement).toBeDefined();
-                expect(movement!.maxVelocity).toBe(GameConfig.player.maxVelocity);
-                expect(movement!.acceleration).toBe(GameConfig.player.acceleration * 1.2);
-                expect(movement!.drag).toBe(0.97);
-                expect(movement!.rotationSpeed).toBe(0.03 * 1.5);
+            expect(movement!.maxVelocity).toBe(GameConfig.player.maxVelocity);
+            expect(movement!.acceleration).toBe(GameConfig.player.acceleration * 1.2);
+            expect(movement!.drag).toBe(0.97);
+            expect(movement!.rotationSpeed).toBe(0.03 * 1.5);
         });
 
         it('should initialize WeaponComponent for local player', () => {

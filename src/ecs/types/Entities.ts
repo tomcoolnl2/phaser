@@ -6,13 +6,13 @@
  */
 export enum AsteroidComposition {
     /** Dark, carbon-rich asteroids; most common (~75%) */
-    C_TYPE = "C-type (Carbonaceous)",
+    C_TYPE = 'C-type (Carbonaceous)',
 
     /** Silicate or stony asteroids; brighter than C-types */
-    S_TYPE = "S-type (Silicaceous / Stony)",
+    S_TYPE = 'S-type (Silicaceous / Stony)',
 
     /** Metallic asteroids; primarily nickel and iron; often asteroid cores */
-    M_TYPE = "M-type (Metallic)",
+    M_TYPE = 'M-type (Metallic)',
 }
 
 /**
@@ -23,17 +23,17 @@ export enum AsteroidComposition {
  */
 export enum AsteroidOrbit {
     /** Located mainly between Mars and Jupiter */
-    MAIN_BELT = "Main-belt",
+    MAIN_BELT = 'Main-belt',
 
     /** Orbits bring them close to Earth; potentially hazardous */
-    NEAR_EARTH = "Near-Earth",
+    NEAR_EARTH = 'Near-Earth',
 
     /** Share orbits with Jupiter (or other planets) at Lagrange points */
-    TROJAN = "Trojan",
+    TROJAN = 'Trojan',
 
     /** Between Jupiter and Neptune; often icy-rocky hybrids */
-    CENTAUR = "Centaur",
+    CENTAUR = 'Centaur',
 
     /** Other orbital locations not classified above */
-    OTHER = "Other",
+    OTHER = 'Other',
 }

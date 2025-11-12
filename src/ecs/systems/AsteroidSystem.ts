@@ -25,7 +25,6 @@ import { HealthComponent } from '@/ecs/components/HealthComponent';
  * ```
  */
 export class AsteroidSystem extends System {
-
     /** Map of asteroid IDs to their health text displays */
     private healthTexts: Map<string, Phaser.GameObjects.Text> = new Map();
 
@@ -118,11 +117,7 @@ export class AsteroidSystem extends System {
      * @param transform - Transform component containing sprite position
      * @param health - Health component with current health value
      */
-    private createHealthText(
-        asteroidId: string,
-        transform: TransformComponent,
-        health: HealthComponent
-    ): void {
+    private createHealthText(asteroidId: string, transform: TransformComponent, health: HealthComponent): void {
         const healthText = this.scene.add
             .text(transform.sprite.x, transform.sprite.y + 80, `HP: ${health.currentHealth}`, {
                 fontSize: '16px',
@@ -159,7 +154,6 @@ export class AsteroidSystem extends System {
      * @param asteroidId - Unique identifier for the asteroid
      */
     private destroyAsteroid(entity: Entity, transform: TransformComponent, asteroidId: string): void {
-
         // Prevent double-destroy
         if (!transform.sprite.active) {
             return;
@@ -175,7 +169,7 @@ export class AsteroidSystem extends System {
 
         // Cleanup health text
         this.cleanupHealthText(asteroidId);
-        
+
         this.scene.entityManager.removeEntity(entity.id);
     }
 

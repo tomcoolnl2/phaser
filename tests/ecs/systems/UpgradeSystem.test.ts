@@ -325,14 +325,7 @@ describe('UpgradeSystem', () => {
             entity.addComponent(health);
 
             // Max out all upgrades
-            const allUpgrades = [
-                UpgradeType.FIRE_RATE,
-                UpgradeType.DAMAGE,
-                UpgradeType.SPEED,
-                UpgradeType.HEALTH,
-                UpgradeType.MAX_AMMO,
-                UpgradeType.ROTATION_SPEED,
-            ];
+            const allUpgrades = [UpgradeType.FIRE_RATE, UpgradeType.DAMAGE, UpgradeType.SPEED, UpgradeType.HEALTH, UpgradeType.MAX_AMMO, UpgradeType.ROTATION_SPEED];
 
             for (const type of allUpgrades) {
                 const upgrade = upgrades.getUpgrade(type);
