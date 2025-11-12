@@ -10,7 +10,6 @@ import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
-import { UIComponent } from '@/ecs/components/UIComponent';
 import { CollisionLayer } from '@/ecs/types';
 
 // Mock Phaser Scene
@@ -99,7 +98,6 @@ describe('Pure ECS Factories', () => {
             expect(entity.hasComponent(HealthComponent)).toBe(true);
             expect(entity.hasComponent(ColliderComponent)).toBe(true);
             expect(entity.hasComponent(UpgradesComponent)).toBe(true);
-            expect(entity.hasComponent(UIComponent)).toBe(true);
         });
 
         it('should initialize TransformComponent with sprite', () => {
@@ -168,26 +166,6 @@ describe('Pure ECS Factories', () => {
             expect(collider).toBeDefined();
             expect(collider!.layer).toBe(CollisionLayer.PLAYER);
             expect(collider!.radius).toBe(GameConfig.player.maxVelocity / 2);
-        });
-
-        it('should initialize UIComponent with player info', () => {
-            const entity = createPlayerEntity(mockScene, entityManager, mockPlayerData, 'sprite-key', true);
-
-            const ui = entity.getComponent(UIComponent);
-            expect(ui).toBeDefined();
-            expect(ui!.isLocal).toBe(true);
-            expect(ui!.nameText).toBeDefined();
-            expect(ui!.levelText).toBeDefined();
-            expect(ui!.ammoText).toBeDefined(); // Local player has ammo display
-        });
-
-        it('should not create ammo display for remote player', () => {
-            const entity = createPlayerEntity(mockScene, entityManager, mockPlayerData, 'sprite-key', false);
-
-            const ui = entity.getComponent(UIComponent);
-            expect(ui).toBeDefined();
-            expect(ui!.isLocal).toBe(false);
-            expect(ui!.ammoText).toBeUndefined(); // Remote player has no ammo display
         });
 
         it('should initialize UpgradesComponent', () => {

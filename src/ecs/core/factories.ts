@@ -11,7 +11,6 @@ import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
-import { UIComponent } from '@/ecs/components/UIComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
 
@@ -35,7 +34,7 @@ import { PickupComponent } from '@/ecs/components/PickupComponent';
  * - HealthComponent: HP tracking
  * - ColliderComponent: Collision detection
  * - UpgradesComponent: Stat progression
- * - UIComponent: Name, level, and ammo displays
+ * - UIComponent: ANy additional text displays (currently unused)
  *
  * @param scene - The Phaser scene to create objects in
  * @param entityManager - The entity manager to register the entity with
@@ -126,17 +125,6 @@ export function createPlayerEntity(scene: Phaser.Scene, entityManager: EntityMan
     // Upgrades component
     const upgrades = new UpgradesComponent();
     entity.addComponent(upgrades);
-
-    // UI component - manages name, level, and ammo displays
-    const ui = new UIComponent(
-        scene,
-        playerData.name,
-        playerData.level || 1,
-        isLocal,
-        playerData.x,
-        playerData.y
-    );
-    entity.addComponent(ui);
 
     return entity;
 }
