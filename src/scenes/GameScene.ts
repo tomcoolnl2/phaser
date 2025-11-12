@@ -186,13 +186,7 @@ export class GameScene extends Phaser.Scene {
             if (this.pickupEntity) {
                 const pickupTransform = this.pickupEntity.getComponent(TransformComponent);
                 if (pickupTransform && pickupTransform.sprite.active) {
-                    
-                    const distance = Phaser.Math.Distance.Between(
-                        transform.sprite.x,
-                        transform.sprite.y,
-                        pickupTransform.sprite.x,
-                        pickupTransform.sprite.y
-                    );
+                    const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, pickupTransform.sprite.x, pickupTransform.sprite.y);
 
                     if (distance < GameConfig.pickup.collisionRadius) {
                         // Player collected the pickup
@@ -209,7 +203,7 @@ export class GameScene extends Phaser.Scene {
                             uuid: this.localPlayerId,
                             ammo: true,
                         });
-                        
+
                         // Destroy pickup
                         pickupTransform.sprite.destroy();
                         this.entityManager.removeEntity(this.pickupEntity.id);
@@ -223,12 +217,7 @@ export class GameScene extends Phaser.Scene {
                 const asteroidTransform = asteroidEntity.getComponent(TransformComponent);
                 if (!asteroidTransform || !asteroidTransform.sprite.active) return;
 
-                const distance = Phaser.Math.Distance.Between(
-                    transform.sprite.x,
-                    transform.sprite.y,
-                    asteroidTransform.sprite.x,
-                    asteroidTransform.sprite.y
-                );
+                const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, asteroidTransform.sprite.x, asteroidTransform.sprite.y);
 
                 if (distance < GameConfig.asteroid.collisionRadius) {
                     // Player hit by asteroid - game over
@@ -246,12 +235,7 @@ export class GameScene extends Phaser.Scene {
 
                     weapon.bullets.children.entries.forEach((bullet: any) => {
                         if (bullet.active) {
-                            const distance = Phaser.Math.Distance.Between(
-                                bullet.x,
-                                bullet.y,
-                                asteroidTransform.sprite.x,
-                                asteroidTransform.sprite.y
-                            );
+                            const distance = Phaser.Math.Distance.Between(bullet.x, bullet.y, asteroidTransform.sprite.x, asteroidTransform.sprite.y);
 
                             if (distance < GameConfig.asteroid.bulletCollisionRadius) {
                                 // Bullet hit asteroid
@@ -439,13 +423,13 @@ export class GameScene extends Phaser.Scene {
             if (this.pickupEntity) {
                 // Remove entity first to trigger cleanup in systems
                 this.entityManager.removeEntity(this.pickupEntity.id);
-                
+
                 // Then destroy the sprite
                 const transform = this.pickupEntity.getComponent(TransformComponent);
                 if (transform) {
                     transform.sprite.destroy();
                 }
-                
+
                 this.pickupEntity = null;
             }
         });
@@ -453,13 +437,7 @@ export class GameScene extends Phaser.Scene {
         // Asteroid created
         this.socket.on(AsteroidEvent.create, (asteroidDTO: AsteroidDTO) => {
             console.log('[Client]', 'Asteroid created:', asteroidDTO);
-            const entity = createAsteroidEntity(
-                this,
-                this.entityManager,
-                asteroidDTO.id,
-                asteroidDTO.x,
-                asteroidDTO.y
-            );
+            const entity = createAsteroidEntity(this, this.entityManager, asteroidDTO.id, asteroidDTO.x, asteroidDTO.y);
             // Set HP and maxHp if HealthComponent exists
             const health = entity.getComponent(HealthComponent);
             if (health) {
@@ -505,19 +483,18 @@ export class GameScene extends Phaser.Scene {
         // Asteroid destroyed
         this.socket.on(AsteroidEvent.destroy, (asteroidDTO: AsteroidDTO) => {
             console.log('[Client]', 'Asteroid destroyed', asteroidDTO.id, asteroidDTO);
-            this.asteroidSystem.destroyAsteroidById(asteroidDTO.id,);
-            this.asteroidEntities.delete(asteroidDTO.id,);
+            this.asteroidSystem.destroyAsteroidById(asteroidDTO.id);
+            this.asteroidEntities.delete(asteroidDTO.id);
         });
     }
 
     /**
      * Emits player data to Vue.js HUD for display.
-     * 
+     *
      * Sends custom events with current player stats (name, level, ammo, score)
      * to be consumed by the Vue frontend components.
      */
     private emitPlayerDataToVue(): void {
-
         if (!this.localPlayerId) {
             return;
         }

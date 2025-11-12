@@ -25,7 +25,7 @@ vi.mock('phaser', () => {
                     },
                     group: vi.fn(),
                 },
-                velocityFromRotation: (angle: number, speed: number, velocity: { x: number, y: number }) => {
+                velocityFromRotation: (angle: number, speed: number, velocity: { x: number; y: number }) => {
                     // Simple mock: set velocity.x/y based on angle and speed
                     velocity.x = Math.cos(angle) * speed;
                     velocity.y = Math.sin(angle) * speed;

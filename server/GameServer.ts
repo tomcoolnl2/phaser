@@ -12,7 +12,6 @@ import { GameSocket } from './model';
 import { logger } from './logger';
 import { HealthManager } from './HealthManager';
 
-
 /**
  * GameServer is the authoritative multiplayer game server for Phaser ECS.
  *
@@ -193,7 +192,7 @@ export class GameServer {
     private addPickupListener(socket: GameSocket): void {
         socket.on(PlayerEvent.pickup, (pickupDTO: PickupDTO) => {
             if (socket.player) {
-                switch(pickupDTO.type) {
+                switch (pickupDTO.type) {
                     case PickupType.AMMO:
                         socket.player.ammo += pickupDTO.amount ? GameConfig.player.ammoPerPickup : 0;
                         break;
@@ -268,23 +267,30 @@ export class GameServer {
                 // TODO: util function?
                 // Pick a random edge: 0=top, 1=bottom, 2=left, 3=right
                 const edge = Math.floor(Math.random() * 4);
-                let x = 0, y = 0, dx = 0, dy = 0;
-                if (edge === 0) { // top
+                let x = 0,
+                    y = 0,
+                    dx = 0,
+                    dy = 0;
+                if (edge === 0) {
+                    // top
                     x = Math.random() * width;
                     y = -32;
                     dx = (Math.random() - 0.5) * speed;
                     dy = speed;
-                } else if (edge === 1) { // bottom
+                } else if (edge === 1) {
+                    // bottom
                     x = Math.random() * width;
                     y = height + 32;
                     dx = (Math.random() - 0.5) * speed;
                     dy = -speed;
-                } else if (edge === 2) { // left
+                } else if (edge === 2) {
+                    // left
                     x = -32;
                     y = Math.random() * height;
                     dx = speed;
                     dy = (Math.random() - 0.5) * speed;
-                } else { // right
+                } else {
+                    // right
                     x = width + 32;
                     y = Math.random() * height;
                     dx = -speed;
@@ -292,14 +298,18 @@ export class GameServer {
                 }
 
                 // Normalize direction to ensure it crosses the play area
-                const norm = Math.sqrt(dx*dx + dy*dy);
+                const norm = Math.sqrt(dx * dx + dy * dy);
                 dx = (dx / norm) * speed;
                 dy = (dy / norm) * speed;
 
                 const asteroidDTO: AsteroidDTO = {
                     id: asteroidId,
-                    x, y, dx, dy,
-                    hp: 3, maxHp: 3,
+                    x,
+                    y,
+                    dx,
+                    dy,
+                    hp: 3,
+                    maxHp: 3,
                 };
 
                 this.asteroidMap.set(asteroidId, asteroidDTO);
@@ -326,21 +336,23 @@ export class GameServer {
 
                 // Destroy when off screen
                 if (
-                    (asteroidDTO.x < -64 || asteroidDTO.x > 1024 + 64 || // TODO: use GameConfig
-                    asteroidDTO.y < -64 || asteroidDTO.y > 768 + 64) &&
+                    (asteroidDTO.x < -64 ||
+                        asteroidDTO.x > 1024 + 64 || // TODO: use GameConfig
+                        asteroidDTO.y < -64 ||
+                        asteroidDTO.y > 768 + 64) &&
                     !this.destroyedAsteroids.has(asteroidDTO.id)
                 ) {
                     asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.OFFSCREEN;
                     this.io.emit(AsteroidEvent.destroy, asteroidDTO);
                     this.destroyedAsteroids.add(asteroidDTO.id);
-                    
+
                     this.hasAsteroid = false;
-                    
+
                     this.healthManager.remove(asteroidDTO.id);
                     this.asteroidMap.delete(asteroidDTO.id);
-                    
+
                     clearInterval(update);
-                    
+
                     logger.debug('Asteroid destroyed (off screen)');
                 }
             }, 25);

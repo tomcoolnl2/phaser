@@ -13,13 +13,19 @@ const createMockScene = () =>
 
 // Test components
 class PositionComponent extends Component {
-    constructor(public x: number, public y: number) {
+    constructor(
+        public x: number,
+        public y: number
+    ) {
         super();
     }
 }
 
 class VelocityComponent extends Component {
-    constructor(public vx: number, public vy: number) {
+    constructor(
+        public vx: number,
+        public vy: number
+    ) {
         super();
     }
 }

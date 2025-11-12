@@ -15,7 +15,7 @@ describe('Asteroid ECS', () => {
     beforeEach(() => {
         // Mock Phaser scene
         mockScene = {
-            entityManager: new EntityManager({} as Phaser.Scene), 
+            entityManager: new EntityManager({} as Phaser.Scene),
             physics: {
                 add: {
                     sprite: vi.fn((x: number, y: number, texture: string) => {
@@ -33,12 +33,12 @@ describe('Asteroid ECS', () => {
                             setMaxVelocity: vi.fn().mockReturnThis(),
                             setData: vi.fn().mockReturnThis(),
                             play: vi.fn().mockReturnThis(),
-                            setPosition: vi.fn(function(this: any, newX: number, newY: number) {
+                            setPosition: vi.fn(function (this: any, newX: number, newY: number) {
                                 this.x = newX;
                                 this.y = newY;
                                 return this;
                             }),
-                            destroy: vi.fn(function(this: any) {
+                            destroy: vi.fn(function (this: any) {
                                 this.active = false;
                                 this.visible = false;
                             }),
@@ -95,13 +95,7 @@ describe('Asteroid ECS', () => {
 
     describe('createAsteroidEntity', () => {
         it('should create entity with all required components', () => {
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                100,
-                200
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 100, 200);
 
             expect(entity.hasComponent(TransformComponent)).toBe(true);
             expect(entity.hasComponent(HealthComponent)).toBe(true);
@@ -110,13 +104,7 @@ describe('Asteroid ECS', () => {
         });
 
         it('should initialize sprite with correct properties', () => {
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                150,
-                250
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 150, 250);
 
             const transform = entity.getComponent(TransformComponent);
             expect(transform).toBeDefined();
@@ -126,13 +114,7 @@ describe('Asteroid ECS', () => {
         });
 
         it('should initialize health correctly', () => {
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                100,
-                100
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 100, 100);
 
             const health = entity.getComponent(HealthComponent) as HealthComponent;
             expect(health).toBeDefined();
@@ -141,13 +123,7 @@ describe('Asteroid ECS', () => {
         });
 
         it('should initialize asteroid component with ID', () => {
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'asteroid-xyz',
-                100,
-                100
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'asteroid-xyz', 100, 100);
 
             const asteroid = entity.getComponent(AsteroidComponent) as AsteroidComponent;
             expect(asteroid).toBeDefined();
@@ -155,13 +131,7 @@ describe('Asteroid ECS', () => {
         });
 
         it('should set sprite to play asteroid-spin animation', () => {
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                100,
-                100
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 100, 100);
 
             const transform = entity.getComponent(TransformComponent);
             expect(transform!.sprite.play).toHaveBeenCalledWith('asteroid-spin');
@@ -180,13 +150,7 @@ describe('Asteroid ECS', () => {
 
         it('should create health text when entity is updated', () => {
             const system = new AsteroidSystem(mockScene);
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                100,
-                100
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 100, 100);
 
             system.update(entity, 16);
 
@@ -195,13 +159,7 @@ describe('Asteroid ECS', () => {
 
         it('should update health text position to follow sprite', () => {
             const system = new AsteroidSystem(mockScene);
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                100,
-                100
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 100, 100);
 
             // First update creates health text
             system.update(entity, 16);
@@ -219,13 +177,7 @@ describe('Asteroid ECS', () => {
 
         it('should change health text color based on damage', () => {
             const system = new AsteroidSystem(mockScene);
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                100,
-                100
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 100, 100);
 
             // Initial update (3 HP - green)
             system.update(entity, 16);
@@ -246,13 +198,7 @@ describe('Asteroid ECS', () => {
 
         it('should destroy asteroid when health reaches 0', () => {
             const system = new AsteroidSystem(mockScene);
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                100,
-                100
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 100, 100);
 
             const transform = entity.getComponent(TransformComponent) as TransformComponent;
             const health = entity.getComponent(HealthComponent) as HealthComponent;
@@ -267,13 +213,7 @@ describe('Asteroid ECS', () => {
 
         it('should flash asteroid sprite when hit', () => {
             const system = new AsteroidSystem(mockScene);
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                100,
-                100
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 100, 100);
 
             const transform = entity.getComponent(TransformComponent)!;
             system.flashAsteroid(transform.sprite);
@@ -295,13 +235,7 @@ describe('Asteroid ECS', () => {
             const system = new AsteroidSystem(mockScene);
             entityManager.addSystem(system);
 
-            const entity = createAsteroidEntity(
-                mockScene,
-                entityManager,
-                'ast-1',
-                100,
-                100
-            );
+            const entity = createAsteroidEntity(mockScene, entityManager, 'ast-1', 100, 100);
 
             const health = entity.getComponent(HealthComponent) as HealthComponent;
             const transform = entity.getComponent(TransformComponent) as TransformComponent;

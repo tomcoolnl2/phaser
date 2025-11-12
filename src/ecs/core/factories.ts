@@ -79,7 +79,7 @@ export function createPlayerEntity(scene: Phaser.Scene, entityManager: EntityMan
         GameConfig.player.maxVelocity,
         GameConfig.player.acceleration,
         0.97, // drag value
-        0.03  // rotation speed
+        0.03 // rotation speed
     );
     movement.targetRotation = sprite.rotation;
     entity.addComponent(movement);
@@ -96,19 +96,14 @@ export function createPlayerEntity(scene: Phaser.Scene, entityManager: EntityMan
             999,
             GameConfig.player.fireRate,
             400, // bullet speed
-            1,   // base damage
+            1, // base damage
             `laser-level-${playerData.level || 1}` // bullet sprite
         );
         entity.addComponent(weapon);
     }
 
     // Player component
-    const playerComp = new PlayerComponent(
-        playerData.id,
-        playerData.name,
-        isLocal,
-        playerData.level || 1
-    );
+    const playerComp = new PlayerComponent(playerData.id, playerData.name, isLocal, playerData.level || 1);
     entity.addComponent(playerComp);
 
     // Health component
@@ -116,10 +111,7 @@ export function createPlayerEntity(scene: Phaser.Scene, entityManager: EntityMan
     entity.addComponent(health);
 
     // Collider component
-    const collider = new ColliderComponent(
-        GameConfig.player.maxVelocity / 2,
-        CollisionLayer.PLAYER
-    );
+    const collider = new ColliderComponent(GameConfig.player.maxVelocity / 2, CollisionLayer.PLAYER);
     entity.addComponent(collider);
 
     // Upgrades component
@@ -159,13 +151,7 @@ export function createPlayerEntity(scene: Phaser.Scene, entityManager: EntityMan
  * );
  * ```
  */
-export function createAsteroidEntity(
-    scene: Phaser.Scene,
-    entityManager: EntityManager,
-    asteroidId: string,
-    x: number,
-    y: number
-): Entity {
+export function createAsteroidEntity(scene: Phaser.Scene, entityManager: EntityManager, asteroidId: string, x: number, y: number): Entity {
     const entity = entityManager.createEntity();
 
     // Create asteroid sprite
@@ -189,10 +175,7 @@ export function createAsteroidEntity(
     entity.addComponent(health);
 
     // Collider component
-    const collider = new ColliderComponent(
-        GameConfig.asteroid.collisionRadius,
-        CollisionLayer.ASTEROID
-    );
+    const collider = new ColliderComponent(GameConfig.asteroid.collisionRadius, CollisionLayer.ASTEROID);
     entity.addComponent(collider);
 
     // Asteroid component
@@ -213,14 +196,7 @@ export function createAsteroidEntity(
  * @param value - Value to grant when collected
  * @returns Created pickup entity
  */
-export function createPickupEntity(
-    scene: Phaser.Scene,
-    entityManager: EntityManager,
-    x: number,
-    y: number,
-    type: PickupType = PickupType.AMMO,
-    value: number = 10
-): Entity {
+export function createPickupEntity(scene: Phaser.Scene, entityManager: EntityManager, x: number, y: number, type: PickupType = PickupType.AMMO, value: number = 10): Entity {
     const entity = entityManager.createEntity();
 
     // Create pickup sprite

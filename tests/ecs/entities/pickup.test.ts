@@ -27,15 +27,15 @@ describe('Pickup ECS', () => {
                             active: true,
                             visible: true,
                             body: {
-                                velocity: { x: 0, y: 0 }
+                                velocity: { x: 0, y: 0 },
                             },
                             setOrigin: vi.fn().mockReturnThis(),
-                            setPosition: vi.fn(function(this: any, newX: number, newY: number) {
+                            setPosition: vi.fn(function (this: any, newX: number, newY: number) {
                                 this.x = newX;
                                 this.y = newY;
                                 return this;
                             }),
-                            destroy: vi.fn(function(this: any) {
+                            destroy: vi.fn(function (this: any) {
                                 this.active = false;
                                 this.visible = false;
                             }),
@@ -43,7 +43,7 @@ describe('Pickup ECS', () => {
                         return sprite;
                     }),
                 },
-                velocityFromRotation: vi.fn((angle: number, speed: number, velocity: { x: number, y: number }) => {
+                velocityFromRotation: vi.fn((angle: number, speed: number, velocity: { x: number; y: number }) => {
                     velocity.x = Math.cos(angle) * speed;
                     velocity.y = Math.sin(angle) * speed;
                 }),
@@ -87,26 +87,14 @@ describe('Pickup ECS', () => {
 
     describe('createPickupEntity', () => {
         it('should create entity with required components', () => {
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                100,
-                200,
-                PickupType.AMMO,
-                10
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 100, 200, PickupType.AMMO, 10);
 
             expect(entity.hasComponent(TransformComponent)).toBe(true);
             expect(entity.hasComponent(PickupComponent)).toBe(true);
         });
 
         it('should initialize sprite at correct position', () => {
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                150,
-                250
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 150, 250);
 
             const transform = entity.getComponent(TransformComponent);
             expect(transform).toBeDefined();
@@ -116,14 +104,7 @@ describe('Pickup ECS', () => {
         });
 
         it('should initialize pickup component with type and value', () => {
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                100,
-                100,
-                PickupType.HEALTH,
-                25
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 100, 100, PickupType.HEALTH, 25);
 
             const pickup = entity.getComponent(PickupComponent);
             expect(pickup).toBeDefined();
@@ -132,12 +113,7 @@ describe('Pickup ECS', () => {
         });
 
         it('should use default pickup values when not specified', () => {
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                100,
-                100
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 100, 100);
 
             const pickup = entity.getComponent(PickupComponent);
             expect(pickup!.type).toBe(PickupType.AMMO);
@@ -156,12 +132,7 @@ describe('Pickup ECS', () => {
 
         it('should create floating animation when entity is added', () => {
             const system = new PickupSystem(mockScene);
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                100,
-                100
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 100, 100);
 
             // First update initializes animations
             system.update(entity, 16);
@@ -180,12 +151,7 @@ describe('Pickup ECS', () => {
 
         it('should create rotation animation when entity is added', () => {
             const system = new PickupSystem(mockScene);
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                100,
-                100
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 100, 100);
 
             // First update initializes animations
             system.update(entity, 16);
@@ -201,16 +167,11 @@ describe('Pickup ECS', () => {
 
         it('should stop tweens when entity is removed', () => {
             const system = new PickupSystem(mockScene);
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                100,
-                100
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 100, 100);
 
             // First update initializes animations
             system.update(entity, 16);
-            
+
             // Get the tweens that were created
             const tween1 = mockScene.tweens.add.mock.results[0].value;
             const tween2 = mockScene.tweens.add.mock.results[1].value;
@@ -225,17 +186,12 @@ describe('Pickup ECS', () => {
 
         it('should detect when sprite is destroyed', () => {
             const system = new PickupSystem(mockScene);
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                100,
-                100
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 100, 100);
 
             // First update initializes animations
             system.update(entity, 16);
             const transform = entity.getComponent(TransformComponent)!;
-            
+
             // Get the tweens that were created
             const tween1 = mockScene.tweens.add.mock.results[0].value;
             const tween2 = mockScene.tweens.add.mock.results[1].value;
@@ -258,14 +214,7 @@ describe('Pickup ECS', () => {
             const system = new PickupSystem(mockScene);
             entityManager.addSystem(system);
 
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                100,
-                100,
-                PickupType.AMMO,
-                10
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 100, 100, PickupType.AMMO, 10);
 
             const transform = entity.getComponent(TransformComponent)!;
 
@@ -291,14 +240,7 @@ describe('Pickup ECS', () => {
         });
 
         it('should create pickup with custom type and value', () => {
-            const entity = createPickupEntity(
-                mockScene,
-                entityManager,
-                200,
-                300,
-                PickupType.HEALTH,
-                50
-            );
+            const entity = createPickupEntity(mockScene, entityManager, 200, 300, PickupType.HEALTH, 50);
 
             const pickup = entity.getComponent(PickupComponent)!;
             expect(pickup.type).toBe(PickupType.HEALTH);

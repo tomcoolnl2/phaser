@@ -28,7 +28,6 @@ import { WeaponComponent } from '@/ecs/components/WeaponComponent';
  * ```
  */
 export class InputSystem extends System {
-
     // Keyboard input references
     private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
     private fireKey?: Phaser.Input.Keyboard.Key;

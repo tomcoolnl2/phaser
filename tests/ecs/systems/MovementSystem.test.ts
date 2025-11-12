@@ -36,6 +36,7 @@ describe('MovementSystem', () => {
                     return vec;
                 }),
             },
+            game: { loop: { delta: 16 } },
         };
 
         entityManager = new EntityManager(mockScene);
@@ -67,8 +68,8 @@ describe('MovementSystem', () => {
 
             movementSystem.update(entity, 16);
 
-            expect(movement.targetRotation).toBe(0.03); // Initial 0 + (1 * 0.03)
-            expect(sprite.rotation).toBe(0.03);
+            expect(movement.targetRotation).toBe(0.045); // Initial 0 + (1 * 0.03 * 1.5)
+            expect(sprite.rotation).toBe(0.045);
         });
 
         it('should rotate left when rotationInput is negative', () => {
@@ -85,8 +86,8 @@ describe('MovementSystem', () => {
 
             movementSystem.update(entity, 16);
 
-            expect(movement.targetRotation).toBe(-0.03); // Initial 0 + (-1 * 0.03)
-            expect(sprite.rotation).toBe(-0.03);
+            expect(movement.targetRotation).toBe(-0.045); // Initial 0 + (-1 * 0.03 * 1.5)
+            expect(sprite.rotation).toBe(-0.045);
         });
 
         it('should not rotate when rotationInput is 0', () => {
@@ -123,7 +124,7 @@ describe('MovementSystem', () => {
             movementSystem.update(entity, 16);
             movementSystem.update(entity, 16);
 
-            expect(movement.targetRotation).toBeCloseTo(0.09, 5); // 3 frames * 0.03
+            expect(movement.targetRotation).toBeCloseTo(0.135, 5); // 3 frames * 0.03 * 1.5
         });
     });
 
@@ -142,12 +143,9 @@ describe('MovementSystem', () => {
 
             movementSystem.update(entity, 16);
 
-            expect(mockScene.physics.velocityFromRotation).toHaveBeenCalledWith(
-                0,
-                200,
-                sprite.body.velocity
-            );
-            expect(sprite.body.velocity.x).toBeCloseTo(200, 1);
+            // currentVelocity = acceleration * delta = (500 * 1.2) * (16/1000) = 9.6
+            expect(mockScene.physics.velocityFromRotation).toHaveBeenCalledWith(0, 9.6, sprite.body.velocity);
+            expect(sprite.body.velocity.x).toBeCloseTo(9.6, 1);
             expect(sprite.body.velocity.y).toBeCloseTo(0, 1);
         });
 
@@ -165,11 +163,8 @@ describe('MovementSystem', () => {
 
             movementSystem.update(entity, 16);
 
-            expect(mockScene.physics.velocityFromRotation).toHaveBeenCalledWith(
-                Math.PI / 2,
-                200,
-                sprite.body.velocity
-            );
+            // currentVelocity = acceleration * delta = (500 * 1.2) * (16/1000) = 9.6
+            expect(mockScene.physics.velocityFromRotation).toHaveBeenCalledWith(Math.PI / 2, 9.6, sprite.body.velocity);
         });
 
         it('should not apply velocity when not thrusting', () => {
@@ -346,7 +341,7 @@ describe('MovementSystem', () => {
             movementSystem.update(entity, 16);
 
             // Rotation should have changed
-            expect(sprite.rotation).toBe(0.03);
+            expect(sprite.rotation).toBe(0.045);
             // Velocity should be applied
             expect(mockScene.physics.velocityFromRotation).toHaveBeenCalled();
         });
@@ -409,7 +404,7 @@ describe('MovementSystem', () => {
 
             entityManager.update(16);
 
-            expect(sprite.rotation).toBe(0.03);
+            expect(sprite.rotation).toBe(0.045);
             expect(mockScene.physics.velocityFromRotation).toHaveBeenCalled();
         });
     });
