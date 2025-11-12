@@ -1,3 +1,4 @@
+import { GameConfig } from '../../../shared/config';
 import { Component } from '../core/Component';
 
 /**
@@ -24,6 +25,9 @@ import { Component } from '../core/Component';
  * ```
  */
 export class MovementComponent extends Component {
+    /** Current velocity in pixels per second */
+    public currentVelocity: number = 0;
+    
     /** Maximum velocity the entity can reach */
     public maxVelocity: number;
 
@@ -62,9 +66,10 @@ export class MovementComponent extends Component {
     constructor(maxVelocity: number, acceleration: number, drag: number, rotationSpeed: number) {
         super();
         this.maxVelocity = maxVelocity;
-        this.acceleration = acceleration;
+        this.acceleration = acceleration * GameConfig.player.accelerationMultiplier;
         this.drag = drag;
-        this.rotationSpeed = rotationSpeed;
+        this.rotationSpeed = rotationSpeed * GameConfig.player.rotationSpeedMultiplier;
+        this.currentVelocity = 0;
     }
 
     /**

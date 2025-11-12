@@ -29,6 +29,8 @@ export const GameConfig = {
         fireRate: 250, // milliseconds between shots
         drag: 100,
         angularDrag: 200,
+        accelerationMultiplier: 1.2, // Multiplier for acceleration
+        rotationSpeedMultiplier: 1.5, // Multiplier for rotation speed
     },
 
     asteroid: {

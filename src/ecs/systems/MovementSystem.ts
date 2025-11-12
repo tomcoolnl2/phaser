@@ -53,18 +53,33 @@ export class MovementSystem extends System {
         }
         sprite.rotation = movement.targetRotation;
 
-        // Handle thrust
+        // Handle thrust with smooth acceleration
         if (movement.thrustInput > 0) {
-            // Set velocity in the direction the ship is facing
-            this.scene.physics.velocityFromRotation(sprite.rotation, movement.maxVelocity, body.velocity);
+            // Use deltaTime for frame-rate independence
+            const delta = this.scene.game.loop.delta / 1000; // seconds
+            movement.currentVelocity += movement.acceleration * delta;
+            if (movement.currentVelocity > movement.maxVelocity) {
+                movement.currentVelocity = movement.maxVelocity;
+            }
+            this.scene.physics.velocityFromRotation(
+                sprite.rotation,
+                movement.currentVelocity,
+                body.velocity
+            );
         } else if (movement.brakeInput) {
             // Brake - stops quickly
+            movement.currentVelocity *= 0.85;
             body.velocity.x *= 0.85;
             body.velocity.y *= 0.85;
         } else {
             // Drift - gradual slowdown
+            movement.currentVelocity *= movement.drag;
             body.velocity.x *= movement.drag;
             body.velocity.y *= movement.drag;
+        }
+        // Clamp to zero if very slow
+        if (Math.abs(movement.currentVelocity) < 0.01) {
+            movement.currentVelocity = 0;
         }
     }
 }

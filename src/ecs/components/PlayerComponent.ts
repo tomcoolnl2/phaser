@@ -22,6 +22,7 @@ import type { Level } from '../../../shared/models';
  * ```
  */
 export class PlayerComponent extends Component {
+    
     /** Unique identifier for this player */
     public playerId: string;
 
