@@ -4,7 +4,13 @@ import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { MovementComponent } from '@/ecs/components/MovementComponent';
 
-const mockSprite = { rotation: 0, body: { velocity: { x: 0, y: 0 } } };
+const mockSprite = { 
+    rotation: 0, 
+    body: { 
+        velocity: { x: 0, y: 0 }
+    },
+    setOrigin: () => mockSprite,
+};
 
 describe('MovementSystem', () => {
     let system: MovementSystem;
