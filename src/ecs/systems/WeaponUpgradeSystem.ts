@@ -44,7 +44,7 @@ export class WeaponUpgradeSystem extends System {
         // Update bullet sprite based on level
         const bulletSpriteKey = this.getBulletSpriteForLevel(playerComp.level);
         if (weaponComp.bulletSpriteKey !== bulletSpriteKey) {
-            console.log(`[WeaponUpgradeSystem] Updating bullet sprite: ${weaponComp.bulletSpriteKey} -> ${bulletSpriteKey} (Player level: ${playerComp.level})`);
+            console.info(`[WeaponUpgradeSystem] Updating bullet sprite: ${weaponComp.bulletSpriteKey} -> ${bulletSpriteKey} (Player level: ${playerComp.level})`);
             weaponComp.bulletSpriteKey = bulletSpriteKey;
         }
     }

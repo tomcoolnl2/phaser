@@ -40,6 +40,7 @@ export class AsteroidEntityFactory {
      * @returns The newly created asteroid entity
      */
     public create(dto: AsteroidDTO): Entity {
+
         if (!this.validDTO(dto)) {
             throw new Error('Invalid AsteroidDTO: missing required fields');
         }
@@ -55,6 +56,7 @@ export class AsteroidEntityFactory {
         entity.addComponent(new HealthComponent(dto.hp));
         entity.addComponent(new ColliderComponent(GameConfig.asteroid.collisionRadius, CollisionLayer.ASTEROID));
         entity.addComponent(new AsteroidComponent(dto.id));
+        
         return entity;
     }
 

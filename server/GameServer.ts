@@ -8,7 +8,7 @@ import * as Utils from '@shared/utils';
 import { GameConfig } from '@shared/config';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
 import { Coordinates, Player } from '@shared/model';
-import { AsteroidCauseOfDeath, AsteroidDTO } from '@shared/dto/AsteroidDTO';
+import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO } from '@shared/dto/AsteroidDTO';
 import { PickupDTO, PickupType } from '@shared/dto/PickupDTO';
 import { GameSocket } from './model';
 import { logger } from './logger';
@@ -181,17 +181,17 @@ export class GameServer {
      * @param socket - The connected Socket
      */
     private addAsteroidHitListener(socket: Socket): void {
-        socket.on(AsteroidEvent.hit, (asteroidId: string) => {
+        socket.on(AsteroidEvent.hit, ({ asteroidId, damage }: AsteroidHitDTO ) => {
             if (this.destroyedAsteroids.has(asteroidId)) {
                 return;
             }
-            const hp = this.healthManager.damage(asteroidId, 1);
+            const hp = this.healthManager.damage(asteroidId, damage);
             const maxHp = this.healthManager.getMaxHealth(asteroidId);
             const asteroidDTO = this.asteroidMap.get(asteroidId);
             if (asteroidDTO) {
                 asteroidDTO.hp = hp;
                 asteroidDTO.maxHp = maxHp;
-                this.io.emit(AsteroidEvent.hit, { ...asteroidDTO });
+                this.io.emit(AsteroidEvent.hit, { asteroidId, damage });
                 if (this.healthManager.isDead(asteroidId)) {
                     asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.HIT;
                     this.io.emit(AsteroidEvent.destroy, asteroidDTO);

@@ -62,9 +62,7 @@ export class WeaponSystem extends System {
             return;
         }
 
-        // Find the first component that implements WeaponLevelProvider<number>
-        const levelProvider = this.findWeaponLevelProvider<number>(entity);
-        this.fireWeapon(transform, weapon, levelProvider);
+        this.fireWeapon(transform, weapon);
     }
 
     /**
@@ -76,12 +74,12 @@ export class WeaponSystem extends System {
      *
      * Damage is scaled by the provider's level property if present, otherwise defaults to 1.
      */
-    private fireWeapon(transform: TransformComponent, weapon: WeaponComponent, levelProvider: WeaponLevelProvider<number> | undefined): void {
+    private fireWeapon(transform: TransformComponent, weapon: WeaponComponent): void {
         weapon.fire();
         const sprite = transform.sprite;
 
         // Get bullet from pool using dynamic sprite key
-        console.log(`[Client] [WeaponSystem] Firing bullet with sprite: ${weapon.bulletSpriteKey}`);
+        console.info(`[Client] [WeaponSystem] Firing bullet with sprite: ${weapon.bulletSpriteKey}`);
         const bullet = weapon.bullets.get(sprite.x, sprite.y, weapon.bulletSpriteKey) as Phaser.Physics.Arcade.Sprite;
         if (bullet) {
             // Explicitly set the texture to ensure it's correct (Phaser pool reuse can cause issues)
@@ -93,12 +91,7 @@ export class WeaponSystem extends System {
             bullet.setRotation(sprite.rotation + Math.PI / 2);
 
             // Set bullet velocity based on ship rotation
-            this.scene.physics.velocityFromRotation(sprite.rotation, weapon.bulletSpeed, bullet.body!.velocity);
-
-            // Apply damage scaling based on provider level
-            const scaledDamage = this.getDamageForLevel(weapon.damage, levelProvider?.level ? (levelProvider?.level as number) : 1);
-            bullet.setData('damage', scaledDamage);
-            console.log(`[WeaponSystem] Bullet fired with damage: ${scaledDamage} (Level ${levelProvider?.level.toString()})`);
+            this.scene.physics.velocityFromRotation(sprite.rotation, weapon.getAmmoSpeed(), bullet.body!.velocity);
 
             // Only deactivate bullet if it leaves the play area
             bullet.update = function () {
@@ -116,41 +109,5 @@ export class WeaponSystem extends System {
                 }
             });
         }
-    }
-
-    /**
-     * Scales weapon damage by provider level.
-     *
-     * @param damage - The base weapon damage.
-     * @param level - The provider's level (default 1).
-     * @returns The scaled damage value.
-     */
-    private getDamageForLevel(damage: number, level: number): number {
-        return damage * (1 + 0.5 * (level - 1));
-    }
-
-    /**
-     * Finds the first component on the entity that implements WeaponLevelProvider<T>.
-     *
-     * @param entity - The entity to search.
-     * @returns The provider component, or undefined if none found.
-     */
-    private findWeaponLevelProvider<T>(entity: Entity): WeaponLevelProvider<T> | undefined {
-        for (const component of entity.getAllComponents()) {
-            if (this.isWeaponLevelProvider(component)) {
-                return component as WeaponLevelProvider<T>;
-            }
-        }
-        return undefined;
-    }
-
-    /**
-     * Type guard to check if a component implements WeaponLevelProvider<T>.
-     *
-     * @param component - The component to check.
-     * @returns True if the component has a level property.
-     */
-    private isWeaponLevelProvider<T>(component: unknown): component is WeaponLevelProvider<T> {
-        return typeof component === 'object' && component !== null && 'level' in component && typeof (component as { level: unknown }).level !== 'undefined';
     }
 }

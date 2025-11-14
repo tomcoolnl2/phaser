@@ -51,7 +51,7 @@ export const GameConfig = {
         health: 3,
         maxVelocity: 100,
         collisionRadius: 70, // Distance for ship collision
-        bulletCollisionRadius: 60, // Distance for bullet collision
+        ammoCollisionRadius: 60, // Distance for ammo collision
     },
     pickup: {
         collisionRadius: 40,

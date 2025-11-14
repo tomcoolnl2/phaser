@@ -58,7 +58,7 @@ export class PickupSystem extends System {
 
         // Destroy pickup if it moves fully off-screen (with margin)
         if (Utils.isOutOfBounds({ x, y, threshold: 16, bounds: this.scene.scale })) {
-            console.log(`[PickupSystem] Destroying pickup for moving off-screen at (${x.toFixed(1)}, ${y.toFixed(1)})`);
+            console.info(`[PickupSystem] Destroying pickup for moving off-screen at (${x.toFixed(1)}, ${y.toFixed(1)})`);
             sprite.destroy();
             this.cleanupPickup(entity);
             // Remove the entity from the ECS/entity manager to stop further updates

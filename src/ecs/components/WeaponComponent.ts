@@ -24,7 +24,8 @@ import { WeaponDTO } from '@shared/dto/WeaponDTO';
  * ```
  */
 export class WeaponComponent extends Component {
-    public lastFired: number;
+    
+    public lastFired: number = 0;
 
     public triggerPulled: boolean = false;
 
@@ -35,7 +36,7 @@ export class WeaponComponent extends Component {
      * @param bulletSpriteKey - Texture key for bullet sprite
      */
     constructor(
-        public bullets: Phaser.Physics.Arcade.Group,
+        public bullets: Phaser.Physics.Arcade.Group & { children: Phaser.Physics.Arcade.Sprite[] },
         public readonly dto: WeaponDTO,
         public bulletSpriteKey: string
     ) {
@@ -60,6 +61,7 @@ export class WeaponComponent extends Component {
             this.dto.ammo--;
         }
     }
+
     /**
      * Gets the current ammo count.
      * @returns Current ammunition from the DTO
@@ -89,5 +91,28 @@ export class WeaponComponent extends Component {
      */
     public upgradeDamage(increaseAmount: number): void {
         this.dto.damage += increaseAmount;
+    }
+
+    /**
+     * Gets the current damage a ammo type can do.
+     * @returns Current damage from the DTO
+     */
+    public getDamage(): number {
+        return this.dto.damage;
+    }
+    
+    /**
+     * Sets a new damage level based on player level.
+     * @returns Current damage from the DTO
+     */
+    public setDamage(damage: number) {
+        this.dto.damage = damage;
+    }
+    /**
+     * Gets the current speed a ammo type can do.
+     * @returns Current speed for a ammo type
+     */
+    public getAmmoSpeed(): number {
+        return this.dto.speed;
     }
 }
