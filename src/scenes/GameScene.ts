@@ -2,10 +2,16 @@ import Phaser from 'phaser';
 import { v4 as uuidv4 } from 'uuid';
 import { Socket } from 'socket.io-client';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
-import { Coordinates, PlayerLevel } from '@shared/model';
+import { Coordinates } from '@shared/model';
+import { GameConfig } from '@shared/config';
+import { AmmoAmount } from '@shared/types';
+import { PlayerDTO } from '@shared/dto/Player.dto';
 import { AmmoPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
-import { GameConfig } from '@shared/config';
+import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
+import { SocketResponseSchema } from '@shared/dto/SocketResponse.schema';
+import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
+import { SocketRequestSchema } from '@shared/dto/SocketRequest.schema';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { InputSystem } from '@/ecs/systems/InputSystem';
 import { MovementSystem } from '@/ecs/systems/MovementSystem';
@@ -20,12 +26,9 @@ import { PickupEntityFactory } from '@/ecs/factories/PickupEntityFactory';
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
-import { MovementComponent } from '@/ecs/components/MovementComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
 import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
-import { AmmoAmount } from '@shared/types';
-import { PlayerDTO } from '@shared/dto/Player.dto';
 
 
 /**
@@ -168,27 +171,32 @@ export class GameScene extends Phaser.Scene {
         // Handle local player logic
         if (this.localPlayerId) {
             const localEntity = this.playerEntities.get(this.localPlayerId);
+            
             if (!localEntity) {
                 return;
             }
 
+            const player = localEntity.getComponent(PlayerComponent)!;
             const transform = localEntity.getComponent(TransformComponent)!;
             const weapon = localEntity.getComponent(WeaponComponent)!;
-            const movement = localEntity.getComponent(MovementComponent)!;
-            const player = localEntity.getComponent(PlayerComponent)!;
 
             // Emit player data to Vue HUD
             this.emitPlayerDataToVue();
 
-            // Send player state to server
-            this.socket.emit(PlayerEvent.coordinates, {
+            // Send player state to server (wrapped in SocketRequestDTO and validated)
+            const coordinates: Coordinates = {
                 x: transform.sprite.x,
                 y: transform.sprite.y,
-                r: transform.sprite.rotation,
-                f: weapon.triggerPulled,
-                m: movement.thrustInput !== 0,
-                a: weapon.dto.ammo,
-            });
+            };
+            const request: SocketRequestDTO<Coordinates> = { dto: coordinates };
+            try {
+                SocketRequestSchema.parse(request);
+                this.socket.emit(PlayerEvent.coordinates, request);
+            } catch (e) {
+                const message = e instanceof Error ? e.message : e.toString();
+                console.error(`[Client] Invalid SocketRequest for ${PlayerEvent.coordinates}: ${message}`);
+                // Optionally show user feedback
+            }
 
             // Check pickup collision
             if (this.pickupEntity) {
@@ -202,28 +210,32 @@ export class GameScene extends Phaser.Scene {
                             weapon.addAmmo();
                         }
 
-                        // Level up (cycle through 1-5)
-                        const newLevel = ((player.level % 5) + 1) as PlayerLevel;
-                        console.info(`[GameScene] Leveling up: ${player.level} -> ${newLevel}`);
-                        player.level = newLevel;
+                        const newLevel = player.levelUp();
+                        console.info(`[GameScene] Leveling up: ${player.level - 1} -> ${newLevel}`);
 
-                        // Update weapon damage based on new level
-                        const scaledDamage = 1 + 0.5 * (newLevel - 1);
                         if (weapon) {
-                            weapon.setDamage(scaledDamage);
-                            console.info(`[GameScene] Weapon damage set to: ${scaledDamage}`);
+                            weapon.setDamageForLevel(newLevel);
+                            console.info(`[GameScene] Weapon damage set to: ${weapon.getDamage()}`);
                         }
 
-                        this.socket.emit(PlayerEvent.pickup, {
+                        const ammoPickupDTO: AmmoPickupDTO = {
                             type: PickupType.AMMO,
                             id: this.localPlayerId,
                             amount: AmmoAmount.BULLET_AMMO,
-                        } as AmmoPickupDTO);
+                        };
 
-                        // Destroy pickup
-                        pickupTransform.sprite.destroy();
-                        this.entityManager.removeEntity(this.pickupEntity.id);
-                        this.pickupEntity = null;
+                        const request: SocketRequestDTO<AmmoPickupDTO> = { dto: ammoPickupDTO };
+
+                        try {
+                            SocketRequestSchema.parse(request);
+                            this.socket.emit(PlayerEvent.pickup, request);
+                            // Destroy pickup
+                            pickupTransform.sprite.destroy();
+                            this.entityManager.removeEntity(this.pickupEntity.id);
+                            this.pickupEntity = null;
+                        } catch (error: Error | unknown) {
+                            return this.handleSocketError(PlayerEvent.hit, error);
+                        }
                     }
                 }
             }
@@ -234,13 +246,18 @@ export class GameScene extends Phaser.Scene {
                 if (!asteroidTransform || !asteroidTransform.sprite.active) {
                     return;
                 }
-
                 const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, asteroidTransform.sprite.x, asteroidTransform.sprite.y);
-
                 if (distance < GameConfig.asteroid.collisionRadius) {
                     // Player hit by asteroid - game over
-                    this.socket.emit(PlayerEvent.hit, this.localPlayerId!);
-                    this.handlePlayerDeath(this.localPlayerId!);
+                    const playerDTO = PlayerEntityFactory.toDTO(localEntity);
+                    const hitRequest: SocketRequestDTO<PlayerDTO> = { dto: playerDTO };
+                    try {
+                        SocketRequestSchema.parse(hitRequest);
+                        this.socket.emit(PlayerEvent.hit, hitRequest);
+                        this.handlePlayerDeath(this.localPlayerId!);
+                    } catch (error: Error | unknown) {
+                        return this.handleSocketError(PlayerEvent.hit, error);
+                    }
                 }
             });
 
@@ -270,13 +287,15 @@ export class GameScene extends Phaser.Scene {
                         if (distance < GameConfig.asteroid.ammoCollisionRadius) {
                             bullet.setActive(false);
                             bullet.setVisible(false);
-
-                            this.socket.emit(AsteroidEvent.hit, {
-                                asteroidId: asteroidComponent.id,
-                                damage: weapon.getDamage()
-                            });
-
-                            this.asteroidSystem.flashAsteroid(asteroidTransform.sprite);
+                            const asteroidHitDTO = { asteroidId: asteroidComponent.id, damage: weapon.getDamage() };
+                            const hitRequest: SocketRequestDTO<AsteroidHitDTO> = { dto: asteroidHitDTO };
+                            try {
+                                SocketRequestSchema.parse(hitRequest);
+                                this.socket.emit(AsteroidEvent.hit, hitRequest);
+                                this.asteroidSystem.flashAsteroid(asteroidTransform.sprite);
+                            } catch (error: Error | unknown) {
+                                return this.handleSocketError(AsteroidEvent.hit, error);
+                            }
                         }
                     }
                 });
@@ -348,202 +367,275 @@ export class GameScene extends Phaser.Scene {
      */
     private setupSocketListeners(): void {
         // Player joined
-        this.socket.on(PlayerEvent.joined, (playerDTO: PlayerDTO) => {
-            console.info('[Client]', 'Player joined:', playerDTO);
-            playerDTO.spriteKey = 'shooter-sprite-enemy';
-            playerDTO.isLocal = false;
-            const entity = new PlayerEntityFactory(this, this.entityManager).create(playerDTO);
-            this.playerEntities.set(playerDTO.id, entity);
+        this.socket.on(PlayerEvent.joined, (response: SocketResponseDTO) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const playerDTO = response.dto as PlayerDTO;
+                playerDTO.spriteKey = 'shooter-sprite-enemy';
+                playerDTO.isLocal = false;
+                const factory = new PlayerEntityFactory(this, this.entityManager);
+                const entity = factory.fromDTO(playerDTO);
+                this.playerEntities.set(playerDTO.id, entity);
+                console.info('[Client]', 'Player joined:', playerDTO);
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(PlayerEvent.joined, error);
+            }
         });
 
         // Local player (protagonist)
-        this.socket.on(PlayerEvent.protagonist, (playerDTO: PlayerDTO) => {
-            console.info('[Client]', 'Local player:', playerDTO);
-            playerDTO.spriteKey = 'shooter-sprite';
-            playerDTO.isLocal = true;
-            const entity = new PlayerEntityFactory(this, this.entityManager).create(playerDTO);
-            this.playerEntities.set(playerDTO.id, entity);
-            this.localPlayerId = playerDTO.id;
+        this.socket.on(PlayerEvent.protagonist, (response: SocketResponseDTO) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const playerDTO = response.dto as PlayerDTO;
+                playerDTO.spriteKey = 'shooter-sprite';
+                playerDTO.isLocal = true;
+                const factory = new PlayerEntityFactory(this, this.entityManager);
+                const entity = factory.fromDTO(playerDTO);
+                this.playerEntities.set(playerDTO.id, entity);
+                this.localPlayerId = playerDTO.id;
+                console.info('[Client]', 'Local player:', playerDTO);
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(PlayerEvent.protagonist, error);
+            }
         });
 
         // Existing players
-        this.socket.on(PlayerEvent.players, (players: PlayerDTO[]) => {
-            console.info('[Client]', 'Existing players:', players);
-            players.forEach(playerDTO => {
-                playerDTO.spriteKey = 'shooter-sprite-enemy';
-                playerDTO.isLocal = false;
-                const entity = new PlayerEntityFactory(this, this.entityManager).create(playerDTO);
-                this.playerEntities.set(playerDTO.id, entity);
-            });
+        this.socket.on(PlayerEvent.players, (response: SocketResponseDTO) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const players = response.dto as PlayerDTO[];
+                const factory = new PlayerEntityFactory(this, this.entityManager);
+                players.forEach(playerDTO => {
+                    playerDTO.spriteKey = 'shooter-sprite-enemy';
+                    playerDTO.isLocal = false;
+                    const entity = factory.fromDTO(playerDTO);
+                    this.playerEntities.set(playerDTO.id, entity);
+                });
+                console.info('[Client]', 'Existing players:', players);
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(PlayerEvent.protagonist, error);
+            }
         });
 
         // Player quit
-        this.socket.on(PlayerEvent.quit, (playerId: string) => {
-            console.info('[Client]', 'Player quit:', playerId);
-            const entity = this.playerEntities.get(playerId);
-            if (entity) {
-                this.entityManager.removeEntity(entity.id);
-                this.playerEntities.delete(playerId);
+        this.socket.on(PlayerEvent.quit, (response: SocketResponseDTO<PlayerDTO>) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const player = response.dto as PlayerDTO;
+                console.info('[Client]', 'Player quit:', player.id);
+                const entity = this.playerEntities.get(player.id);
+                if (entity) {
+                    this.entityManager.removeEntity(entity.id);
+                    this.playerEntities.delete(player.id);
+                }
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(PlayerEvent.quit, error);
             }
         });
 
         // Player coordinates update
-        this.socket.on(PlayerEvent.coordinates, (playerDTO: PlayerDTO) => {
-            
-            if (!playerDTO.id || !playerDTO.position) {
-                return;
-            }
-
-            // Skip local player (we control them locally)
-            if (playerDTO.id === this.localPlayerId) {
-                return;
-            }
-
-            const entity = this.playerEntities.get(playerDTO.id);
-            if (entity) {
-                const transform = entity.getComponent(TransformComponent);
-                if (transform) {
-                    transform.sprite.setPosition(playerDTO.x, playerDTO.y);
+        this.socket.on(PlayerEvent.coordinates, (response: SocketResponseDTO) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const playerDTO = response.dto as PlayerDTO;
+                if (!playerDTO.id) {
+                    throw new Error('PlayerDTO missing id');
                 }
-
-                // TODO: Add visual feedback for thrust (m) and firing (f) if needed
+                // Skip local player (we control them locally)
+                if (playerDTO.id === this.localPlayerId) {
+                    return;
+                }
+                const entity = this.playerEntities.get(playerDTO.id);
+                if (entity) {
+                    const transform = entity.getComponent(TransformComponent);
+                    if (transform) {
+                        transform.sprite.setPosition(playerDTO.x, playerDTO.y);
+                    }
+                    // TODO: Add visual feedback for thrust (m) and firing (f) if needed
+                }
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(PlayerEvent.coordinates, error);
             }
         });
 
         // Player hit
-        this.socket.on(PlayerEvent.hit, (playerId: string) => {
-            console.info('[Client]', 'Player hit:', playerId);
-            const entity = this.playerEntities.get(playerId);
-            if (entity) {
-                if (playerId === this.localPlayerId) {
-                    // Game over for local player
-                    this.scene.pause();
-                    this.add
-                        .text(this.scale.width / 2, this.scale.height / 2, 'YOU DIED!', {
-                            fontSize: '64px',
-                            color: '#ff0000',
-                        })
-                        .setOrigin(0.5);
-                    setTimeout(() => window.location.reload(), 3000);
-                } else {
-                    // Remote player died
-                    this.entityManager.removeEntity(entity.id);
-                    this.playerEntities.delete(playerId);
+        this.socket.on(PlayerEvent.hit, (response: SocketResponseDTO<PlayerDTO>) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const player = response.dto as PlayerDTO;
+                console.info('[Client]', 'Player hit:', player);
+                const entity = this.playerEntities.get(player.id);
+                if (entity) {
+                    if (player.id === this.localPlayerId) {
+                        // Game over for local player
+                        this.scene.pause();
+                        this.add
+                            .text(this.scale.width / 2, this.scale.height / 2, 'YOU DIED!', {
+                                fontSize: '64px',
+                                color: '#ff0000',
+                            })
+                            .setOrigin(0.5);
+                        setTimeout(() => window.location.reload(), 3000); // TODO Let player select reload, or rematch
+                    } else {
+                        // Remote player died
+                        this.entityManager.removeEntity(entity.id);
+                        this.playerEntities.delete(player.id);
+                    }
                 }
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(PlayerEvent.hit, error);
             }
         });
 
         // Pickup drop
-        this.socket.on(GameEvent.drop, ({ x, y }: Coordinates) => {
-            console.info('[Client]', 'Pickup dropped:', { x, y });
-            if (this.pickupEntity) {
-                const transform = this.pickupEntity.getComponent(TransformComponent);
-                if (transform) {
-                    transform.sprite.destroy();
+        this.socket.on(GameEvent.drop, (response: SocketResponseDTO<Coordinates>) => {
+             try {
+                SocketResponseSchema.parse(response);
+                const { x, y } = response.dto as Coordinates;
+                console.info('[Client]', 'Pickup dropped:', { x, y });
+                if (this.pickupEntity) {
+                    const transform = this.pickupEntity.getComponent(TransformComponent);
+                    if (transform) {
+                        transform.sprite.destroy();
+                    }
+                    this.entityManager.removeEntity(this.pickupEntity.id);
                 }
-                this.entityManager.removeEntity(this.pickupEntity.id);
+                const dto: PickupDTO = {
+                    type: PickupType.AMMO,
+                    amount: AmmoAmount.BULLET_AMMO,
+                    x,
+                    y,
+                    id: uuidv4(),
+                };
+                this.pickupEntity = new PickupEntityFactory(this, this.entityManager).create(dto);
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(GameEvent.drop, error);
             }
-            const dto: PickupDTO = {
-                type: PickupType.AMMO,
-                amount: AmmoAmount.BULLET_AMMO,
-                x,
-                y,
-                id: uuidv4(),
-            };
-            this.pickupEntity = new PickupEntityFactory(this, this.entityManager).create(dto);
         });
 
         // Player pickup
-        this.socket.on(PlayerEvent.pickup, (pickupDTO: PickupDTO) => {
-            console.info('[Client]', 'Player picked up:', pickupDTO);
-            const entity = this.playerEntities.get(pickupDTO.id);
-            if (entity) {
-                switch (pickupDTO.type) {
-                    case PickupType.AMMO:
-                        const weapon = entity.getComponent(WeaponComponent);
-                        if (weapon) {
-                            weapon.addAmmo();
-                        }
-                        break;
-                    case PickupType.HEALTH:
-                        const health = entity.getComponent(HealthComponent);
-                        if (health) {
-                            health.currentHealth = Math.min(health.maxHealth, health.currentHealth + pickupDTO.amount);
-                        }
-                        break;
-                    default:
-                        break;
+        this.socket.on(PlayerEvent.pickup, (response: SocketResponseDTO<PickupDTO>) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const pickupDTO = response.dto as PickupDTO;
+                console.info('[Client]', 'Player picked up:', pickupDTO);
+                const entity = this.playerEntities.get(pickupDTO.id);
+                if (entity) {
+                    switch (pickupDTO.type) {
+                        case PickupType.AMMO:
+                            const weapon = entity.getComponent(WeaponComponent);
+                            if (weapon) {
+                                weapon.addAmmo();
+                            }
+                            break;
+                        case PickupType.HEALTH:
+                            const health = entity.getComponent(HealthComponent);
+                            if (health) {
+                                health.heal(pickupDTO.amount)
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 }
-            }
-            if (this.pickupEntity) {
-                // Remove entity first to trigger cleanup in systems
-                this.entityManager.removeEntity(this.pickupEntity.id);
+                if (this.pickupEntity) {
+                    // Remove entity first to trigger cleanup in systems
+                    this.entityManager.removeEntity(this.pickupEntity.id);
 
-                // Then destroy the sprite
-                const transform = this.pickupEntity.getComponent(TransformComponent);
-                if (transform) {
-                    transform.sprite.destroy();
+                    // Then destroy the sprite
+                    const transform = this.pickupEntity.getComponent(TransformComponent);
+                    if (transform) {
+                        transform.sprite.destroy();
+                    }
+
+                    this.pickupEntity = null;
                 }
-
-                this.pickupEntity = null;
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(PlayerEvent.pickup, error);
             }
         });
 
         // Asteroid created
-        this.socket.on(AsteroidEvent.create, (asteroidDTO: AsteroidDTO) => {
-            console.info('[Client]', 'Asteroid created:', asteroidDTO);
-            const entity = new AsteroidEntityFactory(this, this.entityManager).create(asteroidDTO);
-            // Set HP and maxHp if HealthComponent exists
-            const health = entity.getComponent(HealthComponent);
-            if (health) {
-                health.currentHealth = asteroidDTO.health;
-                if (asteroidDTO.maxHealth !== undefined) {
-                    health.maxHealth = asteroidDTO.maxHealth;
-                }
-            }
-            this.asteroidEntities.set(asteroidDTO.id, entity);
-        });
-
-        // Asteroid coordinates
-        this.socket.on(AsteroidEvent.coordinates, (asteroidDTO: AsteroidDTO) => {
-            const entity = this.asteroidEntities.get(asteroidDTO.id);
-            if (entity) {
-                const transform = entity.getComponent(TransformComponent);
-                if (transform) {
-                    transform.sprite.setPosition(asteroidDTO.x, asteroidDTO.y);
-                }
+        this.socket.on(AsteroidEvent.create, (response: SocketResponseDTO<AsteroidDTO>) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const asteroidDTO = response.dto as AsteroidDTO;
+                console.info('[Client]', 'Asteroid created:', asteroidDTO);
+                const entity = new AsteroidEntityFactory(this, this.entityManager).create(asteroidDTO);
+                // Set HP and maxHp if HealthComponent exists
                 const health = entity.getComponent(HealthComponent);
                 if (health) {
                     health.currentHealth = asteroidDTO.health;
-                    if (asteroidDTO.maxHealth !== undefined) health.maxHealth = asteroidDTO.maxHealth;
+                    if (asteroidDTO.maxHealth !== undefined) {
+                        health.maxHealth = asteroidDTO.maxHealth;
+                    }
                 }
+                this.asteroidEntities.set(asteroidDTO.id, entity);
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(AsteroidEvent.create, error);
+            }
+        });
+
+        // Asteroid coordinates
+        this.socket.on(AsteroidEvent.coordinates, (response: SocketResponseDTO<AsteroidDTO>) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const asteroidDTO = response.dto as AsteroidDTO;
+                const entity = this.asteroidEntities.get(asteroidDTO.id);
+                if (entity) {
+                    const transform = entity.getComponent(TransformComponent);
+                    if (transform) {
+                        transform.sprite.setPosition(asteroidDTO.x, asteroidDTO.y);
+                    }
+                    const health = entity.getComponent(HealthComponent);
+                    if (health) {
+                        health.currentHealth = asteroidDTO.health;
+                        if (asteroidDTO.maxHealth !== undefined) {
+                            health.maxHealth = asteroidDTO.maxHealth;
+                        }
+                    }
+                }
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(AsteroidEvent.coordinates, error);
             }
         });
 
         // Asteroid hit
-        this.socket.on(AsteroidEvent.hit, ({ asteroidId, damage }: AsteroidHitDTO) => {
-            console.info('[Client]', 'Asteroid hit', asteroidId, 'damage:', damage);
-            if (typeof damage !== 'number' || isNaN(damage)) {
-                throw new Error(`Invalid damage value received for asteroid hit: ${damage}`);
-            }
-            const entity = this.asteroidEntities.get(asteroidId);
-            if (entity) {
-                const health = entity.getComponent(HealthComponent);
-                if (health) {
-                    health.currentHealth = Math.max(0, health.currentHealth - damage);
+        this.socket.on(AsteroidEvent.hit, (response: SocketResponseDTO<AsteroidHitDTO>) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const { asteroidId, damage } = response.dto as AsteroidHitDTO;
+                console.info('[Client]', 'Asteroid hit', asteroidId, 'damage:', damage);
+                if (typeof damage !== 'number' || isNaN(damage)) {
+                    throw new Error(`Invalid damage value received for asteroid hit: ${damage}`);
                 }
-                const transform = entity.getComponent(TransformComponent);
-                if (transform) {
-                    this.asteroidSystem.flashAsteroid(transform.sprite);
+                const entity = this.asteroidEntities.get(asteroidId);
+                if (entity) {
+                    const health = entity.getComponent(HealthComponent);
+                    if (health) {
+                        health.currentHealth = Math.max(0, health.currentHealth - damage);
+                    }
+                    const transform = entity.getComponent(TransformComponent);
+                    if (transform) {
+                        this.asteroidSystem.flashAsteroid(transform.sprite);
+                    }
                 }
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(AsteroidEvent.hit, error);
             }
         });
 
         // Asteroid destroyed
-        this.socket.on(AsteroidEvent.destroy, (asteroidDTO: AsteroidDTO) => {
-            console.info('[Client]', 'Asteroid destroyed', asteroidDTO.id, asteroidDTO);
-            this.asteroidSystem.destroyAsteroidById(asteroidDTO.id);
-            this.asteroidEntities.delete(asteroidDTO.id);
+        this.socket.on(AsteroidEvent.destroy, (response: SocketResponseDTO<AsteroidDTO>) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const asteroidDTO = response.dto as AsteroidDTO;
+                console.info('[Client]', 'Asteroid destroyed:', asteroidDTO.id);
+                this.asteroidSystem.destroyAsteroidById(asteroidDTO.id);
+                this.asteroidEntities.delete(asteroidDTO.id);
+            } catch(error: Error | unknown) {
+                return this.handleSocketError(AsteroidEvent.destroy, error);
+            }
         });
     }
 
@@ -580,5 +672,16 @@ export class GameScene extends Phaser.Scene {
                 },
             })
         );
+    }
+
+    /**
+     * Handles socket errors by logging and optionally showing user feedback.
+     * @param event The socket event where the error occurred
+     * @param error The error object or message
+     */
+    private handleSocketError(event: string, error: Error | unknown): void {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`[Client] Socket error on event ${event}: ${message}`);
+        // TODO show user friendly message in the UI    
     }
 }

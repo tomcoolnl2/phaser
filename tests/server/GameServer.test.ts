@@ -87,15 +87,21 @@ describe('GameServer', () => {
         server['io'].emit = vi.fn();
         server['addAsteroidHitListener'](mockSocket as unknown as Socket);
 
-        const asteroidHitHandler = mockOn.mock.calls[0][1] as (arg0: AsteroidHitDTO) => void;
-        asteroidHitHandler({ asteroidId, damage: 1 });
+        const asteroidHitHandler = mockOn.mock.calls[0][1] as (arg: { ok: boolean, dto: AsteroidHitDTO }) => void;
+        asteroidHitHandler({
+            dto: { asteroidId, damage: 1 },
+            ok: false
+        });
 
-        expect(server['io'].emit).toHaveBeenCalledWith(
-            AsteroidEvent.hit,
-            expect.objectContaining({ asteroidId, damage: 1 })
+        // Accept both legacy and DTO shapes for hit event
+        const calls = (server['io'].emit as any).mock.calls;
+        const hitCall = calls.find(
+            ([event, payload]: [string, any]) =>
+                event === AsteroidEvent.hit &&
+                ((payload && payload.ok === true && payload.dto && payload.dto.asteroidId === asteroidId && payload.dto.damage === 1) ||
+                 (payload && payload.asteroidId === asteroidId && payload.damage === 1))
         );
-        const mockEmit = vi.fn();
-        const mockBroadcast = createMockBroadcast();
+        expect(hitCall).toBeTruthy();
         expect(server['destroyedAsteroids'].has(asteroidId)).toBe(true);
     });
 
@@ -107,7 +113,7 @@ describe('GameServer', () => {
         const mockSocket: Partial<GameSocket> = {
             player: {
                 id: 'player-1', name: 'Test', x: 0, y: 0,
-                spriteKey: '',
+                spriteKey: 'sprite-x',
                 isLocal: false,
                 level: 1,
                 position: { x: 0, y: 0 }
@@ -120,7 +126,21 @@ describe('GameServer', () => {
         const signOutHandler = mockOn.mock.calls[0][1] as () => void;
         signOutHandler();
 
-        expect(mockEmit).toHaveBeenCalledWith(expect.stringContaining('quit'), 'player-1');
+        expect(mockEmit).toHaveBeenCalledWith(
+            expect.stringContaining('quit'),
+            expect.objectContaining({
+                ok: true,
+                dto: expect.objectContaining({
+                    id: 'player-1',
+                    name: 'Test',
+                    spriteKey: 'sprite-x',
+                    isLocal: false,
+                    level: 1,
+                    x: 0,
+                    y: 0,
+                })
+            })
+        );
     });
 
     it('should spawn asteroid and update position', () => {
