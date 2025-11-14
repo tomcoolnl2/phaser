@@ -181,16 +181,16 @@ export class GameServer {
      * @param socket - The connected Socket
      */
     private addAsteroidHitListener(socket: Socket): void {
-        socket.on(AsteroidEvent.hit, ({ asteroidId, damage }: AsteroidHitDTO ) => {
+        socket.on(AsteroidEvent.hit, ({ asteroidId, damage }: AsteroidHitDTO) => {
             if (this.destroyedAsteroids.has(asteroidId)) {
                 return;
             }
-            const hp = this.healthManager.damage(asteroidId, damage);
-            const maxHp = this.healthManager.getMaxHealth(asteroidId);
             const asteroidDTO = this.asteroidMap.get(asteroidId);
+            const health = this.healthManager.damage(asteroidId, damage);
+            const maxHealth = this.healthManager.getMaxHealth(asteroidId);
             if (asteroidDTO) {
-                asteroidDTO.hp = hp;
-                asteroidDTO.maxHp = maxHp;
+                asteroidDTO.health = health;
+                asteroidDTO.maxHealth = maxHealth;
                 this.io.emit(AsteroidEvent.hit, { asteroidId, damage });
                 if (this.healthManager.isDead(asteroidId)) {
                     asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.HIT;
@@ -280,9 +280,9 @@ export class GameServer {
     private createAsteroid(socket: GameSocket, interval: number): void {
         setInterval(() => {
             if (!this.hasAsteroid) {
-                const initialAsteroidHealth = 3;
+                const initialAsteroidHealth = GameConfig.asteroid.health;
                 const asteroidId = uuidv4();
-                const dto: AsteroidDTO = { id: asteroidId, hp: initialAsteroidHealth, maxHp: initialAsteroidHealth, x: 0, y: 0 };
+                const dto: AsteroidDTO = { id: asteroidId, health: initialAsteroidHealth, maxHealth: initialAsteroidHealth, x: 0, y: 0 };
                 socket.asteroid = dto;
                 this.hasAsteroid = true;
                 this.healthManager.setHealth(asteroidId, initialAsteroidHealth, initialAsteroidHealth);
@@ -341,8 +341,8 @@ export class GameServer {
                     y,
                     dx,
                     dy,
-                    hp: initialAsteroidHealth,
-                    maxHp: initialAsteroidHealth,
+                    health: initialAsteroidHealth,
+                    maxHealth: initialAsteroidHealth,
                 };
 
                 this.asteroidMap.set(asteroidId, asteroidDTO);
@@ -362,8 +362,8 @@ export class GameServer {
             const update = setInterval(() => {
                 asteroidDTO.x += asteroidDTO.dx!;
                 asteroidDTO.y += asteroidDTO.dy!;
-                asteroidDTO.hp = this.healthManager.getHealth(asteroidDTO.id);
-                asteroidDTO.maxHp = this.healthManager.getMaxHealth(asteroidDTO.id);
+                asteroidDTO.health = this.healthManager.getHealth(asteroidDTO.id);
+                asteroidDTO.maxHealth = this.healthManager.getMaxHealth(asteroidDTO.id);
                 this.asteroidMap.set(asteroidDTO.id, asteroidDTO);
                 this.io.emit(AsteroidEvent.coordinates, asteroidDTO);
 

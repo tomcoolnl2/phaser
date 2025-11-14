@@ -36,7 +36,7 @@ export class WeaponComponent extends Component {
      * @param bulletSpriteKey - Texture key for bullet sprite
      */
     constructor(
-        public bullets: Phaser.Physics.Arcade.Group & { children: Phaser.Physics.Arcade.Sprite[] },
+        public bullets: Phaser.Physics.Arcade.Group,
         public readonly dto: WeaponDTO,
         public bulletSpriteKey: string
     ) {

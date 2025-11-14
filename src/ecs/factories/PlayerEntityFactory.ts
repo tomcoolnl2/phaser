@@ -60,7 +60,7 @@ export class PlayerEntityFactory {
         sprite.setBounce(0);
         sprite.setDamping(true);
         sprite.setDrag(0.99);
-        sprite.setMaxVelocity(GameConfig.player.maxVelocity);
+        sprite.setMaxVelocity(GameConfig.player.maxVelocity); 
         sprite.setAngularDrag(GameConfig.player.angularDrag);
         sprite.setData('id', playerDTO.id);
 
@@ -85,11 +85,17 @@ export class PlayerEntityFactory {
         // Weapon component - only for local players
         if (playerDTO.isLocal) {
             const bulletGroup = this.scene.physics.add.group({
+                classType: Phaser.Physics.Arcade.Sprite,
                 maxSize: 10,
-            });
+            }) as Phaser.Physics.Arcade.Group;
 
             const dto = new WeaponDTO(playerDTO.id + '-weapon');
-            const weapon = new WeaponComponent(bulletGroup, dto, `laser-level-${playerDTO.level}`);
+            // Pass the bulletGroup directly; use getArray() where needed for iteration
+            const weapon = new WeaponComponent(
+                bulletGroup,
+                dto,
+                `laser-level-${playerDTO.level}`
+            );
             entity.addComponent(weapon);
         }
 

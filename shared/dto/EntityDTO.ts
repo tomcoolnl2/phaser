@@ -5,6 +5,6 @@ export interface EntityDTO {
 }
 
 export interface EntityWithHealthDTO extends EntityDTO {
-    hp: number;
-    maxHp?: number;
+    health: number;
+    maxHealth?: number;
 }

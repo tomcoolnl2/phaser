@@ -28,7 +28,6 @@ import { AmmoAmount } from '@shared/types';
 import { PlayerDTO } from '@shared/dto/PlayerDTO';
 
 
-
 /**
  * Main gameplay scene that manages all game entities and ECS systems.
  *
@@ -232,7 +231,9 @@ export class GameScene extends Phaser.Scene {
             // Check asteroid collisions with local player
             this.asteroidEntities.forEach(asteroidEntity => {
                 const asteroidTransform = asteroidEntity.getComponent(TransformComponent);
-                if (!asteroidTransform || !asteroidTransform.sprite.active) return;
+                if (!asteroidTransform || !asteroidTransform.sprite.active) {
+                    return;
+                }
 
                 const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, asteroidTransform.sprite.x, asteroidTransform.sprite.y);
 
@@ -253,7 +254,7 @@ export class GameScene extends Phaser.Scene {
                         return;
                     }
 
-                    const bullets = weapon.bullets.children.entries as unknown as Phaser.GameObjects.Sprite[];
+                    const bullets = weapon.bullets.children.getArray() as Phaser.GameObjects.Sprite[];
                     for (const bullet of bullets) {
                         if (!bullet.active) {
                             continue;
@@ -496,9 +497,9 @@ export class GameScene extends Phaser.Scene {
             // Set HP and maxHp if HealthComponent exists
             const health = entity.getComponent(HealthComponent);
             if (health) {
-                health.currentHealth = asteroidDTO.hp;
-                if (asteroidDTO.maxHp !== undefined) {
-                    health.maxHealth = asteroidDTO.maxHp;
+                health.currentHealth = asteroidDTO.health;
+                if (asteroidDTO.maxHealth !== undefined) {
+                    health.maxHealth = asteroidDTO.maxHealth;
                 }
             }
             this.asteroidEntities.set(asteroidDTO.id, entity);
@@ -514,8 +515,8 @@ export class GameScene extends Phaser.Scene {
                 }
                 const health = entity.getComponent(HealthComponent);
                 if (health) {
-                    health.currentHealth = asteroidDTO.hp;
-                    if (asteroidDTO.maxHp !== undefined) health.maxHealth = asteroidDTO.maxHp;
+                    health.currentHealth = asteroidDTO.health;
+                    if (asteroidDTO.maxHealth !== undefined) health.maxHealth = asteroidDTO.maxHealth;
                 }
             }
         });

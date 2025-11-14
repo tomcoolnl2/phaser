@@ -7,7 +7,7 @@ import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
-import { AsteroidDTO } from '@shared/dto/AsteroidDTO';
+import { AsteroidDTO, AsteroidDTOSchema } from '@shared/dto/AsteroidDTO';
 
 /**
  * AsteroidEntityFactory - OOP ECS factory for asteroid entities.
@@ -41,8 +41,9 @@ export class AsteroidEntityFactory {
      */
     public create(dto: AsteroidDTO): Entity {
 
-        if (!this.validDTO(dto)) {
-            throw new Error('Invalid AsteroidDTO: missing required fields');
+        const result = AsteroidDTOSchema.safeParse(dto);
+        if (!result.success) {
+            throw new Error('Invalid AsteroidDTO: ' + result.error.message);
         }
 
         const entity = this.entityManager.createEntity();
@@ -53,19 +54,10 @@ export class AsteroidEntityFactory {
         sprite.setData('id', dto.id);
         sprite.play('asteroid-spin');
         entity.addComponent(new TransformComponent(sprite));
-        entity.addComponent(new HealthComponent(dto.hp));
+        entity.addComponent(new HealthComponent(dto.health));
         entity.addComponent(new ColliderComponent(GameConfig.asteroid.collisionRadius, CollisionLayer.ASTEROID));
         entity.addComponent(new AsteroidComponent(dto.id));
         
         return entity;
-    }
-
-    /**
-     * Validates the AsteroidDTO for required fields.
-     * @param dto - AsteroidDTO to validate
-     * @returns true if valid, false otherwise
-     */
-    private validDTO({ id, x, y, hp }: AsteroidDTO): boolean {
-        return !!id && typeof x === 'number' && typeof y === 'number' && typeof hp === 'number';
     }
 }

@@ -52,7 +52,7 @@ export class MovementSystem extends System {
             movement.targetRotation += movement.rotationInput * movement.rotationSpeed;
         }
         sprite.rotation = movement.targetRotation;
-
+        
         // Handle thrust with smooth acceleration
         if (movement.thrustInput > 0) {
             // Use deltaTime for frame-rate independence

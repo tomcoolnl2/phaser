@@ -14,19 +14,24 @@ const mockSprite = {
 	setMaxVelocity: () => mockSprite,
 	setAngularDrag: () => mockSprite,
 	setData: () => mockSprite,
+	setRotation: () => mockSprite,
 	rotation: 0,
 };
 
-const mockGroup = {};
+const bulletGroup = {
+    children: {
+        getArray: () => []
+    }
+} as unknown as Phaser.Physics.Arcade.Group;
 
 const mockPhysics = {
-	add: {
-		sprite: vi.fn(() => mockSprite),
-		group: vi.fn(() => mockGroup),
-	},
+    add: {
+        sprite: vi.fn(() => mockSprite),
+        group: vi.fn(() => bulletGroup),
+    },
 };
-
 const mockScene = { physics: mockPhysics } as any;
+
 
 describe('PlayerEntityFactory', () => {
 	let factory: PlayerEntityFactory;
