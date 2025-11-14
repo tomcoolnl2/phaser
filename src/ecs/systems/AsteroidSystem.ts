@@ -74,22 +74,22 @@ export class AsteroidSystem extends System {
      */
     public update(entity: Entity, _deltaTime: number): void {
         const transform = entity.getComponent(TransformComponent)!;
-        const asteroid = entity.getComponent(AsteroidComponent)!;
+        const { asteroidId } = entity.getComponent(AsteroidComponent)!;
         const health = entity.getComponent(HealthComponent)!;
 
         // Check if sprite is destroyed
         if (!transform.sprite.active) {
-            this.cleanupHealthText(asteroid.asteroidId);
+            this.cleanupHealthText(asteroidId);
             return;
         }
 
         // Create health text if it doesn't exist yet
-        if (!this.healthTexts.has(asteroid.asteroidId)) {
-            this.createHealthText(asteroid.asteroidId, transform, health);
+        if (!this.healthTexts.has(asteroidId)) {
+            this.createHealthText(asteroidId, transform, health);
         }
 
         // Update health text
-        const healthText = this.healthTexts.get(asteroid.asteroidId);
+        const healthText = this.healthTexts.get(asteroidId);
         if (healthText) {
             healthText.setPosition(transform.sprite.x, transform.sprite.y + 80);
             healthText.setText(`HP: ${health.currentHealth}`);
@@ -106,7 +106,7 @@ export class AsteroidSystem extends System {
 
         // Destroy asteroid if health reaches 0
         if (health.isDead() && transform.sprite.active) {
-            this.destroyAsteroid(entity, transform, asteroid.asteroidId);
+            this.destroyAsteroid(entity, transform, asteroidId);
         }
     }
 

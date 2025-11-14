@@ -1,5 +1,5 @@
 import { Component } from '@/ecs/core/Component';
-import { PickupType } from '@/ecs/types/PickupType';
+import { PickupType } from '@shared/dto/PickupDTO';
 
 /**
  * Component that marks an entity as a collectible pickup.

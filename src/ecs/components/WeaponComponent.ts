@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Component } from '../core/Component';
+import { WeaponDTO } from '@shared/dto/WeaponDTO';
 
 /**
  * WeaponComponent - Manages weapon state, ammo, and firing logic.
@@ -12,11 +13,7 @@ import { Component } from '../core/Component';
  * ```typescript
  * const weapon = new WeaponComponent(
  *     bulletGroup,        // Phaser bullet pool
- *     50,                 // starting ammo
- *     999,                // max ammo
- *     250,                // fire rate (ms between shots)
- *     400,                // bullet speed
- *     1,                  // damage
+ *     dto,                // WeaponDTO instance
  *     'laser-level-1'     // bullet sprite key
  * );
  *
@@ -27,61 +24,22 @@ import { Component } from '../core/Component';
  * ```
  */
 export class WeaponComponent extends Component {
+    public lastFired: number;
 
-    /** Current ammunition count */
-    public ammo: number;
-
-    /** Maximum ammunition capacity */
-    public maxAmmo: number;
-
-    /** Milliseconds between shots */
-    public fireRate: number;
-
-    /** Bullet travel speed in pixels per second */
-    public bulletSpeed: number;
-
-    /** Damage dealt per bullet */
-    public damage: number;
-
-    /** Timestamp of last shot (for fire rate limiting) */
-    public lastFired: number = 0;
-
-    /** Phaser group managing bullet sprites */
-    public bullets: Phaser.Physics.Arcade.Group;
-
-    /** Current bullet sprite texture key */
-    public bulletSpriteKey: string = 'laser-level-1';
-
-    /** Whether the trigger is currently pulled (set by InputSystem) */
     public triggerPulled: boolean = false;
 
     /**
      * Creates a new WeaponComponent.
      * @param bullets - Phaser group for bullet pooling
-     * @param ammo - Starting ammunition count
-     * @param maxAmmo - Maximum ammunition capacity
-     * @param fireRate - Milliseconds between shots
-     * @param bulletSpeed - Bullet travel speed in pixels/second
-     * @param damage - Damage per bullet hit
+     * @param dto - local state DTO for weapon configuration
      * @param bulletSpriteKey - Texture key for bullet sprite
      */
     constructor(
-        bullets: Phaser.Physics.Arcade.Group,
-        ammo: number,
-        maxAmmo: number = 999,
-        fireRate: number = 300,
-        bulletSpeed: number = 600,
-        damage: number = 1,
-        bulletSpriteKey: string = 'laser-level-1'
+        public bullets: Phaser.Physics.Arcade.Group,
+        public readonly dto: WeaponDTO,
+        public bulletSpriteKey: string
     ) {
         super();
-        this.bullets = bullets;
-        this.ammo = ammo;
-        this.maxAmmo = maxAmmo;
-        this.fireRate = fireRate;
-        this.bulletSpeed = bulletSpeed;
-        this.damage = damage;
-        this.bulletSpriteKey = bulletSpriteKey;
     }
 
     /**
@@ -90,7 +48,7 @@ export class WeaponComponent extends Component {
      */
     public canFire(): boolean {
         const now = Date.now();
-        return this.ammo > 0 && now - this.lastFired >= this.fireRate;
+        return this.dto.ammo > 0 && now - this.lastFired >= this.dto.fireRate;
     }
 
     /**
@@ -98,17 +56,23 @@ export class WeaponComponent extends Component {
      */
     public fire(): void {
         this.lastFired = Date.now();
-        if (this.ammo > 0) {
-            this.ammo--;
+        if (this.dto.ammo > 0) {
+            this.dto.ammo--;
         }
+    }
+    /**
+     * Gets the current ammo count.
+     * @returns Current ammunition from the DTO
+     */
+    public getAmmo() {
+        return this.dto.ammo;
     }
 
     /**
      * Adds ammunition, capped at maxAmmo.
-     * @param amount - Amount of ammunition to add
      */
-    public addAmmo(amount: number): void {
-        this.ammo = Math.min(this.maxAmmo, this.ammo + amount);
+    public addAmmo(): void {
+        this.dto.addAmmo();
     }
 
     /**
@@ -116,7 +80,7 @@ export class WeaponComponent extends Component {
      * @param reductionPercent - Percentage to reduce cooldown (0.1 = 10% faster)
      */
     public upgradeFireRate(reductionPercent: number): void {
-        this.fireRate = Math.max(50, this.fireRate * (1 - reductionPercent));
+        this.dto.fireRate = Math.max(50, this.dto.fireRate * (1 - reductionPercent));
     }
 
     /**
@@ -124,6 +88,6 @@ export class WeaponComponent extends Component {
      * @param increaseAmount - Amount to add to base damage
      */
     public upgradeDamage(increaseAmount: number): void {
-        this.damage += increaseAmount;
+        this.dto.damage += increaseAmount;
     }
 }

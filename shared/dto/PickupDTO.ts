@@ -1,19 +1,22 @@
+import { Coordinates } from '@shared/model';
+import { AmmoAmount, AmmoType } from '@shared/types';
+
 export enum PickupType {
     AMMO = 'ammo',
     HEALTH = 'health',
 }
 
-export type PickupDTO = AmmoPickupDTO | HealthPickupDTO;
+export type PickupDTO = (AmmoPickupDTO | HealthPickupDTO) & Coordinates;
 
 export type AmmoPickupDTO = {
     type: PickupType.AMMO;
-    uuid: string;
-    amount: boolean;
-    // ammoType: bullet | rocket | mine; // future use
+    id: string;
+    amount: AmmoAmount;
+    ammoType?: AmmoType;
 };
 
 export type HealthPickupDTO = {
     type: PickupType.HEALTH;
-    uuid: string;
-    amount: 1;
+    id: string;
+    amount: 1 | 2;
 };

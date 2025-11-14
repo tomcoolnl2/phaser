@@ -1,9 +1,8 @@
 import { Socket } from 'socket.io';
-import { SpaceShip } from '../shared/model';
+import { PlayerDTO } from '@shared/model';
+import { AsteroidDTO } from '@shared/dto/AsteroidDTO';
 
 export interface GameSocket extends Socket {
-    player?: SpaceShip;
-    asteroid?: {
-        id: string;
-    };
+    player?: PlayerDTO;
+    asteroid?: AsteroidDTO;
 }

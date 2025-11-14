@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
+import { v4 as uuidv4 } from 'uuid';
 import { Socket } from 'socket.io-client';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
-import { SpaceShip, Coordinates, Player as PlayerData, Level } from '@shared/model';
-import { PickupDTO } from '@shared/dto/PickupDTO';
+import { Coordinates, Player as PlayerData, PlayerLevel } from '@shared/model';
+import { AmmoPickupDTO, PickupDTO, PickupType } from '@shared/dto/PickupDTO';
 import { AsteroidDTO } from '@shared/dto/AsteroidDTO';
 import { GameConfig } from '@shared/config';
 import { EntityManager } from '@/ecs/core/EntityManager';
@@ -13,15 +14,19 @@ import { WeaponUpgradeSystem } from '@/ecs/systems/WeaponUpgradeSystem';
 import { RenderSystem } from '@/ecs/systems/RenderSystem';
 import { AsteroidSystem } from '@/ecs/systems/AsteroidSystem';
 import { PickupSystem } from '@/ecs/systems/PickupSystem';
-import { createPlayerEntity, createAsteroidEntity, createPickupEntity } from '@/ecs/core/factories';
 import { Entity } from '@/ecs/core/Entity';
+import { AsteroidEntityFactory } from '@/ecs/factories/AsteroidEntityFactory';
+import { PickupEntityFactory } from '@/ecs/factories/PickupEntityFactory';
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 import { MovementComponent } from '@/ecs/components/MovementComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
-import { PickupType } from '@/ecs/types/PickupType';
+// import { PickupType } from '@shared/types';
+import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
+import { AmmoAmount } from '@shared/types';
+import { PlayerDTO } from '@shared/dto/PlayerDTO';
 
 /**
  * Main gameplay scene that manages all game entities and ECS systems.
@@ -162,12 +167,14 @@ export class GameScene extends Phaser.Scene {
         // Handle local player logic
         if (this.localPlayerId) {
             const localEntity = this.playerEntities.get(this.localPlayerId);
-            if (!localEntity) return;
+            if (!localEntity) {
+                return;
+            }
 
             const transform = localEntity.getComponent(TransformComponent)!;
-            const weapon = localEntity.getComponent(WeaponComponent);
+            const weapon = localEntity.getComponent(WeaponComponent)!;
             const movement = localEntity.getComponent(MovementComponent)!;
-            const playerComp = localEntity.getComponent(PlayerComponent)!;
+            const player = localEntity.getComponent(PlayerComponent)!;
 
             // Emit player data to Vue HUD
             this.emitPlayerDataToVue();
@@ -177,9 +184,9 @@ export class GameScene extends Phaser.Scene {
                 x: transform.sprite.x,
                 y: transform.sprite.y,
                 r: transform.sprite.rotation,
-                f: weapon?.triggerPulled || false,
+                f: weapon.triggerPulled,
                 m: movement.thrustInput !== 0,
-                a: weapon?.ammo || 0,
+                a: weapon.dto.ammo,
             });
 
             // Check pickup collision
@@ -191,18 +198,19 @@ export class GameScene extends Phaser.Scene {
                     if (distance < GameConfig.pickup.collisionRadius) {
                         // Player collected the pickup
                         if (weapon) {
-                            weapon.addAmmo(GameConfig.player.ammoPerPickup);
+                            weapon.addAmmo();
                         }
 
                         // Level up (cycle through 1-5)
-                        const newLevel = ((playerComp.level % 5) + 1) as Level;
-                        console.log(`[GameScene] Leveling up: ${playerComp.level} -> ${newLevel}`);
-                        playerComp.setLevel(newLevel);
+                        const newLevel = ((player.level % 5) + 1) as PlayerLevel;
+                        console.log(`[GameScene] Leveling up: ${player.level} -> ${newLevel}`);
+                        player.level = newLevel;
 
                         this.socket.emit(PlayerEvent.pickup, {
-                            uuid: this.localPlayerId,
-                            ammo: true,
-                        });
+                            type: PickupType.AMMO,
+                            id: this.localPlayerId,
+                            amount: AmmoAmount.BULLET_AMMO,
+                        } as AmmoPickupDTO);
 
                         // Destroy pickup
                         pickupTransform.sprite.destroy();
@@ -230,8 +238,8 @@ export class GameScene extends Phaser.Scene {
             if (weapon && weapon.bullets) {
                 this.asteroidEntities.forEach(asteroidEntity => {
                     const asteroidTransform = asteroidEntity.getComponent(TransformComponent);
-                    const asteroidComp = asteroidEntity.getComponent(AsteroidComponent);
-                    if (!asteroidTransform || !asteroidTransform.sprite.active || !asteroidComp) {
+                    const asteroidComponent = asteroidEntity.getComponent(AsteroidComponent);
+                    if (!asteroidTransform || !asteroidTransform.sprite.active || !asteroidComponent) {
                         return;
                     }
 
@@ -243,7 +251,7 @@ export class GameScene extends Phaser.Scene {
                                 // Bullet hit asteroid
                                 bullet.setActive(false);
                                 bullet.setVisible(false);
-                                this.socket.emit(AsteroidEvent.hit, asteroidComp.asteroidId);
+                                this.socket.emit(AsteroidEvent.hit, asteroidComponent.id);
                                 // Flash effect
                                 this.asteroidSystem.flashAsteroid(asteroidTransform.sprite);
                             }
@@ -318,26 +326,32 @@ export class GameScene extends Phaser.Scene {
      */
     private setupSocketListeners(): void {
         // Player joined
-        this.socket.on(PlayerEvent.joined, (playerData: SpaceShip) => {
-            console.log('[Client]', 'Player joined:', playerData);
-            const entity = createPlayerEntity(this, this.entityManager, playerData, 'shooter-sprite-enemy', false);
-            this.playerEntities.set(playerData.id, entity);
+        this.socket.on(PlayerEvent.joined, (playerDTO: PlayerDTO) => {
+            console.log('[Client]', 'Player joined:', playerDTO);
+            playerDTO.spriteKey = 'shooter-sprite-enemy';
+            playerDTO.isLocal = false;
+            const entity = new PlayerEntityFactory(this, this.entityManager).create(playerDTO);
+            this.playerEntities.set(playerDTO.id, entity);
         });
 
         // Local player (protagonist)
-        this.socket.on(PlayerEvent.protagonist, (playerData: SpaceShip) => {
-            console.log('[Client]', 'Local player:', playerData);
-            const entity = createPlayerEntity(this, this.entityManager, playerData, 'shooter-sprite', true);
-            this.playerEntities.set(playerData.id, entity);
-            this.localPlayerId = playerData.id;
+        this.socket.on(PlayerEvent.protagonist, (playerDTO: PlayerDTO) => {
+            console.log('[Client]', 'Local player:', playerDTO);
+            playerDTO.spriteKey = 'shooter-sprite';
+            playerDTO.isLocal = true;
+            const entity = new PlayerEntityFactory(this, this.entityManager).create(playerDTO);
+            this.playerEntities.set(playerDTO.id, entity);
+            this.localPlayerId = playerDTO.id;
         });
 
         // Existing players
-        this.socket.on(PlayerEvent.players, (players: SpaceShip[]) => {
+        this.socket.on(PlayerEvent.players, (players: PlayerDTO[]) => {
             console.log('[Client]', 'Existing players:', players);
-            players.forEach(playerData => {
-                const entity = createPlayerEntity(this, this.entityManager, playerData, 'shooter-sprite-enemy', false);
-                this.playerEntities.set(playerData.id, entity);
+            players.forEach(playerDTO => {
+                playerDTO.spriteKey = 'shooter-sprite-enemy';
+                playerDTO.isLocal = false;
+                const entity = new PlayerEntityFactory(this, this.entityManager).create(playerDTO);
+                this.playerEntities.set(playerDTO.id, entity);
             });
         });
 
@@ -352,24 +366,23 @@ export class GameScene extends Phaser.Scene {
         });
 
         // Player coordinates update
-        this.socket.on(PlayerEvent.coordinates, (data: PlayerData) => {
-            if (!data.player || !data.coors) return;
+        this.socket.on(PlayerEvent.coordinates, (playerData: PlayerData) => {
+            if (!playerData.player || !playerData.coors) {
+                return;
+            }
 
             // Skip local player (we control them locally)
-            if (data.player.id === this.localPlayerId) return;
+            if (playerData.player.id === this.localPlayerId) {
+                return;
+            }
 
-            const entity = this.playerEntities.get(data.player.id);
+            const entity = this.playerEntities.get(playerData.player.id);
             if (entity) {
                 const transform = entity.getComponent(TransformComponent);
-                const weapon = entity.getComponent(WeaponComponent);
 
                 if (transform) {
-                    transform.sprite.setPosition(data.coors.x, data.coors.y);
-                    transform.sprite.setRotation(data.coors.r);
-                }
-
-                if (weapon && data.coors.a !== undefined) {
-                    weapon.ammo = data.coors.a;
+                    transform.sprite.setPosition(playerData.coors.x, playerData.coors.y);
+                    transform.sprite.setRotation(playerData.coors.r);
                 }
 
                 // TODO: Add visual feedback for thrust (m) and firing (f) if needed
@@ -400,8 +413,8 @@ export class GameScene extends Phaser.Scene {
         });
 
         // Pickup drop
-        this.socket.on(GameEvent.drop, (coords: Coordinates) => {
-            console.log('[Client]', 'Pickup dropped:', coords);
+        this.socket.on(GameEvent.drop, ({ x, y }: Coordinates) => {
+            console.log('[Client]', 'Pickup dropped:', { x, y });
             if (this.pickupEntity) {
                 const transform = this.pickupEntity.getComponent(TransformComponent);
                 if (transform) {
@@ -409,17 +422,36 @@ export class GameScene extends Phaser.Scene {
                 }
                 this.entityManager.removeEntity(this.pickupEntity.id);
             }
-            this.pickupEntity = createPickupEntity(this, this.entityManager, coords.x, coords.y, PickupType.AMMO, 10);
+            const dto: PickupDTO = {
+                type: PickupType.AMMO,
+                amount: AmmoAmount.BULLET_AMMO,
+                x,
+                y,
+                id: uuidv4(),
+            };
+            this.pickupEntity = new PickupEntityFactory(this, this.entityManager).create(dto);
         });
 
         // Player pickup
         this.socket.on(PlayerEvent.pickup, (pickupDTO: PickupDTO) => {
             console.log('[Client]', 'Player picked up:', pickupDTO);
-            const entity = this.playerEntities.get(pickupDTO.uuid);
+            const entity = this.playerEntities.get(pickupDTO.id);
             if (entity) {
-                const weapon = entity.getComponent(WeaponComponent);
-                if (weapon) {
-                    weapon.addAmmo(10);
+                switch (pickupDTO.type) {
+                    case PickupType.AMMO:
+                        const weapon = entity.getComponent(WeaponComponent);
+                        if (weapon) {
+                            weapon.addAmmo();
+                        }
+                        break;
+                    case PickupType.HEALTH:
+                        const health = entity.getComponent(HealthComponent);
+                        if (health) {
+                            health.currentHealth = Math.min(health.maxHealth, health.currentHealth + pickupDTO.amount);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
             if (this.pickupEntity) {
@@ -439,7 +471,7 @@ export class GameScene extends Phaser.Scene {
         // Asteroid created
         this.socket.on(AsteroidEvent.create, (asteroidDTO: AsteroidDTO) => {
             console.log('[Client]', 'Asteroid created:', asteroidDTO);
-            const entity = createAsteroidEntity(this, this.entityManager, asteroidDTO.id, asteroidDTO.x, asteroidDTO.y);
+            const entity = new AsteroidEntityFactory(this, this.entityManager).create(asteroidDTO);
             // Set HP and maxHp if HealthComponent exists
             const health = entity.getComponent(HealthComponent);
             if (health) {
@@ -506,19 +538,19 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
-        const playerComp = entity.getComponent(PlayerComponent);
-        const weapon = entity.getComponent(WeaponComponent);
+        const player = entity.getComponent(PlayerComponent);
+        const weapon = entity.getComponent(WeaponComponent)!;
 
-        if (!playerComp) {
+        if (!player) {
             return;
         }
 
         window.dispatchEvent(
             new CustomEvent('updatePlayerData', {
                 detail: {
-                    name: playerComp.playerName,
-                    level: playerComp.level,
-                    ammo: weapon?.ammo || 0,
+                    name: player.playerName,
+                    level: player.level,
+                    ammo: weapon.getAmmo(),
                     score: 0, // TODO: Add score tracking
                 },
             })

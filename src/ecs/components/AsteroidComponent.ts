@@ -15,9 +15,9 @@ import { Component } from '../core/Component';
 export class AsteroidComponent extends Component {
     /**
      * Creates a new AsteroidComponent.
-     * @param asteroidId - Unique identifier for the asteroid
+     * @param id - Unique identifier for the asteroid
      */
-    constructor(public asteroidId: string) {
+    constructor(public id: string) {
         super();
     }
 }

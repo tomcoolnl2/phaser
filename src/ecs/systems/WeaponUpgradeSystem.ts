@@ -1,9 +1,9 @@
-import { System } from '../core/System';
-import { Entity } from '../core/Entity';
-import { PlayerComponent } from '../components/PlayerComponent';
-import { WeaponComponent } from '../components/WeaponComponent';
-import { ComponentClass, Component } from '../core/Component';
-import type { Level } from '../../../shared/model';
+import { PlayerLevel } from '@shared/model';
+import { System } from '@/ecs/core/System';
+import { Entity } from '@/ecs/core/Entity';
+import { ComponentClass, Component } from '@/ecs/core/Component';
+import { PlayerComponent } from '@/ecs/components/PlayerComponent';
+import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 
 /**
  * WeaponUpgradeSystem - Automatically updates weapon visuals based on player level.
@@ -37,7 +37,9 @@ export class WeaponUpgradeSystem extends System {
         const playerComp = entity.getComponent(PlayerComponent);
         const weaponComp = entity.getComponent(WeaponComponent);
 
-        if (!playerComp || !weaponComp) return;
+        if (!playerComp || !weaponComp) {
+            return;
+        }
 
         // Update bullet sprite based on level
         const bulletSpriteKey = this.getBulletSpriteForLevel(playerComp.level);
@@ -47,7 +49,7 @@ export class WeaponUpgradeSystem extends System {
         }
     }
 
-    private getBulletSpriteForLevel(level: Level): string {
+    private getBulletSpriteForLevel(level: PlayerLevel): string {
         return `laser-level-${level}`;
     }
 }

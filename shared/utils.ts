@@ -17,7 +17,6 @@ export interface OutOfBoundsParams {
     bounds?: { width: number; height: number };
 }
 
-
 /**
  * Checks if a point is beyond the play area, with an optional threshold/margin.
  * @param params - Object containing x, y, threshold, and base (play area)

@@ -1,5 +1,6 @@
-import { Component } from '../core/Component';
-import type { Level } from '../../../shared/model';
+import type { PlayerLevel, WeaponLevelProvider } from '@shared/model';
+import { Component } from '@/ecs/core/Component';
+import { GameConfig } from '@shared/config';
 
 /**
  * PlayerComponent - Marks an entity as a player and stores player-specific data.
@@ -21,21 +22,18 @@ import type { Level } from '../../../shared/model';
  * playerComp.addScore(100);
  * ```
  */
-export class PlayerComponent extends Component {
-    /** Unique identifier for this player */
-    public playerId: string;
-
-    /** Display name of the player */
-    public playerName: string;
-
-    /** Whether this is the local player (controlled by this client) */
-    public isLocal: boolean;
-
-    /** Current player level (1-5) */
-    public level: Level = 1;
-
-    /** Current player score */
-    public score: number = 0;
+/**
+ * PlayerComponent - Marks an entity as a player and stores player-specific data.
+ *
+ * Identifies player entities and stores player metadata like ID, name, level, and score.
+ * The `isLocal` flag distinguishes the local player (controlled by this client) from remote players.
+ */
+export class PlayerComponent extends Component implements WeaponLevelProvider<PlayerLevel> {
+    /**
+     * Current player score.
+     * @private
+     */
+    private _score: number = 0;
 
     /**
      * Creates a new PlayerComponent.
@@ -44,27 +42,56 @@ export class PlayerComponent extends Component {
      * @param isLocal - True if this is the local player
      * @param level - Starting level (1-5)
      */
-    constructor(playerId: string, playerName: string, isLocal: boolean = false, level: Level = 1) {
+    constructor(
+        /** Unique player identifier */
+        public playerId: string,
+        /** Display name for the player */
+        public playerName: string,
+        /** True if this is the local player */
+        public isLocal = false,
+        /** Starting level (1-5) */
+        private _level = GameConfig.player.startingLevel as PlayerLevel
+    ) {
         super();
-        this.playerId = playerId;
-        this.playerName = playerName;
-        this.isLocal = isLocal;
-        this.level = level;
     }
 
     /**
-     * Updates the player's level.
+     * Gets the player's current level.
+     * @returns The current player level (1-5)
+     */
+    public get level(): PlayerLevel {
+        return this._level;
+    }
+
+    /**
+     * Updates the player's level, clamped to the maximum allowed.
      * @param level - New level (1-5)
      */
-    public setLevel(level: Level): void {
-        this.level = level;
+    public set level(level: PlayerLevel) {
+        this._level = Math.min(level, GameConfig.player.playerMaxLevel) as PlayerLevel;
     }
 
     /**
-     * Adds points to the player's score.
-     * @param points - Points to add
+     * Gets the player's current score.
+     * @returns The current score
      */
-    public addScore(points: number): void {
-        this.score += points;
+    public get score(): number {
+        return this._score;
+    }
+
+    /**
+     * Sets the player's score.
+     * @param score - New score value
+     */
+    public set score(score: number) {
+        this._score = score;
+    }
+
+    /**
+     * Adds to the player's score.
+     * @param amount - Amount to add to the score
+     */
+    public addScore(amount: number): void {
+        this._score += amount;
     }
 }
