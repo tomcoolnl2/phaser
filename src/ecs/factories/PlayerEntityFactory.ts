@@ -80,7 +80,7 @@ export class PlayerEntityFactory {
             GameConfig.player.maxVelocity,
             GameConfig.player.acceleration,
             0.97, // drag value
-            0.03 // rotation speed
+            2.0 // rotation speed
         );
         movement.targetRotation = sprite.rotation;
         entity.addComponent(movement);

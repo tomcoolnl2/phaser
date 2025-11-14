@@ -47,20 +47,22 @@ export class MovementSystem extends System {
         const sprite = transform.sprite;
         const body = sprite.body as Phaser.Physics.Arcade.Body;
 
-        // Handle rotation
+        // Frame-rate independent rotation
+        const delta = this.scene.game.loop.delta / 1000; // seconds
         if (movement.rotationInput !== 0) {
-            movement.targetRotation += movement.rotationInput * movement.rotationSpeed;
+            sprite.rotation += movement.rotationInput * movement.rotationSpeed * delta;
         }
-        sprite.rotation = movement.targetRotation;
-        
-        // Adjust sprite origin based on rotation input for sharper turns
+
+        // Smoothly interpolate sprite origin.x for animated steering
+        let targetOriginX = 0.5;
         if (movement.rotationInput < 0) {
-            sprite.setOrigin(0.6, 0.5); // pivot more to the right when turning left
+            targetOriginX = 0.6;
         } else if (movement.rotationInput > 0) {
-            sprite.setOrigin(0.4, 0.5); // pivot more to the left when turning right
-        } else {
-            sprite.setOrigin(0.5, 0.5); // center when not turning
+            targetOriginX = 0.4;
         }
+        // Interpolate current origin.x toward targetOriginX
+        const lerpedOriginX = Phaser.Math.Linear(sprite.originX, targetOriginX, 0.2);
+        sprite.setOrigin(lerpedOriginX, 0.5);
 
         // Handle thrust with smooth acceleration
         if (movement.thrustInput > 0) {

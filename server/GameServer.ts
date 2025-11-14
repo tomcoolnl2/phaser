@@ -263,8 +263,10 @@ export class GameServer {
                         this.asteroidMap.delete(asteroidId);
                     }
                 }
-            } catch(error) {
-
+            } catch(e) {
+                const message = e instanceof Error ? e.message : e.toString();
+                socket.broadcast.emit(AsteroidEvent.destroy, { ok: false, message });
+                logger.error({ error: message }, `Invalid SocketResponse for ${AsteroidEvent.destroy}`);
             }
         });
     }
