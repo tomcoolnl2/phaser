@@ -31,6 +31,6 @@
         "target": "ES2020",
         "jsx": "preserve"
     },
-    "include": ["src/**/*", "tests/**/*"],
+    "include": ["src/**/*", "tests/**/*", "shared/dto/asteroidDTO.zod.ts"],
     "exclude": ["node_modules"]
 }

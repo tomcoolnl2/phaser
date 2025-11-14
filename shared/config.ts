@@ -48,7 +48,7 @@ export const GameConfig = {
         },
     },
     asteroid: {
-        health: 3,
+        health: 10,
         maxVelocity: 100,
         collisionRadius: 70, // Distance for ship collision
         ammoCollisionRadius: 60, // Distance for ammo collision
@@ -58,7 +58,7 @@ export const GameConfig = {
     },
     server: {
         asteroidSpeed: 2, // pixels per update
-        asteroidSpawnInterval: 10000, // milliseconds
+        asteroidSpawnInterval: 5000, // milliseconds
         pickupSpawnInterval: 15000, // milliseconds
     },
     // Debug settings - controlled by VITE_DEV_MODE or individual VITE_* flags

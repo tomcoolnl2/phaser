@@ -52,6 +52,15 @@ export class MovementSystem extends System {
             movement.targetRotation += movement.rotationInput * movement.rotationSpeed;
         }
         sprite.rotation = movement.targetRotation;
+        
+        // Adjust sprite origin based on rotation input for sharper turns
+        if (movement.rotationInput < 0) {
+            sprite.setOrigin(0.6, 0.5); // pivot more to the right when turning left
+        } else if (movement.rotationInput > 0) {
+            sprite.setOrigin(0.4, 0.5); // pivot more to the left when turning right
+        } else {
+            sprite.setOrigin(0.5, 0.5); // center when not turning
+        }
 
         // Handle thrust with smooth acceleration
         if (movement.thrustInput > 0) {

@@ -43,8 +43,8 @@ export class BootScene extends Phaser.Scene {
         this.load.image('space', 'assets/background.jpg');
 
         this.load.spritesheet('shooter-sprite', 'assets/ship.png', {
-            frameWidth: 32,
-            frameHeight: 32,
+            frameWidth: 50,
+            frameHeight: 64,
         });
 
         this.load.spritesheet('shooter-sprite-enemy', 'assets/ship-enemy.png', {
