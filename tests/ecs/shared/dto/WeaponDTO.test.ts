@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { WeaponDTO } from '@shared/dto/WeaponDTO';
+import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { AmmoType, AmmoAmount, AmmoMaxAmount } from '@shared/types';
 
 describe('WeaponDTO', () => {

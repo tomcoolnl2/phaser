@@ -7,7 +7,7 @@ import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
-import { AsteroidDTO, AsteroidDTOSchema } from '@shared/dto/AsteroidDTO';
+import { AsteroidDTO, AsteroidDTOSchema } from '@shared/dto/Asteroid.dto';
 
 /**
  * AsteroidEntityFactory - OOP ECS factory for asteroid entities.
@@ -23,10 +23,8 @@ import { AsteroidDTO, AsteroidDTOSchema } from '@shared/dto/AsteroidDTO';
  * - AsteroidComponent: Asteroid metadata (id)
  */
 export class AsteroidEntityFactory {
-    constructor(
-        private scene: Phaser.Scene,
-        private entityManager: EntityManager
-    ) {}
+
+    constructor(private scene: Phaser.Scene, private entityManager: EntityManager) {}
 
     /**
      * Creates an asteroid entity with all necessary ECS components:

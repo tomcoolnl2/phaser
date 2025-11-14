@@ -4,7 +4,7 @@ import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { MovementComponent } from '@/ecs/components/MovementComponent';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
-import { PickupDTO } from '@shared/dto/PickupDTO';
+import { PickupDTO } from '@shared/dto/Pickup.dto';
 
 /**
  * PickupEntityFactory - OOP ECS factory for pickups.
@@ -26,6 +26,7 @@ export class PickupEntityFactory {
      * @returns The newly created pickup entity
      */
     public create(dto: PickupDTO): Entity {
+
         if (!this.validDTO(dto)) {
             throw new Error('Invalid PickupDTO: missing required fields');
         }

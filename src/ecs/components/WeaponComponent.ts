@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { Component } from '../core/Component';
-import { WeaponDTO } from '@shared/dto/WeaponDTO';
+import { Component } from '@/ecs/core/Component';
+import { WeaponDTO } from '@shared/dto/Weapon.dto';
 
 /**
  * WeaponComponent - Manages weapon state, ammo, and firing logic.

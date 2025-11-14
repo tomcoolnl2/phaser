@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
-import { WeaponDTO } from '@shared/dto/WeaponDTO';
+import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { AmmoType } from '@shared/types';
 
 // Mock Phaser group

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EntityWithHealthDTO } from './EntityDTO';
+import { EntityWithHealthDTO } from './Entity.dto';
 
 export enum AsteroidSize {
     SMALL = 's',

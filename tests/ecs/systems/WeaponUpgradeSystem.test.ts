@@ -5,7 +5,7 @@ import { WeaponUpgradeSystem } from '@/ecs/systems/WeaponUpgradeSystem';
 import { Entity } from '@/ecs/core/Entity';
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
-import { WeaponDTO } from '@shared/dto/WeaponDTO';
+import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { AmmoType } from '@shared/types';
 import { GameScene } from '@/scenes/GameScene';
 

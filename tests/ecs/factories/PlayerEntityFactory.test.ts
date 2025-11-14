@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
 import { EntityManager } from '@/ecs/core/EntityManager';
-import { PlayerDTO } from '@shared/dto/PlayerDTO';
+import { PlayerDTO } from '@shared/dto/Player.dto';
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 

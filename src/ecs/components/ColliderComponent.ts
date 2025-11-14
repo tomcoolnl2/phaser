@@ -1,5 +1,5 @@
 import { Component } from '../core/Component';
-import { CollisionLayer } from '../types/CollisionLayer';
+import { CollisionLayer } from '@shared/types';
 
 /**
  * ColliderComponent - Defines collision detection properties for an entity.

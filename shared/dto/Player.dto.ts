@@ -1,5 +1,6 @@
-import { GameConfig } from '@shared/config';
-import { Coordinates, PlayerLevel } from '@shared/model';
+import { GameConfig } from '../../shared/config';
+import { Coordinates, PlayerLevel } from '../../shared/model';
+
 
 /**
  * Data Transfer Object representing a player in the game.
@@ -7,7 +8,8 @@ import { Coordinates, PlayerLevel } from '@shared/model';
  */
 export class PlayerDTO implements Coordinates {
 
-    private _level : number;
+    private _level : number = GameConfig.player.startingLevel;
+
     /**
      * @param id - Unique identifier for the player
      * @param name - Player's display name
@@ -15,7 +17,7 @@ export class PlayerDTO implements Coordinates {
      * @param y - Y coordinate of the player
      * @param spriteKey - Key for the player's sprite asset
      * @param isLocal - Whether this player is the local player
-     * @param _level - Player's current level (defaults to starting level)
+     * @param level - Initial level of the player (default: starting level from GameConfig)
      */
     constructor(
         public id: string,

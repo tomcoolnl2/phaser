@@ -2,9 +2,9 @@ import Phaser from 'phaser';
 import { v4 as uuidv4 } from 'uuid';
 import { Socket } from 'socket.io-client';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
-import { Coordinates, Player as PlayerData, PlayerLevel } from '@shared/model';
-import { AmmoPickupDTO, PickupDTO, PickupType } from '@shared/dto/PickupDTO';
-import { AsteroidDTO, AsteroidHitDTO } from '@shared/dto/AsteroidDTO';
+import { Coordinates, PlayerLevel } from '@shared/model';
+import { AmmoPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
+import { AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
 import { GameConfig } from '@shared/config';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { InputSystem } from '@/ecs/systems/InputSystem';
@@ -25,7 +25,7 @@ import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
 import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
 import { AmmoAmount } from '@shared/types';
-import { PlayerDTO } from '@shared/dto/PlayerDTO';
+import { PlayerDTO } from '@shared/dto/Player.dto';
 
 
 /**
@@ -388,23 +388,22 @@ export class GameScene extends Phaser.Scene {
         });
 
         // Player coordinates update
-        this.socket.on(PlayerEvent.coordinates, (playerData: PlayerData) => {
-            if (!playerData.player || !playerData.coors) {
+        this.socket.on(PlayerEvent.coordinates, (playerDTO: PlayerDTO) => {
+            
+            if (!playerDTO.id || !playerDTO.position) {
                 return;
             }
 
             // Skip local player (we control them locally)
-            if (playerData.player.id === this.localPlayerId) {
+            if (playerDTO.id === this.localPlayerId) {
                 return;
             }
 
-            const entity = this.playerEntities.get(playerData.player.id);
+            const entity = this.playerEntities.get(playerDTO.id);
             if (entity) {
                 const transform = entity.getComponent(TransformComponent);
-
                 if (transform) {
-                    transform.sprite.setPosition(playerData.coors.x, playerData.coors.y);
-                    transform.sprite.setRotation(playerData.coors.r);
+                    transform.sprite.setPosition(playerDTO.x, playerDTO.y);
                 }
 
                 // TODO: Add visual feedback for thrust (m) and firing (f) if needed
