@@ -497,7 +497,9 @@ export class GameScene extends Phaser.Scene {
             const health = entity.getComponent(HealthComponent);
             if (health) {
                 health.currentHealth = asteroidDTO.hp;
-                if (asteroidDTO.maxHp !== undefined) health.maxHealth = asteroidDTO.maxHp;
+                if (asteroidDTO.maxHp !== undefined) {
+                    health.maxHealth = asteroidDTO.maxHp;
+                }
             }
             this.asteroidEntities.set(asteroidDTO.id, entity);
         });

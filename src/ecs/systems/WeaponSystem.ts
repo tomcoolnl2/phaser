@@ -100,14 +100,6 @@ export class WeaponSystem extends System {
                     this.setVisible(false);
                 }
             };
-
-            // Optionally, keep the 2-second timeout as a backup
-            this.scene.time.delayedCall(2000, () => {
-                if (bullet.active) {
-                    bullet.setActive(false);
-                    bullet.setVisible(false);
-                }
-            });
         }
     }
 }
