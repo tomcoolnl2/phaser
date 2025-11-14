@@ -7,7 +7,7 @@ import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
-import { AsteroidDTO, AsteroidDTOSchema } from '@shared/dto/Asteroid.dto';
+import { AsteroidDTO, AsteroidSchema } from '@shared/dto/Asteroid.dto';
 
 /**
  * AsteroidEntityFactory - OOP ECS factory for asteroid entities.
@@ -39,7 +39,7 @@ export class AsteroidEntityFactory {
      */
     public create(dto: AsteroidDTO): Entity {
 
-        const result = AsteroidDTOSchema.safeParse(dto);
+        const result = AsteroidSchema.safeParse(dto);
         if (!result.success) {
             throw new Error('Invalid AsteroidDTO: ' + result.error.message);
         }

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { GameConfig } from '@shared/config';
 import { CollisionLayer } from '@shared/types';
 import { PlayerDTO } from '@shared/dto/Player.dto';
-import { PlayerDTOSchema } from '@shared/dto/Player.schema';
+import { PlayerSchema } from '@shared/dto/Player.schema';
 import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { Entity } from '@/ecs/core/Entity';
@@ -52,7 +52,7 @@ export class PlayerEntityFactory {
     public create(playerDTO: PlayerDTO): Entity {
 
 
-        const result = PlayerDTOSchema.safeParse(playerDTO);
+        const result = PlayerSchema.safeParse(playerDTO);
         if (!result.success) {
             throw new Error('Invalid PlayerDTO: ' + result.error.message);
         }

@@ -4,7 +4,7 @@ import { GameConfig } from '../../shared/config';
 /**
  * Zod schema for PlayerDTO validation
  */
-export const PlayerDTOSchema = z.object({
+export const PlayerSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1),
     x: z.number(),
