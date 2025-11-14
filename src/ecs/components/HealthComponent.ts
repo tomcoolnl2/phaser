@@ -19,6 +19,7 @@ import { Component } from '@/ecs/core/Component';
  * ```
  */
 export class HealthComponent extends Component {
+    
     /** Current health points */
     public currentHealth: number;
 

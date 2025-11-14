@@ -49,8 +49,7 @@ export class PlayerEntityFactory {
      * @param playerDTO - PlayerDTO instance containing player initialization data (id, name, position, level, ammo)
      * @returns The newly created player entity
      */
-    public create(playerDTO: PlayerDTO): Entity {
-
+    public fromDTO(playerDTO: PlayerDTO): Entity {
 
         const result = PlayerSchema.safeParse(playerDTO);
         if (!result.success) {
@@ -120,5 +119,29 @@ export class PlayerEntityFactory {
         entity.addComponent(upgrades);
 
         return entity;
+    }
+
+    /**
+     * Converts a Player ECS Entity to a PlayerDTO.
+     * @param entity - The player entity instance
+     * @returns PlayerDTO
+     */
+    public static toDTO(entity: Entity): PlayerDTO {
+        const player = entity.getComponent(PlayerComponent);
+        const transform = entity.getComponent(TransformComponent);
+        if (!player || !transform) {
+            throw new Error('Entity missing PlayerComponent or TransformComponent');
+        }
+        // spriteKey is not on PlayerComponent, so we must infer it from the sprite texture key
+        const spriteKey = transform.sprite.texture.key;
+        return new PlayerDTO(
+            player.playerId,
+            player.playerName,
+            transform.x,
+            transform.y,
+            spriteKey,
+            player.isLocal,
+            player.level
+        );
     }
 }

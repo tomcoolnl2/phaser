@@ -87,6 +87,11 @@ export class PlayerComponent extends Component implements WeaponLevelProvider<Pl
         this._score = score;
     }
 
+    public levelUp(): PlayerLevel {
+        this.level += 1;
+        return this.level as PlayerLevel;
+    }
+
     /**
      * Adds to the player's score.
      * @param amount - Amount to add to the score

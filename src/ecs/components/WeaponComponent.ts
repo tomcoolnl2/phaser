@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Component } from '@/ecs/core/Component';
 import { WeaponDTO } from '@shared/dto/Weapon.dto';
+import { PlayerLevel } from '@shared/model';
 
 /**
  * WeaponComponent - Manages weapon state, ammo, and firing logic.
@@ -102,12 +103,22 @@ export class WeaponComponent extends Component {
     }
     
     /**
-     * Sets a new damage level based on player level.
-     * @returns Current damage from the DTO
+     * Sets a new damage level.
+     * @param damage - New damage value to set
      */
-    public setDamage(damage: number) {
+    public setDamage(damage: number): void {
         this.dto.damage = damage;
     }
+    
+    /**
+     * Sets a new damage level based on player level.
+     * @param level - Player level to scale damage for
+     */
+    public setDamageForLevel(level: PlayerLevel): void {
+        const scaledDamage = 1 + 0.5 * (level - 1)
+        this.setDamage(scaledDamage);
+    }
+
     /**
      * Gets the current speed a ammo type can do.
      * @returns Current speed for a ammo type
