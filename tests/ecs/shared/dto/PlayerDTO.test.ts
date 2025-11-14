@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GameConfig } from '@shared/config';
 import { PlayerLevel } from '@shared/model';
-import { PlayerDTO } from '@shared/dto/PlayerDTO';
+import { PlayerDTO } from '@shared/dto/Player.dto';
 
 describe('PlayerDTO', () => {
 	let dto: PlayerDTO;

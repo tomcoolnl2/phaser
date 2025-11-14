@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import { GameConfig } from '@shared/config';
 import { CollisionLayer } from '@shared/types';
-import { PlayerDTO } from '@shared/dto/PlayerDTO';
+import { PlayerDTO } from '@shared/dto/Player.dto';
+import { PlayerSchema } from '@shared/dto/Player.schema';
+import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
@@ -11,7 +13,6 @@ import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
-import { WeaponDTO } from '@shared/dto/WeaponDTO';
 
 /**
  * PlayerEntityFactory - OOP ECS factory for player entities.
@@ -49,6 +50,13 @@ export class PlayerEntityFactory {
      * @returns The newly created player entity
      */
     public create(playerDTO: PlayerDTO): Entity {
+
+
+        const result = PlayerSchema.safeParse(playerDTO);
+        if (!result.success) {
+            throw new Error('Invalid PlayerDTO: ' + result.error.message);
+        }
+
         // Create the entity
         const entity = this.entityManager.createEntity();
 

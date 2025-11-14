@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { AsteroidEntityFactory } from '@/ecs/factories/AsteroidEntityFactory';
 import { EntityManager } from '@/ecs/core/EntityManager';
-import { AsteroidDTO } from '@shared/dto/AsteroidDTO';
+import { AsteroidDTO } from '@shared/dto/Asteroid.dto';
 
 const mockSprite = {
 	setOrigin: () => mockSprite,

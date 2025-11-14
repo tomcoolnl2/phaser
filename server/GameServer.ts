@@ -3,13 +3,13 @@ import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { PlayerDTO } from '@shared/dto/PlayerDTO';
+import { PlayerDTO } from '@shared/dto/Player.dto';
 import * as Utils from '@shared/utils';
 import { GameConfig } from '@shared/config';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
-import { Coordinates, Player } from '@shared/model';
-import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO } from '@shared/dto/AsteroidDTO';
-import { PickupDTO, PickupType } from '@shared/dto/PickupDTO';
+import { Coordinates } from '@shared/model';
+import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
+import { PickupDTO } from '@shared/dto/Pickup.dto';
 import { GameSocket } from './model';
 import { logger } from './logger';
 import { HealthManager } from './HealthManager';
@@ -96,9 +96,10 @@ export class GameServer {
      * Sets up Socket.IO and attaches all event listeners for multiplayer sync.
      */
     private setupSocketIO(): void {
-        this.io.on('connection', (socket: GameSocket) => {
-            logger.info({ socketId: socket.id }, 'Player connected');
-            this.attachListeners(socket);
+        this.io.on('connection', (socket: Socket) => {
+            const gameSocket = socket as GameSocket;
+            logger.info({ socketId: gameSocket.id }, 'Player connected');
+            this.attachListeners(gameSocket);
         });
     }
 
@@ -121,7 +122,7 @@ export class GameServer {
      * @param socket - The connected GameSocket
      */
     private addSignOnListener(socket: GameSocket): void {
-        socket.on(PlayerEvent.authenticate, (player: Player, gameSize?: Coordinates) => {
+        socket.on(PlayerEvent.authenticate, (player: PlayerDTO, gameSize?: Coordinates) => {
             // Send existing players to new player
             socket.emit(PlayerEvent.players, this.getAllPlayers());
 
@@ -145,10 +146,9 @@ export class GameServer {
      * @param socket - The connected GameSocket
      */
     private addMovementListener(socket: GameSocket): void {
-        socket.on(PlayerEvent.coordinates, (coords: Coordinates) => {
+        socket.on(PlayerEvent.coordinates, (coordinates: Coordinates) => {
             socket.broadcast.emit(PlayerEvent.coordinates, {
-                coors: coords,
-                player: socket.player,
+                player: { ...socket.player, x: coordinates.x, y: coordinates.y } as PlayerDTO,
             });
         });
     }
@@ -220,16 +220,6 @@ export class GameServer {
      */
     private addPickupListener(socket: GameSocket): void {
         socket.on(PlayerEvent.pickup, (pickupDTO: PickupDTO) => {
-            if (socket.player) {
-                switch (pickupDTO.type) {
-                    case PickupType.AMMO:
-                        socket.player.ammo += pickupDTO.amount;
-                        break;
-                    case PickupType.HEALTH:
-                        // Handle health pickup when needed
-                        break;
-                }
-            }
             socket.broadcast.emit(PlayerEvent.pickup, pickupDTO);
         });
     }
@@ -240,14 +230,15 @@ export class GameServer {
      * @param player - Player data from client
      * @param windowSize - Game window size
      */
-    private createPlayer(socket: GameSocket, player: Player, windowSize: Coordinates): void {
-        socket.player = {
-            name: player.name || `Player ${Math.floor(Math.random() * 1000)}`,
-            id: uuidv4(),
-            ammo: GameConfig.weapon.startingAmmo,
-            x: this.randomInt(100, windowSize.x - 100),
-            y: this.randomInt(100, windowSize.y - 100),
-        };
+    private createPlayer(socket: GameSocket, player: PlayerDTO, windowSize: Coordinates): void {
+        const id = uuidv4();
+        const name = player.name || `Player ${Math.floor(Math.random() * 1000)}`;
+        const x = this.randomInt(100, windowSize.x - 100);
+        const y = this.randomInt(100, windowSize.y - 100);
+        const spriteKey = player.spriteKey;
+        const isLocal = false;
+        const level = player.level ?? GameConfig.player.startingLevel;
+        socket.player = new PlayerDTO(id, name, x, y, spriteKey, isLocal, level);;
     }
 
     /**

@@ -1,5 +1,5 @@
-import { GameConfig } from '@shared/config';
-import { AmmoAmount, AmmoMaxAmount, AmmoType } from '@shared/types';
+import { GameConfig } from '../../shared/config';
+import { AmmoAmount, AmmoMaxAmount, AmmoType } from '../types';
 
 const MAX_AMMO: Record<AmmoType, number> = {
     [AmmoType.BULLET]: AmmoMaxAmount.BULLET_MAX_AMMO,

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PickupEntityFactory } from '@/ecs/factories/PickupEntityFactory';
 import { EntityManager } from '@/ecs/core/EntityManager';
-import { PickupDTO, PickupType } from '@shared/dto/PickupDTO';
+import { PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 
 const mockSprite = {
 	setOrigin: () => mockSprite,

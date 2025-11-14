@@ -4,7 +4,9 @@ import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { MovementComponent } from '@/ecs/components/MovementComponent';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
-import { PickupDTO } from '@shared/dto/PickupDTO';
+import { PickupDTO } from '@shared/dto/Pickup.dto';
+import { PickupSchema } from '@shared/dto/Pickup.schema';
+import { z, ZodSafeParseResult } from 'zod';
 
 /**
  * PickupEntityFactory - OOP ECS factory for pickups.
@@ -26,8 +28,10 @@ export class PickupEntityFactory {
      * @returns The newly created pickup entity
      */
     public create(dto: PickupDTO): Entity {
-        if (!this.validDTO(dto)) {
-            throw new Error('Invalid PickupDTO: missing required fields');
+
+        const result: ZodSafeParseResult<z.infer<typeof PickupSchema>> = PickupSchema.safeParse(dto);
+        if (!result.success) {
+            throw new Error('Invalid PickupDTO: ' + result.error.message);
         }
 
         const entity = this.entityManager.createEntity();
@@ -56,9 +60,5 @@ export class PickupEntityFactory {
         entity.addComponent(pickup);
 
         return entity;
-    }
-
-    private validDTO(dto: PickupDTO): boolean {
-        return !!dto && typeof dto.x === 'number' && typeof dto.y === 'number' && !!dto.type && typeof dto.amount === 'number';
     }
 }
