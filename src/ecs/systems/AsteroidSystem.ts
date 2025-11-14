@@ -25,6 +25,7 @@ import { HealthComponent } from '@/ecs/components/HealthComponent';
  * ```
  */
 export class AsteroidSystem extends System {
+
     /** Map of asteroid IDs to their health text displays */
     private healthTexts: Map<string, Phaser.GameObjects.Text> = new Map();
 
@@ -45,12 +46,12 @@ export class AsteroidSystem extends System {
      *
      * @param asteroidId - Unique identifier for the asteroid
      */
-    public destroyAsteroidById(asteroidId: string): void {
+    public destroyAsteroidById(id: string): void {
         // Find the entity with this asteroidId
         const entities = this.scene.entityManager.queryEntities(AsteroidComponent, TransformComponent);
         const entity = entities.find((e: Entity) => {
             const asteroid = e.getComponent(AsteroidComponent);
-            return asteroid && asteroid.asteroidId === asteroidId;
+            return asteroid && asteroid.id === id;
         });
         if (!entity) {
             return;
@@ -59,7 +60,7 @@ export class AsteroidSystem extends System {
         if (!transform) {
             return;
         }
-        this.destroyAsteroid(entity, transform, asteroidId);
+        this.destroyAsteroid(entity, transform, id);
     }
 
     /**
@@ -74,22 +75,22 @@ export class AsteroidSystem extends System {
      */
     public update(entity: Entity, _deltaTime: number): void {
         const transform = entity.getComponent(TransformComponent)!;
-        const asteroid = entity.getComponent(AsteroidComponent)!;
+        const { id } = entity.getComponent(AsteroidComponent)!;
         const health = entity.getComponent(HealthComponent)!;
 
         // Check if sprite is destroyed
         if (!transform.sprite.active) {
-            this.cleanupHealthText(asteroid.asteroidId);
+            this.cleanupHealthText(id);
             return;
         }
 
         // Create health text if it doesn't exist yet
-        if (!this.healthTexts.has(asteroid.asteroidId)) {
-            this.createHealthText(asteroid.asteroidId, transform, health);
+        if (!this.healthTexts.has(id)) {
+            this.createHealthText(id, transform, health);
         }
 
         // Update health text
-        const healthText = this.healthTexts.get(asteroid.asteroidId);
+        const healthText = this.healthTexts.get(id);
         if (healthText) {
             healthText.setPosition(transform.sprite.x, transform.sprite.y + 80);
             healthText.setText(`HP: ${health.currentHealth}`);
@@ -106,18 +107,18 @@ export class AsteroidSystem extends System {
 
         // Destroy asteroid if health reaches 0
         if (health.isDead() && transform.sprite.active) {
-            this.destroyAsteroid(entity, transform, asteroid.asteroidId);
+            this.destroyAsteroid(entity, transform, id);
         }
     }
 
     /**
      * Creates health text display for an asteroid.
      *
-     * @param asteroidId - Unique identifier for the asteroid
+     * @param id - Unique identifier for the asteroid
      * @param transform - Transform component containing sprite position
      * @param health - Health component with current health value
      */
-    private createHealthText(asteroidId: string, transform: TransformComponent, health: HealthComponent): void {
+    private createHealthText(id: string, transform: TransformComponent, health: HealthComponent): void {
         const healthText = this.scene.add
             .text(transform.sprite.x, transform.sprite.y + 80, `HP: ${health.currentHealth}`, {
                 fontSize: '16px',
@@ -128,7 +129,7 @@ export class AsteroidSystem extends System {
             .setOrigin(0.5)
             .setVisible(GameConfig.debug.showAsteroidHealth);
 
-        this.healthTexts.set(asteroidId, healthText);
+        this.healthTexts.set(id, healthText);
     }
 
     /**
@@ -151,9 +152,9 @@ export class AsteroidSystem extends System {
      *
      * @param entity - The asteroid entity to destroy
      * @param transform - Transform component containing sprite
-     * @param asteroidId - Unique identifier for the asteroid
+     * @param id - Unique identifier for the asteroid
      */
-    private destroyAsteroid(entity: Entity, transform: TransformComponent, asteroidId: string): void {
+    private destroyAsteroid(entity: Entity, transform: TransformComponent, id: string): void {
         // Prevent double-destroy
         if (!transform.sprite.active) {
             return;
@@ -168,7 +169,7 @@ export class AsteroidSystem extends System {
         transform.sprite.destroy();
 
         // Cleanup health text
-        this.cleanupHealthText(asteroidId);
+        this.cleanupHealthText(id);
 
         this.scene.entityManager.removeEntity(entity.id);
     }

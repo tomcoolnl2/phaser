@@ -62,7 +62,7 @@ export class RenderSystem extends System {
 
         // Update ammo display for local player
         if (ui.isLocal && weapon) {
-            ui.updateAmmo(weapon.ammo);
+            ui.updateAmmo(weapon.getAmmo());
         }
 
         // Update level display if player component exists

@@ -111,14 +111,6 @@ export class UpgradeSystem extends System {
                 break;
             }
 
-            case UpgradeType.MAX_AMMO: {
-                const weapon = entity.getComponent(WeaponComponent);
-                if (weapon) {
-                    weapon.maxAmmo += upgrade.valuePerLevel;
-                }
-                break;
-            }
-
             case UpgradeType.ROTATION_SPEED: {
                 const movement = entity.getComponent(MovementComponent);
                 if (movement) {

@@ -17,3 +17,8 @@ export interface AsteroidDTO extends EntityWithHealthDTO {
     dy?: number;
     causeOfDeath?: AsteroidCauseOfDeath | null;
 }
+
+export interface AsteroidHitDTO {
+    asteroidId: string;
+    damage: number;
+}

@@ -52,6 +52,7 @@ export default [
             'no-bitwise': 'error',
             'no-console': ['warn', { allow: ['warn', 'error'] }],
             'no-empty-interface': 'off',
+            'no-case-declarations': 'off',
         },
     },
     {
@@ -86,6 +87,7 @@ export default [
             '@typescript-eslint/no-explicit-any': 'warn',
             'vue/multi-word-component-names': 'off',
             'vue/require-default-prop': 'off',
+            'no-case-declarations': 'off',
         },
     },
     {
@@ -115,6 +117,7 @@ export default [
             ...tseslint.configs.recommended.rules,
             '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
             '@typescript-eslint/no-explicit-any': 'warn',
+            'no-case-declarations': 'off',
         },
     },
     {

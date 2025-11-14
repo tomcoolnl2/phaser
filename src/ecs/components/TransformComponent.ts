@@ -17,14 +17,11 @@ import { Component } from '../core/Component';
  * ```
  */
 export class TransformComponent extends Component {
-    /** The Phaser sprite this component controls */
-    public sprite: Phaser.Physics.Arcade.Sprite;
-
     /**
      * Creates a new TransformComponent.
      * @param sprite - The Phaser sprite to manage
      */
-    constructor(sprite: Phaser.Physics.Arcade.Sprite) {
+    constructor(public sprite: Phaser.Physics.Arcade.Sprite) {
         super();
         this.sprite = sprite;
     }

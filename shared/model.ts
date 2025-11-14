@@ -1,28 +1,16 @@
-/**
- * EntityBounds - Defines the rectangular bounds for play area or entity checks.
- */
-export type EntityBounds = {
-    xMin?: number;
-    xMax?: number;
-    yMin?: number;
-    yMax?: number;
-};
+export interface WeaponLevelProvider<T = number> {
+    level: T;
+}
 
-export type Level = 1 | 2 | 3 | 4 | 5;
+export type TurretLevel = 1 | 2 | 3;
+
+export type PlayerLevel = 1 | 2 | 3 | 4 | 5;
 
 export interface PlayerData {
     name: string;
-    level: Level;
+    level: PlayerLevel;
     ammo: number;
     score: number;
-}
-export interface SpaceShip {
-    name: string;
-    id: string;
-    x: number;
-    y: number;
-    ammo: number;
-    level?: Level;
 }
 
 export interface Coordinates {
@@ -35,14 +23,11 @@ export interface PlayerUpdate extends Coordinates {
     r: number;
     f: boolean; // firing
     m: boolean; // moving
-    a: number; // ammo
 }
 
-export interface Player {
+export interface Player extends Coordinates {
     id: string;
     name: string;
-    x: number;
-    y: number;
     ammo: number;
     player?: {
         id: string;

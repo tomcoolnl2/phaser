@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Socket } from 'socket.io';
 import { GameServer } from '../../server/GameServer';
-import { HealthManager } from '../../server/HealthManager';
 import { GameSocket } from '../../server/model';
-import { Player, SpaceShip } from '../../shared/model';
-import { AsteroidDTO } from '../../shared/dto/AsteroidDTO';
-import { PickupDTO } from '../../shared/dto/PickupDTO';
+import { Player } from '../../shared/model';
+import { AsteroidDTO, AsteroidHitDTO } from '../../shared/dto/AsteroidDTO';
+import { AmmoPickupDTO, PickupDTO } from '../../shared/dto/PickupDTO';
 import { PickupType } from '../../shared/dto/PickupDTO';
+import { AsteroidEvent } from '@shared/events';
 
 type BroadcastOperatorMock = {
     emit: ReturnType<typeof vi.fn>;
@@ -103,11 +103,17 @@ describe('GameServer', () => {
         server['io'].emit = vi.fn();
         server['addAsteroidHitListener'](mockSocket as Socket);
 
-        const asteroidHitHandler = mockOn.mock.calls[0][1] as (id: string) => void;
-        asteroidHitHandler(asteroidId);
+        const asteroidHitHandler = mockOn.mock.calls[0][1] as (arg0: AsteroidHitDTO) => void;
+        asteroidHitHandler({ asteroidId, damage: 1 });
 
-        expect(server['io'].emit).toHaveBeenCalledWith(expect.stringContaining('hit'), expect.objectContaining({ id: asteroidId }));
-        expect(server['io'].emit).toHaveBeenCalledWith(expect.stringContaining('destroy'), expect.objectContaining({ id: asteroidId }));
+        expect(server['io'].emit).toHaveBeenCalledWith(
+            AsteroidEvent.hit,
+            expect.objectContaining({ asteroidId, damage: 1 })
+        );
+        expect(server['io'].emit).toHaveBeenCalledWith(
+            AsteroidEvent.destroy,
+            expect.objectContaining({ id: asteroidId })
+        );
         expect(server['destroyedAsteroids'].has(asteroidId)).toBe(true);
     });
 
@@ -156,9 +162,9 @@ describe('GameServer', () => {
             on: mockOn,
         };
         server['addPickupListener'](mockSocket as GameSocket);
-        const pickupDTO: PickupDTO = { type: PickupType.AMMO, uuid: 'pickup-1', amount: true };
+        const pickupDTO: AmmoPickupDTO = { type: PickupType.AMMO, id: 'pickup-1', amount: 10 };
 
-        const pickupHandler = mockOn.mock.calls[0][1] as (dto: PickupDTO) => void;
+        const pickupHandler = mockOn.mock.calls[0][1] as (dto: AmmoPickupDTO) => void;
         pickupHandler(pickupDTO);
 
         expect(mockSocket.player?.ammo).toBeGreaterThan(0);
@@ -178,3 +184,7 @@ describe('GameServer', () => {
         vi.useRealTimers();
     });
 });
+function asteroidHitHandler(arg0: { asteroidId: any; damage: number; }) {
+    throw new Error('Function not implemented.');
+}
+

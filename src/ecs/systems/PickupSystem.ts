@@ -1,8 +1,9 @@
-import { System } from '../core/System';
-import { Entity } from '../core/Entity';
-import { TransformComponent } from '../components/TransformComponent';
-import { PickupComponent } from '../components/PickupComponent';
-import { ComponentClass } from '../core/Component';
+import * as Utils from '@shared/utils';
+import { System } from '@/ecs/core/System';
+import { Entity } from '@/ecs/core/Entity';
+import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { PickupComponent } from '@/ecs/components/PickupComponent';
+import { ComponentClass } from '@/ecs/core/Component';
 
 /**
  * System that manages pickup animations.
@@ -44,21 +45,20 @@ export class PickupSystem extends System {
     public update(entity: Entity, _deltaTime: number): void {
         const transform = entity.getComponent(TransformComponent)!;
         const sprite = transform.sprite;
+        const { x, y } = sprite;
 
         // Warn if pickup is spawned out of bounds (should only happen on first update)
         if (!this.tweens.has(entity) && sprite.active) {
             // Check if pickup is already out of bounds on spawn
-            const outOfBounds = sprite.x < 0 || sprite.x > this.scene.scale.width || sprite.y < 0 || sprite.y > this.scene.scale.height;
-            if (outOfBounds) {
-                console.warn(`[PickupSystem] Pickup spawned out of bounds at (${sprite.x.toFixed(1)}, ${sprite.y.toFixed(1)})`);
+            if (Utils.isOutOfBounds({ x, y, bounds: this.scene.scale })) {
+                console.warn(`[PickupSystem] Pickup spawned out of bounds at (${x.toFixed(1)}, ${y.toFixed(1)})`);
             }
             this.initializePickup(entity, transform);
         }
 
         // Destroy pickup if it moves fully off-screen (with margin)
-        const margin = 16; // allow a small margin before destroying
-        if (sprite.x < -margin || sprite.x > this.scene.scale.width + margin || sprite.y < -margin || sprite.y > this.scene.scale.height + margin) {
-            console.log(`[PickupSystem] Destroying pickup for moving off-screen at (${sprite.x.toFixed(1)}, ${sprite.y.toFixed(1)})`);
+        if (Utils.isOutOfBounds({ x, y, threshold: 16, bounds: this.scene.scale })) {
+            console.info(`[PickupSystem] Destroying pickup for moving off-screen at (${x.toFixed(1)}, ${y.toFixed(1)})`);
             sprite.destroy();
             this.cleanupPickup(entity);
             // Remove the entity from the ECS/entity manager to stop further updates

@@ -3,6 +3,8 @@
  * Centralized settings for the entire game
  */
 
+import { AmmoAmount, AmmoType } from './types';
+
 /**
  * Helper function to read boolean environment variables
  * @param key - Environment variable name (without VITE_ prefix)
@@ -20,41 +22,45 @@ function getEnvBoolean(key: string, defaultValue: boolean): boolean {
 const isDevMode = getEnvBoolean('DEV_MODE', false);
 
 export const GameConfig = {
+    playArea: {
+        width: 1024,
+        height: 768,
+    },
     player: {
-        startingAmmo: 10,
-        ammoPerPickup: 10,
+        startingLevel: 1,
+        playerMaxLevel: 5,
         angularVelocity: 300,
         acceleration: 200,
         maxVelocity: 300,
-        fireRate: 250, // milliseconds between shots
         drag: 100,
         angularDrag: 200,
         accelerationMultiplier: 1.2, // Multiplier for acceleration
         rotationSpeedMultiplier: 1.5, // Multiplier for rotation speed
     },
-
-    playArea: {
-        width: 1024,
-        height: 768,
+    weapon: {
+        baseFireRate: 400, // milliseconds between shots
+        startingAmmo: AmmoAmount.BULLET_AMMO,
+        startingAmmoType: AmmoType.BULLET,
+        ammoSpeed: {
+            [AmmoType.BULLET]: AmmoAmount.BULLET_AMMO,
+            [AmmoType.ROCKET]: AmmoAmount.ROCKET_AMMO,
+            [AmmoType.MINE]: AmmoAmount.MINE_COUNT,
+        },
     },
-
     asteroid: {
         health: 3,
         maxVelocity: 100,
         collisionRadius: 70, // Distance for ship collision
-        bulletCollisionRadius: 60, // Distance for bullet collision
+        ammoCollisionRadius: 60, // Distance for ammo collision
     },
-
     pickup: {
         collisionRadius: 40,
     },
-
     server: {
         asteroidSpeed: 2, // pixels per update
         asteroidSpawnInterval: 10000, // milliseconds
         pickupSpawnInterval: 15000, // milliseconds
     },
-
     // Debug settings - controlled by VITE_DEV_MODE or individual VITE_* flags
     debug: {
         showAsteroidHealth: isDevMode || getEnvBoolean('SHOW_ASTEROID_HEALTH', false),

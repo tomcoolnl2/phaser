@@ -8,7 +8,6 @@ export enum UpgradeType {
     DAMAGE = 'DAMAGE',
     SPEED = 'SPEED',
     HEALTH = 'HEALTH',
-    MAX_AMMO = 'MAX_AMMO',
     ROTATION_SPEED = 'ROTATION_SPEED',
 }
 
@@ -91,14 +90,6 @@ export class UpgradesComponent extends Component {
             level: 0,
             maxLevel: 5,
             valuePerLevel: 2,
-        });
-
-        // Max Ammo: each level adds 10 ammo capacity
-        this.upgrades.set(UpgradeType.MAX_AMMO, {
-            type: UpgradeType.MAX_AMMO,
-            level: 0,
-            maxLevel: 10,
-            valuePerLevel: 10,
         });
 
         // Rotation Speed: each level increases rotation by 20%

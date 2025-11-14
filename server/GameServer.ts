@@ -3,11 +3,13 @@ import express, { Request, Response } from 'express';
 import { createServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { PlayerEvent, GameEvent, AsteroidEvent } from '../shared/events';
-import { SpaceShip, Coordinates, Player } from '../shared/model';
-import { GameConfig } from '../shared/config';
-import { AsteroidCauseOfDeath, AsteroidDTO } from '../shared/dto/AsteroidDTO';
-import { PickupDTO, PickupType } from '../shared/dto/PickupDTO';
+import { PlayerDTO } from '@shared/dto/PlayerDTO';
+import * as Utils from '@shared/utils';
+import { GameConfig } from '@shared/config';
+import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
+import { Coordinates, Player } from '@shared/model';
+import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO } from '@shared/dto/AsteroidDTO';
+import { PickupDTO, PickupType } from '@shared/dto/PickupDTO';
 import { GameSocket } from './model';
 import { logger } from './logger';
 import { HealthManager } from './HealthManager';
@@ -27,7 +29,6 @@ import { HealthManager } from './HealthManager';
  *   server.start(3000);
  */
 export class GameServer {
-
     /**
      * Express application instance for HTTP server.
      */
@@ -180,17 +181,17 @@ export class GameServer {
      * @param socket - The connected Socket
      */
     private addAsteroidHitListener(socket: Socket): void {
-        socket.on(AsteroidEvent.hit, (asteroidId: string) => {
+        socket.on(AsteroidEvent.hit, ({ asteroidId, damage }: AsteroidHitDTO ) => {
             if (this.destroyedAsteroids.has(asteroidId)) {
                 return;
             }
-            const hp = this.healthManager.damage(asteroidId, 1);
+            const hp = this.healthManager.damage(asteroidId, damage);
             const maxHp = this.healthManager.getMaxHealth(asteroidId);
             const asteroidDTO = this.asteroidMap.get(asteroidId);
             if (asteroidDTO) {
                 asteroidDTO.hp = hp;
                 asteroidDTO.maxHp = maxHp;
-                this.io.emit(AsteroidEvent.hit, { ...asteroidDTO });
+                this.io.emit(AsteroidEvent.hit, { asteroidId, damage });
                 if (this.healthManager.isDead(asteroidId)) {
                     asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.HIT;
                     this.io.emit(AsteroidEvent.destroy, asteroidDTO);
@@ -222,7 +223,7 @@ export class GameServer {
             if (socket.player) {
                 switch (pickupDTO.type) {
                     case PickupType.AMMO:
-                        socket.player.ammo += pickupDTO.amount ? GameConfig.player.ammoPerPickup : 0;
+                        socket.player.ammo += pickupDTO.amount;
                         break;
                     case PickupType.HEALTH:
                         // Handle health pickup when needed
@@ -243,7 +244,7 @@ export class GameServer {
         socket.player = {
             name: player.name || `Player ${Math.floor(Math.random() * 1000)}`,
             id: uuidv4(),
-            ammo: GameConfig.player.startingAmmo,
+            ammo: GameConfig.weapon.startingAmmo,
             x: this.randomInt(100, windowSize.x - 100),
             y: this.randomInt(100, windowSize.y - 100),
         };
@@ -251,9 +252,9 @@ export class GameServer {
 
     /**
      * Returns all currently connected player entities.
-     * @returns Array of SpaceShip player objects
+     * @returns Array of PlayerDTO player objects
      */
-    private getAllPlayers(): SpaceShip[] {
+    private getAllPlayers(): PlayerDTO[] {
         const sockets = Array.from(this.io.sockets.sockets.values()) as GameSocket[];
         return sockets.filter(s => s.player).map(s => s.player!);
     }
@@ -281,7 +282,8 @@ export class GameServer {
             if (!this.hasAsteroid) {
                 const initialAsteroidHealth = 3;
                 const asteroidId = uuidv4();
-                socket.asteroid = { id: asteroidId };
+                const dto: AsteroidDTO = { id: asteroidId, hp: initialAsteroidHealth, maxHp: initialAsteroidHealth, x: 0, y: 0 };
+                socket.asteroid = dto;
                 this.hasAsteroid = true;
                 this.healthManager.setHealth(asteroidId, initialAsteroidHealth, initialAsteroidHealth);
                 this.destroyedAsteroids.delete(asteroidId); // ensure not marked destroyed
@@ -366,12 +368,7 @@ export class GameServer {
                 this.io.emit(AsteroidEvent.coordinates, asteroidDTO);
 
                 // Destroy when off screen
-                const { width, height } = GameConfig.playArea;
-                const threshold = 64;
-                if (
-                    (asteroidDTO.x < -threshold || asteroidDTO.x > width + threshold || asteroidDTO.y < -threshold || asteroidDTO.y > height + threshold) 
-                    && !this.destroyedAsteroids.has(asteroidDTO.id)
-                ) {
+                if (Utils.isOutOfBounds({ x: asteroidDTO.x, y: asteroidDTO.y, threshold: 64 }) && !this.destroyedAsteroids.has(asteroidDTO.id)) {
                     asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.OFFSCREEN;
                     this.io.emit(AsteroidEvent.destroy, asteroidDTO);
                     this.destroyedAsteroids.add(asteroidDTO.id);
