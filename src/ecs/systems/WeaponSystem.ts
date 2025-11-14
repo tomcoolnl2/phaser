@@ -4,7 +4,6 @@ import { System } from '@/ecs/core/System';
 import { ComponentClass, Component } from '@/ecs/core/Component';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
-import { WeaponLevelProvider } from '@shared/model';
 
 /**
  * WeaponSystem - Handles weapon firing and bullet spawning.
