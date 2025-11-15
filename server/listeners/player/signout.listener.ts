@@ -1,3 +1,4 @@
+import z from 'zod';
 import { createListener } from '../createListener';
 import { Events } from '@shared/events';
 import { PlayerDTO } from '@shared/dto/Player.dto';
@@ -11,9 +12,10 @@ import { GameServerContext } from '../../GameServerContext';
  *
  * @see createListener
  */
-export const PlayerSignOutListener = createListener<never, PlayerDTO[]>({
+export const PlayerSignOutListener = createListener<string, PlayerDTO[]>({
     event: Events.Socket.disconnect,
-    log: false,
+    requestSchema: z.string(),
+    log: true,
 
     /**
      * Handles player disconnect logic.

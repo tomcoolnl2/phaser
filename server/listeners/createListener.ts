@@ -13,21 +13,22 @@ import { BaseListener } from './BaseListener';
  * @template TRes - The response payload type.
  * @param cfg - Listener configuration object.
  * @param cfg.event - The event name to listen for.
- * @param cfg.requestSchema - Zod schema to validate the request payload.
- * @param cfg.responseSchema - Zod schema to validate the response payload.
+ * @param cfg.requestSchema - Zod schema to validate the request payload, or null to skip validation for this event.
+ * @param cfg.responseSchema - Zod schema to validate the response payload, or null to skip validation for this event.
  * @param cfg.log - Whether to enable logging for this listener.
  * @param cfg.handle - The handler function to process the event.
  * @returns An instance of a BaseListener subclass for the event.
  */
 export function createListener<TReq, TRes>(cfg: {
     event: EventName;
-    requestSchema?: ZodType;
-    responseSchema?: ZodType;
+    requestSchema?: ZodType | null;
+    responseSchema?: ZodType | null;
     log?: boolean;
     handle: (socket: GameSocket, request: SocketRequestDTO<TReq>) => Promise<SocketResponseDTO<TRes>> | SocketResponseDTO<TRes>;
 }) {
-    const requestSchema = cfg.requestSchema ?? SocketRequestSchema;
-    const responseSchema = cfg.responseSchema ?? SocketResponseSchema;
+    // If schema is explicitly null, skip validation. If undefined, use default.
+    const requestSchema = cfg.requestSchema === undefined ? SocketRequestSchema : cfg.requestSchema;
+    const responseSchema = cfg.responseSchema === undefined ? SocketResponseSchema : cfg.responseSchema;
     const log = cfg.log ?? false;
     return new (class extends BaseListener<TReq, TRes> {
         constructor() {
