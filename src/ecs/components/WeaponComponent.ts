@@ -25,7 +25,6 @@ import { PlayerLevel } from '@shared/model';
  * ```
  */
 export class WeaponComponent extends Component {
-    
     public lastFired: number = 0;
 
     public triggerPulled: boolean = false;
@@ -101,7 +100,7 @@ export class WeaponComponent extends Component {
     public getDamage(): number {
         return this.dto.damage;
     }
-    
+
     /**
      * Sets a new damage level.
      * @param damage - New damage value to set
@@ -109,13 +108,13 @@ export class WeaponComponent extends Component {
     public setDamage(damage: number): void {
         this.dto.damage = damage;
     }
-    
+
     /**
      * Sets a new damage level based on player level.
      * @param level - Player level to scale damage for
      */
     public setDamageForLevel(level: PlayerLevel): void {
-        const scaledDamage = 1 + 0.5 * (level - 1)
+        const scaledDamage = 1 + 0.5 * (level - 1);
         this.setDamage(scaledDamage);
     }
 

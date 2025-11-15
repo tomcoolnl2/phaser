@@ -37,4 +37,3 @@ export const AsteroidHitSchema = z.object({
     asteroidId: z.string().min(1),
     damage: z.number().refine(Number.isFinite, { message: "'damage' must be finite" }),
 });
-

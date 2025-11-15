@@ -1,4 +1,3 @@
-
 # Multiplayer Space Shooter 🚀
 
 A real-time multiplayer space shooter built with Phaser 3, TypeScript, Socket.io, and Vite.
@@ -89,11 +88,20 @@ The preview server will start on http://localhost:4173
 
 When emitting events with Socket.IO, it's important to understand the difference between the main emission methods:
 
-- `socket.emit`: Sends an event **only to the sender** (the client that triggered the event).
-- `socket.broadcast.emit`: Sends an event to **all clients except the sender**.
-- `this.io.emit`: Sends an event to **all connected clients** (including the sender).
+-   `socket.emit`: Sends an event **only to the sender** (the client that triggered the event).
+-   `socket.broadcast.emit`: Sends an event to **all clients except the sender**.
+-   `this.io.emit`: Sends an event to **all connected clients** (including the sender).
 
 Use the appropriate method depending on whether you want to notify just the sender, everyone else, or all players. This is critical for real-time multiplayer synchronization and feedback.
+
+```diff
+! [ Authoritative Game Server ]
+                ▲
+  Socket.io     │
+                ▼
++     [ Phaser Client ]  ←→  [ UI Framework ]
+               (game loop)     (HUD / menus)
+```
 
 ## Game Controls
 

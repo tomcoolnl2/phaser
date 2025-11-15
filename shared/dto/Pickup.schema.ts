@@ -21,7 +21,4 @@ export const HealthPickupSchema = z.object({
     ...CoordinatesSchema,
 });
 
-export const PickupSchema = z.discriminatedUnion('type', [
-    AmmoPickupSchema,
-    HealthPickupSchema,
-]);
+export const PickupSchema = z.discriminatedUnion('type', [AmmoPickupSchema, HealthPickupSchema]);

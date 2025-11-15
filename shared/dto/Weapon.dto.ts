@@ -173,7 +173,7 @@ export class WeaponDTO {
     }
 
     /**
-     * Get the current ammoType 
+     * Get the current ammoType
      * @returns Current ammoType
      */
     public get ammoType(): AmmoType {

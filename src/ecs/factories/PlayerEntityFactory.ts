@@ -50,7 +50,6 @@ export class PlayerEntityFactory {
      * @returns The newly created player entity
      */
     public fromDTO(playerDTO: PlayerDTO): Entity {
-
         const result = PlayerSchema.safeParse(playerDTO);
         if (!result.success) {
             throw new Error('Invalid PlayerDTO: ' + result.error.message);
@@ -67,7 +66,7 @@ export class PlayerEntityFactory {
         sprite.setBounce(0);
         sprite.setDamping(true);
         sprite.setDrag(0.99);
-        sprite.setMaxVelocity(GameConfig.player.maxVelocity); 
+        sprite.setMaxVelocity(GameConfig.player.maxVelocity);
         sprite.setAngularDrag(GameConfig.player.angularDrag);
         sprite.setData('id', playerDTO.id);
 
@@ -98,11 +97,7 @@ export class PlayerEntityFactory {
 
             const dto = new WeaponDTO(playerDTO.id + '-weapon');
             // Pass the bulletGroup directly; use getArray() where needed for iteration
-            const weapon = new WeaponComponent(
-                bulletGroup,
-                dto,
-                `laser-level-${playerDTO.level}`
-            );
+            const weapon = new WeaponComponent(bulletGroup, dto, `laser-level-${playerDTO.level}`);
             entity.addComponent(weapon);
         }
 
@@ -134,14 +129,6 @@ export class PlayerEntityFactory {
         }
         // spriteKey is not on PlayerComponent, so we must infer it from the sprite texture key
         const spriteKey = transform.sprite.texture.key;
-        return new PlayerDTO(
-            player.playerId,
-            player.playerName,
-            transform.x,
-            transform.y,
-            spriteKey,
-            player.isLocal,
-            player.level
-        );
+        return new PlayerDTO(player.playerId, player.playerName, transform.x, transform.y, spriteKey, player.isLocal, player.level);
     }
 }
