@@ -32,7 +32,7 @@ export const AsteroidDestroyListener = createListener<AsteroidDTO, AsteroidDTO>(
             server.markAsteroidDestroyed(asteroidDTO.id);
         }
 
-        const response: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
+        const response = { ok: true, dto: asteroidDTO };
 
         try {
             // Broadcast to all other clients (excluding sender)
@@ -40,7 +40,7 @@ export const AsteroidDestroyListener = createListener<AsteroidDTO, AsteroidDTO>(
             return response;
         } catch (e) {
             const message = e instanceof Error ? e.message : e.toString();
-            const errorResponse: SocketResponseDTO<AsteroidDTO> = { ok: false, dto: asteroidDTO, message };
+            const errorResponse = { ok: false, dto: asteroidDTO, message };
             socket.broadcast.emit(this.event, errorResponse);
             return errorResponse;
         }
