@@ -25,13 +25,14 @@ export abstract class BaseListener<TReq, TRes> {
      * Constructs a new BaseListener.
      *
      * @param event - The event name to listen for.
-     * @param requestSchema - Zod schema to validate the request payload.
-     * @param responseSchema - Zod schema to validate the response payload.
+     * @param requestSchema - Zod schema to validate the request payload, or null to skip validation.
+     * @param responseSchema - Zod schema to validate the response payload, or null to skip validation.
+     * @param log - Whether to enable logging for this listener.
      */
     protected constructor(
         public readonly event: EventName,
-        private readonly requestSchema: ZodType,
-        private readonly responseSchema: ZodType,
+        private readonly requestSchema: ZodType | null,
+        private readonly responseSchema: ZodType | null,
         private readonly log: boolean
     ) {
         this.event = event;
@@ -53,8 +54,10 @@ export abstract class BaseListener<TReq, TRes> {
             logger.info({ event: this.event, playerId, playerName, request: request.dto }, `Incoming event: ${this.event}`);
         }
 
-        // Validate input
-        this.requestSchema.parse(request);
+        // Validate input if schema is provided
+        if (this.requestSchema) {
+            this.requestSchema.parse(request);
+        }
 
         // Execute actual handler
         let response: SocketResponseDTO<TRes>;
@@ -66,8 +69,10 @@ export abstract class BaseListener<TReq, TRes> {
             throw err;
         }
 
-        // Validate output
-        this.responseSchema.parse(response);
+        // Validate output if schema is provided
+        if (this.responseSchema) {
+            this.responseSchema.parse(response);
+        }
         if (this.log) {
             logger.info({ event: this.event, playerId, playerName, response: response.dto }, `Event handled successfully: ${this.event}`);
         }

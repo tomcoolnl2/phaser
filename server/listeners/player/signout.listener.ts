@@ -13,6 +13,7 @@ import { GameServerContext } from '../../GameServerContext';
  */
 export const PlayerSignOutListener = createListener<never, PlayerDTO[]>({
     event: Events.Socket.disconnect,
+    requestSchema: null, // skip validation for disconnect event
     log: false,
 
     /**
