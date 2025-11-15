@@ -33,12 +33,6 @@ export class WeaponSystem extends System {
      *  Specifies required components: PlayerComponent, TransformComponent and WeaponComponent.
      * @returns The array of required component classes.
      */
-    /**
-     * Specifies required components for weaponized entities.
-     *
-     * Entities must have TransformComponent and WeaponComponent to be processed by this system.
-     * Provider components (e.g., PlayerComponent, TurretComponent) are optional and used for damage scaling.
-     */
     public getRequiredComponents(): ComponentClass<Component>[] {
         return [TransformComponent, WeaponComponent];
     }
@@ -53,6 +47,11 @@ export class WeaponSystem extends System {
         const transform = entity.getComponent(TransformComponent);
         const weapon = entity.getComponent(WeaponComponent);
 
+        // Clean up bullets that have left the play area
+        if (weapon?.bullets) {
+            this.cleanupBullets(weapon);
+        }
+
         if (!transform?.sprite || !weapon?.triggerPulled) {
             return;
         }
@@ -62,6 +61,24 @@ export class WeaponSystem extends System {
         }
 
         this.fireWeapon(transform, weapon);
+    }
+
+    /**
+     * Deactivates bullets that have left the play area to prevent pool exhaustion.
+     * @param weapon The WeaponComponent containing the bullet group.
+     */
+    private cleanupBullets(weapon: WeaponComponent): void {
+        const bullets = weapon.bullets.children.getArray() as Phaser.GameObjects.Sprite[];
+        for (const bullet of bullets) {
+            if (!bullet.active) {
+                continue;
+            }
+            const x = bullet.x, y = bullet.y;
+            if (Utils.isOutOfBounds({ x, y, threshold: 64 })) {
+                bullet.setActive(false);
+                bullet.setVisible(false);
+            }
+        }
     }
 
     /**
@@ -80,25 +97,31 @@ export class WeaponSystem extends System {
         // Get bullet from pool using dynamic sprite key
         console.info(`[Client] [WeaponSystem] Firing bullet with sprite: ${weapon.bulletSpriteKey}`);
         const bullet = weapon.bullets.get(sprite.x, sprite.y, weapon.bulletSpriteKey) as Phaser.Physics.Arcade.Sprite;
-        if (bullet) {
-            // Explicitly set the texture to ensure it's correct (Phaser pool reuse can cause issues)
-            bullet.setTexture(weapon.bulletSpriteKey);
-            bullet.setActive(true);
-            bullet.setVisible(true);
 
-            // Rotate bullet to match ship direction (add 90° offset since bullet sprite points up)
-            bullet.setRotation(sprite.rotation + Math.PI / 2);
-
-            // Set bullet velocity based on ship rotation
-            this.scene.physics.velocityFromRotation(sprite.rotation, weapon.getAmmoSpeed(), bullet.body!.velocity);
-
-            // Only deactivate bullet if it leaves the play area
-            bullet.update = function () {
-                if (this.active && Utils.isOutOfBounds({ x: this.x, y: this.y, threshold: 64 })) {
-                    this.setActive(false);
-                    this.setVisible(false);
-                }
-            };
+        // Debug: log pool status
+        const activeCount = weapon.bullets.countActive(true);
+        const totalCount = weapon.bullets.getLength ? weapon.bullets.getLength() : 'unknown';
+        if (!bullet) {
+            console.error('[WeaponSystem] Bullet pool exhausted or sprite missing:', {
+                bulletSpriteKey: weapon.bulletSpriteKey,
+                activeCount,
+                totalCount,
+                group: weapon.bullets,
+            });
+            return;
         }
+
+        // Explicitly set the texture to ensure it's correct (Phaser pool reuse can cause issues)
+        bullet.setTexture(weapon.bulletSpriteKey);
+        bullet.setActive(true);
+        bullet.setVisible(true);
+
+        // Rotate bullet to match ship direction (add 90° offset since bullet sprite points up)
+        bullet.setRotation(sprite.rotation + Math.PI / 2);
+
+        // Set bullet velocity based on ship rotation
+        this.scene.physics.velocityFromRotation(sprite.rotation, weapon.getAmmoSpeed(), bullet.body!.velocity);
+
+        // No need to assign a custom update function; cleanup is handled centrally.
     }
 }
