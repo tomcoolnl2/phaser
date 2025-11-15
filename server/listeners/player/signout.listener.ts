@@ -1,5 +1,5 @@
 import { createListener } from '../createListener';
-import { Events, PlayerEvent } from '@shared/events';
+import { Events } from '@shared/events';
 import { PlayerDTO } from '@shared/dto/Player.dto';
 import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
 import { GameServerContext } from '../../GameServerContext';
@@ -29,13 +29,13 @@ export const PlayerSignOutListener = createListener<never, PlayerDTO[]>({
 
         // Broadcast quit event
         const quitResponse: SocketResponseDTO<PlayerDTO> = { ok: true, dto: player };
-        socket.broadcast.emit(PlayerEvent.quit, quitResponse);
+        socket.broadcast.emit(Events.Player.quit, quitResponse);
 
         // Broadcast updated player list
         const server = GameServerContext.get();
         const players = server.getAllPlayers();
         const listResponse: SocketResponseDTO<PlayerDTO[]> = { ok: true, dto: players };
-        socket.broadcast.emit(PlayerEvent.players, listResponse);
+        socket.broadcast.emit(Events.Player.players, listResponse);
 
         return listResponse;
     },

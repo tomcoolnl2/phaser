@@ -6,7 +6,8 @@ import { Coordinates, PlayerLevel } from '../../shared/model';
  * Implements Coordinates for position tracking.
  */
 export class PlayerDTO implements Coordinates {
-    private _level: number = GameConfig.player.startingLevel;
+    
+    private _level: number;
 
     /**
      * @param id - Unique identifier for the player
