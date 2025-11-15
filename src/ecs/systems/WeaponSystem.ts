@@ -98,19 +98,6 @@ export class WeaponSystem extends System {
         console.info(`[Client] [WeaponSystem] Firing bullet with sprite: ${weapon.bulletSpriteKey}`);
         const bullet = weapon.bullets.get(sprite.x, sprite.y, weapon.bulletSpriteKey) as Phaser.Physics.Arcade.Sprite;
 
-        // Debug: log pool status
-        const activeCount = weapon.bullets.countActive(true);
-        const totalCount = weapon.bullets.getLength ? weapon.bullets.getLength() : 'unknown';
-        if (!bullet) {
-            console.error('[WeaponSystem] Bullet pool exhausted or sprite missing:', {
-                bulletSpriteKey: weapon.bulletSpriteKey,
-                activeCount,
-                totalCount,
-                group: weapon.bullets,
-            });
-            return;
-        }
-
         // Explicitly set the texture to ensure it's correct (Phaser pool reuse can cause issues)
         bullet.setTexture(weapon.bulletSpriteKey);
         bullet.setActive(true);
