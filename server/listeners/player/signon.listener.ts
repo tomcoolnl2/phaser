@@ -35,7 +35,6 @@ export const PlayerSignOnListener = createListener<SignOnDTO, PlayerDTO[]>({
 
         // Create new player
         const windowSize = { x: GameConfig.playArea.width, y: GameConfig.playArea.height };
-        console.log('Creating player with request:', request);
         server.createPlayer(socket, signonDTO.name, windowSize);
 
         // Send protagonist info
