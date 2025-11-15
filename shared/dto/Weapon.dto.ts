@@ -8,13 +8,13 @@ const MAX_AMMO: Record<AmmoType, number> = {
 };
 
 export const DEFAULT_AMMO: Record<AmmoType, number> = {
-    [AmmoType.BULLET]: AmmoAmount.BULLET_AMMO,
-    [AmmoType.ROCKET]: AmmoAmount.ROCKET_AMMO,
-    [AmmoType.MINE]: AmmoAmount.MINE_COUNT,
+    [AmmoType.BULLET]: AmmoAmount.BULLET,
+    [AmmoType.ROCKET]: AmmoAmount.ROCKET,
+    [AmmoType.MINE]: AmmoAmount.MINE,
 };
 
 const AMMO_SPEED: Record<AmmoType, number> = {
-    [AmmoType.BULLET]: 400,
+    [AmmoType.BULLET]: 650,
     [AmmoType.ROCKET]: 100,
     [AmmoType.MINE]: 0,
 };

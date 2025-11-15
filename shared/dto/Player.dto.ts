@@ -6,7 +6,6 @@ import { Coordinates, PlayerLevel } from '../../shared/model';
  * Implements Coordinates for position tracking.
  */
 export class PlayerDTO implements Coordinates {
-    
     private _level: number;
 
     /**

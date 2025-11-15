@@ -205,7 +205,7 @@ export class GameScene extends Phaser.Scene {
                         const ammoPickupDTO: AmmoPickupDTO = {
                             type: PickupType.AMMO,
                             id: this.localPlayerId,
-                            amount: AmmoAmount.BULLET_AMMO,
+                            amount: AmmoAmount.BULLET,
                             x: pickupTransform.sprite.x,
                             y: pickupTransform.sprite.y,
                         };
@@ -483,7 +483,7 @@ export class GameScene extends Phaser.Scene {
                 }
                 const dto: PickupDTO = {
                     type: PickupType.AMMO,
-                    amount: AmmoAmount.BULLET_AMMO,
+                    amount: AmmoAmount.BULLET,
                     x,
                     y,
                     id: uuidv4(),

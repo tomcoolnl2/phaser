@@ -11,9 +11,9 @@ export enum AmmoMaxAmount {
 }
 
 export enum AmmoAmount {
-    BULLET_AMMO = 10,
-    ROCKET_AMMO = 3,
-    MINE_COUNT = 2,
+    BULLET = 10,
+    ROCKET = 3,
+    MINE = 2,
 }
 
 /**
