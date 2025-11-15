@@ -51,7 +51,7 @@ export abstract class BaseListener<TReq, TRes> {
         const playerName = socket.player?.name;
 
         if (this.log) {
-            logger.info({ event: this.event, playerId, playerName, request: request.dto }, `Incoming event: ${this.event}`);
+            logger.info({ event: this.event, dto: request.dto }, `Incoming event: ${this.event}`);
         }
 
         // Validate input if schema is provided
@@ -65,7 +65,7 @@ export abstract class BaseListener<TReq, TRes> {
             response = await this._handle(socket, request, this.log);
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            logger.error({ event: this.event, playerId, playerName, error: message }, `Error handling event: ${this.event}`);
+            logger.error({ event: this.event, error: message }, `Error handling event: ${this.event}`);
             throw err;
         }
 
@@ -74,7 +74,7 @@ export abstract class BaseListener<TReq, TRes> {
             this.responseSchema.parse(response);
         }
         if (this.log) {
-            logger.info({ event: this.event, playerId, playerName, response: response.dto }, `Event handled successfully: ${this.event}`);
+            logger.info({ event: this.event, response: response.dto }, `Event handled successfully: ${this.event}`);
         }
         return response;
     }
