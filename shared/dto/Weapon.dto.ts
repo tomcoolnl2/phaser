@@ -14,7 +14,7 @@ export const DEFAULT_AMMO: Record<AmmoType, number> = {
 };
 
 const AMMO_SPEED: Record<AmmoType, number> = {
-    [AmmoType.BULLET]: 400,
+    [AmmoType.BULLET]: 650,
     [AmmoType.ROCKET]: 100,
     [AmmoType.MINE]: 0,
 };
