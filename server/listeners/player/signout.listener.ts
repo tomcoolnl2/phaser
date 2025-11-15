@@ -12,7 +12,7 @@ import { GameServerContext } from '../../GameServerContext';
  *
  * @see createListener
  */
-export const PlayerSignOutListener = createListener<never, PlayerDTO[]>({
+export const PlayerSignOutListener = createListener<string, PlayerDTO[]>({
     event: Events.Socket.disconnect,
     requestSchema: z.string(),
     log: true,
