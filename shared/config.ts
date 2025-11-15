@@ -39,7 +39,7 @@ export const GameConfig = {
     },
     weapon: {
         baseFireRate: 400, // milliseconds between shots
-        startingAmmo: AmmoAmount.BULLET_AMMO,
+        startingAmmo: AmmoAmount.BULLET,
         startingAmmoType: AmmoType.BULLET,
     },
     asteroid: {

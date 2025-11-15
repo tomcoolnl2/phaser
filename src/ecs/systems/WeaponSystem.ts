@@ -73,7 +73,7 @@ export class WeaponSystem extends System {
             if (!bullet.active) {
                 continue;
             }
-            const x = bullet.x, y = bullet.y;
+            const { x, y } = bullet;
             if (Utils.isOutOfBounds({ x, y, threshold: 64 })) {
                 bullet.setActive(false);
                 bullet.setVisible(false);

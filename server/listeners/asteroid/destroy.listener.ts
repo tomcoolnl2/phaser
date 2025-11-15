@@ -1,7 +1,6 @@
 import { createListener } from '../createListener';
 import { Events } from '@shared/events';
 import { AsteroidDTO } from '@shared/dto/Asteroid.dto';
-import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
 import { GameServerContext } from '../../GameServerContext';
 
 /**

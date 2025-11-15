@@ -13,8 +13,8 @@ describe('WeaponDTO', () => {
         expect(dto.id).toBe('id');
         expect(dto.level).toBe(1);
         expect(dto.ammoType).toBe(AmmoType.BULLET);
-        expect(dto.ammo).toBe(AmmoAmount.BULLET_AMMO);
-        expect(dto.speed).toBe(400);
+        expect(dto.ammo).toBe(AmmoAmount.BULLET);
+        expect(dto.speed).toBe(650);
         expect(dto.damage).toBe(1);
         expect(dto.maxAmmo).toBe(AmmoMaxAmount.BULLET_MAX_AMMO);
     });
@@ -40,7 +40,7 @@ describe('WeaponDTO', () => {
     });
 
     it('getAmmo returns correct value for type', () => {
-        expect(dto.getAmmo(AmmoType.BULLET)).toBe(AmmoAmount.BULLET_AMMO);
+        expect(dto.getAmmo(AmmoType.BULLET)).toBe(AmmoAmount.BULLET);
     });
 
     it('addAmmo increases ammo (capped)', () => {
@@ -55,12 +55,12 @@ describe('WeaponDTO', () => {
     it('switchAmmoType changes selected type', () => {
         dto.switchAmmoType(AmmoType.ROCKET);
         expect(dto.ammoType).toBe(AmmoType.ROCKET);
-        expect(dto.ammo).toBe(AmmoAmount.ROCKET_AMMO);
+        expect(dto.ammo).toBe(AmmoAmount.ROCKET);
         expect(dto.speed).toBe(100);
     });
 
     it('getAmmoSpeed returns correct value', () => {
-        expect(dto.getAmmoSpeed(AmmoType.BULLET)).toBe(400);
+        expect(dto.getAmmoSpeed(AmmoType.BULLET)).toBe(650);
         expect(dto.getAmmoSpeed(AmmoType.ROCKET)).toBe(100);
     });
 });
