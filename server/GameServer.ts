@@ -11,7 +11,7 @@ import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
 import { SocketResponseSchema } from '@shared/dto/Socket.schema';
 import { Coordinates } from '@shared/model';
 import { GameConfig } from '@shared/config';
-import { GameEvent, AsteroidEvent } from '@shared/events';
+import { Events } from '@shared/events';
 import * as Utils from '@shared/utils';
 
 import { playerFeatureListeners } from './listeners/player';
@@ -199,7 +199,7 @@ export class GameServer {
      * @param payload - The SocketResponseDTO containing the hit data
      */
     public broadcastAsteroidHit(payload: SocketResponseDTO<AsteroidHitDTO>): void {
-        this.io.emit(AsteroidEvent.hit, payload);
+        this.io.emit(Events.Asteroid.hit, payload);
     }
 
     /**
@@ -210,7 +210,7 @@ export class GameServer {
      * @param payload - The SocketResponseDTO containing the destroyed asteroid data
      */
     public broadcastAsteroidDestroy(payload: SocketResponseDTO<AsteroidDTO>): void {
-        this.io.emit(AsteroidEvent.destroy, payload);
+        this.io.emit(Events.Asteroid.destroy, payload);
     }
 
     /**
@@ -357,7 +357,7 @@ export class GameServer {
                 try {
                     const response: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
                     SocketResponseSchema.parse(response);
-                    this.io.emit(AsteroidEvent.create, response);
+                    this.io.emit(Events.Asteroid.create, response);
                     this.updateAsteroid(socket, asteroidDTO);
                 } catch (e) {
                     const message = e instanceof Error ? e.message : e.toString();
@@ -388,13 +388,13 @@ export class GameServer {
                     this.asteroidMap.set(asteroidDTO.id, asteroidDTO);
                     const response: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
                     SocketResponseSchema.parse(response);
-                    this.io.emit(AsteroidEvent.coordinates, response);
+                    this.io.emit(Events.Asteroid.coordinates, response);
 
                     // Destroy when off screen
                     if (Utils.isOutOfBounds({ x: asteroidDTO.x, y: asteroidDTO.y, threshold: 64 }) && !this.destroyedAsteroids.has(asteroidDTO.id)) {
                         asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.OFFSCREEN;
                         try {
-                            this.io.emit(AsteroidEvent.destroy, response);
+                            this.io.emit(Events.Asteroid.destroy, response);
                             this.destroyedAsteroids.add(asteroidDTO.id);
                             this.hasAsteroid = false;
                             this.healthManager.remove(asteroidDTO.id);
@@ -403,8 +403,8 @@ export class GameServer {
                             logger.debug('Asteroid destroyed (off screen)');
                         } catch (e) {
                             const message = e instanceof Error ? e.message : e.toString();
-                            this.io.emit(AsteroidEvent.destroy, { ok: false, message, dto: asteroidDTO });
-                            logger.error({ error: message }, `Invalid SocketResponse for ${AsteroidEvent.destroy}`);
+                            this.io.emit(Events.Asteroid.destroy, { ok: false, message, dto: asteroidDTO });
+                            logger.error({ error: message }, `Invalid SocketResponse for ${Events.Asteroid.destroy}`);
                         }
                     }
                 } catch (e) {
@@ -432,7 +432,7 @@ export class GameServer {
                 const response: SocketResponseDTO<Coordinates> = { ok: true, dto: coordinates };
                 SocketResponseSchema.parse(response);
                 logger.debug({ coordinates }, 'Spawning pickup');
-                this.io.emit(GameEvent.drop, response);
+                this.io.emit(Events.Game.drop, response);
             } catch (e) {
                 const message = e instanceof Error ? e.message : e.toString();
                 logger.error({ error: message }, 'Failed to spawn pickup due to invalid coordinates');
