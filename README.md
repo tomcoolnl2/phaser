@@ -95,6 +95,16 @@ When emitting events with Socket.IO, it's important to understand the difference
 
 Use the appropriate method depending on whether you want to notify just the sender, everyone else, or all players. This is critical for real-time multiplayer synchronization and feedback.
 
+```diff
+! [ Authoritative Game Server ]
+                ▲
+  Socket.io     │
+                ▼
++     [ Phaser Client ]  ←→  [ UI Framework ]
+               (game loop)     (HUD / menus)
+```
+
+
 ## Game Controls
 
 -   **Arrow Keys** - Move ship

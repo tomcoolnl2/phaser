@@ -1,6 +1,6 @@
 import path from 'path';
-import express, { Request, Response } from 'express';
-import { createServer } from 'http';
+import express, { Express, Request, Response, } from 'express';
+import { createServer, Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { PlayerDTO } from '@shared/dto/Player.dto';
@@ -18,6 +18,10 @@ import { GameSocket } from './model';
 import { logger } from './logger';
 import { HealthManager } from './HealthManager';
 
+const USE_NEW_LISTENERS = true; // flip for testing
+import { playerFeatureListeners } from "./features/player";
+
+
 /**
  * GameServer is the authoritative multiplayer game server for Phaser ECS.
  *
@@ -33,25 +37,17 @@ import { HealthManager } from './HealthManager';
  *   server.start(3000);
  */
 export class GameServer {
-    /**
-     * Express application instance for HTTP server.
-     */
-    private app = express();
+    
+    
+    private featureListeners = [
+        ...playerFeatureListeners,
+        // ...other feature listener arrays
+    ];
 
-    /**
-     * Node.js HTTP server wrapping Express app.
-     */
-    private httpServer = createServer(this.app);
 
-    /**
-     * Socket.IO server for real-time multiplayer communication.
-     */
-    private io = new Server(this.httpServer, {
-        cors: {
-            origin: '*',
-            methods: ['GET', 'POST'],
-        },
-    });
+    private readonly app: Express;
+    private readonly httpServer: HttpServer;
+    private readonly io: Server;
 
     /**
      * Indicates if the game has started.
@@ -75,10 +71,13 @@ export class GameServer {
 
     private asteroidMap: Map<string, AsteroidDTO> = new Map();
 
-    /**
-     * Constructs the GameServer, sets up Express and Socket.IO.
-     */
     constructor() {
+        this.app = express();
+        this.httpServer = createServer(this.app);
+        this.io = new Server(this.httpServer, {
+            cors: { origin: '*', methods: ['GET', 'POST'] }
+        });
+
         this.setupExpress();
         this.setupSocketIO();
     }
@@ -112,13 +111,32 @@ export class GameServer {
      * @param socket - The connected GameSocket
      */
     private attachListeners(socket: GameSocket): void {
+
+        if (USE_NEW_LISTENERS) {
+            this.registerFeatureListeners(socket);
+        }
+
+        // old monolithic listeners continue to work
         this.addSignOnListener(socket);
-        this.addMovementListener(socket);
+        // this.addMovementListener(socket);
         this.addSignOutListener(socket);
-        this.addHitListener(socket);
+        // this.addHitListener(socket);
         this.addAsteroidHitListener(socket);
         this.addAsteroidDestroyListener(socket);
         this.addPickupListener(socket);
+    }
+
+    private registerFeatureListeners(socket: GameSocket): void {
+        for (const listener of this.featureListeners) {
+            socket.on(listener.event, async (data) => {
+                try {
+                    await listener.handle(socket, data);
+                } catch (e) {
+                    console.error(`Error in listener "${listener.event}":`, e);
+                    socket.emit("error", { ok: false, message: String(e) });
+                }
+            });
+        }
     }
 
     /**
@@ -171,25 +189,25 @@ export class GameServer {
      * Handles player movement updates from clients.
      * @param socket - The connected GameSocket
      */
-    private addMovementListener(socket: GameSocket): void {
-        socket.on(PlayerEvent.coordinates, (request: SocketRequestDTO<Coordinates>) => {
-            try {
-                SocketRequestSchema.parse(request);
-                const coordinates = request.dto as Coordinates;
-                // Update the player's position
-                const { id, name, spriteKey, isLocal, level } = socket.player;
-                const updatedPlayer = new PlayerDTO(id, name, coordinates.x, coordinates.y, spriteKey, isLocal, level);
-                const response: SocketResponseDTO<PlayerDTO> = { ok: true, dto: updatedPlayer };
-                SocketResponseSchema.parse(response);
-                socket.broadcast.emit(PlayerEvent.coordinates, response);
-            } catch (e) {
-                const message = e instanceof Error ? e.message : e.toString();
-                const errorResponse: SocketResponseDTO = { ok: false, dto: null, message };
-                socket.emit(PlayerEvent.coordinates, errorResponse);
-                logger.error({ error: message }, `Invalid SocketRequest for ${PlayerEvent.coordinates}`);
-            }
-        });
-    }
+    // private addMovementListener(socket: GameSocket): void {
+    //     socket.on(PlayerEvent.coordinates, (request: SocketRequestDTO<Coordinates>) => {
+    //         try {
+    //             SocketRequestSchema.parse(request);
+    //             const coordinates = request.dto as Coordinates;
+    //             // Update the player's position
+    //             const { id, name, spriteKey, isLocal, level } = socket.player;
+    //             const updatedPlayer = new PlayerDTO(id, name, coordinates.x, coordinates.y, spriteKey, isLocal, level);
+    //             const response: SocketResponseDTO<PlayerDTO> = { ok: true, dto: updatedPlayer };
+    //             SocketResponseSchema.parse(response);
+    //             socket.broadcast.emit(PlayerEvent.coordinates, response);
+    //         } catch (e) {
+    //             const message = e instanceof Error ? e.message : e.toString();
+    //             const errorResponse: SocketResponseDTO = { ok: false, dto: null, message };
+    //             socket.emit(PlayerEvent.coordinates, errorResponse);
+    //             logger.error({ error: message }, `Invalid SocketRequest for ${PlayerEvent.coordinates}`);
+    //         }
+    //     });
+    // }
 
     /**
      * Handles player disconnects and broadcasts quit events.
@@ -212,26 +230,26 @@ export class GameServer {
         });
     }
 
-    /**
-     * Handles player hit events and broadcasts to other clients.
-     * @param socket - The connected Socket
-     */
-    private addHitListener(socket: Socket): void {
-        socket.on(PlayerEvent.hit, (request: SocketRequestDTO<PlayerDTO>) => {
-            try {
-                SocketRequestSchema.parse(request);
-                const player = request.dto as PlayerDTO;
-                const hitResponse: SocketResponseDTO<PlayerDTO> = { ok: true, dto: player };
-                SocketResponseSchema.parse(hitResponse);
-                socket.broadcast.emit(PlayerEvent.hit, hitResponse);
-            } catch (e) {
-                const message = e instanceof Error ? e.message : e.toString();
-                const errorResponse: SocketResponseDTO = { ok: false, message };
-                socket.emit(PlayerEvent.hit, errorResponse);
-                logger.error({ error: message }, `Invalid SocketRequest for ${PlayerEvent.hit}`);
-            }
-        });
-    }
+    // /**
+    //  * Handles player hit events and broadcasts to other clients.
+    //  * @param socket - The connected Socket
+    //  */
+    // private addHitListener(socket: Socket): void {
+    //     socket.on(PlayerEvent.hit, (request: SocketRequestDTO<PlayerDTO>) => {
+    //         try {
+    //             SocketRequestSchema.parse(request);
+    //             const player = request.dto as PlayerDTO;
+    //             const hitResponse: SocketResponseDTO<PlayerDTO> = { ok: true, dto: player };
+    //             SocketResponseSchema.parse(hitResponse);
+    //             socket.broadcast.emit(PlayerEvent.hit, hitResponse);
+    //         } catch (e) {
+    //             const message = e instanceof Error ? e.message : e.toString();
+    //             const errorResponse: SocketResponseDTO = { ok: false, message };
+    //             socket.emit(PlayerEvent.hit, errorResponse);
+    //             logger.error({ error: message }, `Invalid SocketRequest for ${PlayerEvent.hit}`);
+    //         }
+    //     });
+    // }
 
     /**
      * Handles asteroid hit events, updates health, and emits destroy if dead.
