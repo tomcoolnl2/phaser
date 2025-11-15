@@ -34,7 +34,6 @@ import { Component, ComponentClass } from '@/ecs/core/Component';
  * ```
  */
 export class EntityManager {
-    
     /** Map of entity IDs to entity instances */
     private entities: Map<string, Entity> = new Map();
 

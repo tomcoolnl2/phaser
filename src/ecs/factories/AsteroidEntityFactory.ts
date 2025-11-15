@@ -23,8 +23,10 @@ import { AsteroidDTO, AsteroidSchema } from '@shared/dto/Asteroid.dto';
  * - AsteroidComponent: Asteroid metadata (id)
  */
 export class AsteroidEntityFactory {
-
-    constructor(private scene: Phaser.Scene, private entityManager: EntityManager) {}
+    constructor(
+        private scene: Phaser.Scene,
+        private entityManager: EntityManager
+    ) {}
 
     /**
      * Creates an asteroid entity with all necessary ECS components:
@@ -38,7 +40,6 @@ export class AsteroidEntityFactory {
      * @returns The newly created asteroid entity
      */
     public create(dto: AsteroidDTO): Entity {
-
         const result = AsteroidSchema.safeParse(dto);
         if (!result.success) {
             throw new Error('Invalid AsteroidDTO: ' + result.error.message);
@@ -55,7 +56,7 @@ export class AsteroidEntityFactory {
         entity.addComponent(new HealthComponent(dto.health));
         entity.addComponent(new ColliderComponent(GameConfig.asteroid.collisionRadius, CollisionLayer.ASTEROID));
         entity.addComponent(new AsteroidComponent(dto.id));
-        
+
         return entity;
     }
 }

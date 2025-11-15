@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { v4 as uuidv4 } from 'uuid';
 import { Socket } from 'socket.io-client';
-import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
+import { Events } from '@shared/events';
 import { Coordinates } from '@shared/model';
 import { GameConfig } from '@shared/config';
 import { AmmoAmount } from '@shared/types';
@@ -9,9 +9,7 @@ import { PlayerDTO } from '@shared/dto/Player.dto';
 import { AmmoPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
 import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
-import { SocketResponseSchema } from '@shared/dto/SocketResponse.schema';
-import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
-import { SocketRequestSchema } from '@shared/dto/SocketRequest.schema';
+import { SocketResponseSchema, SocketRequestSchema } from '@shared/dto/Socket.schema';
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { InputSystem } from '@/ecs/systems/InputSystem';
 import { MovementSystem } from '@/ecs/systems/MovementSystem';
@@ -29,7 +27,6 @@ import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
 import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
-
 
 /**
  * Main gameplay scene that manages all game entities and ECS systems.
@@ -51,7 +48,6 @@ import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
  * ```
  */
 export class GameScene extends Phaser.Scene {
-
     /** Socket.IO connection for multiplayer networking */
     private socket!: Socket;
     /** Map of player entities by player ID */
@@ -112,16 +108,8 @@ export class GameScene extends Phaser.Scene {
             'playerNameSubmitted',
             ((event: CustomEvent) => {
                 const playerName = event.detail.name || `Player ${Math.floor(Math.random() * 1000)}`;
-                this.socket.emit(
-                    PlayerEvent.authenticate,
-                    {
-                        name: playerName,
-                    },
-                    {
-                        x: this.scale.width,
-                        y: this.scale.height,
-                    }
-                );
+                const signonDto = { name: playerName as string, x: this.scale.width, y: this.scale.height };
+                this.socket.emit(Events.Player.authenticate, { ok: true, dto: signonDto });
             }) as EventListener,
             { once: true }
         );
@@ -171,7 +159,7 @@ export class GameScene extends Phaser.Scene {
         // Handle local player logic
         if (this.localPlayerId) {
             const localEntity = this.playerEntities.get(this.localPlayerId);
-            
+
             if (!localEntity) {
                 return;
             }
@@ -183,18 +171,14 @@ export class GameScene extends Phaser.Scene {
             // Emit player data to Vue HUD
             this.emitPlayerDataToVue();
 
-            // Send player state to server (wrapped in SocketRequestDTO and validated)
-            const coordinates: Coordinates = {
-                x: transform.sprite.x,
-                y: transform.sprite.y,
-            };
-            const request: SocketRequestDTO<Coordinates> = { dto: coordinates };
             try {
+                const { x, y } = transform.sprite;
+                const request = { ok: true, dto: { x, y } };
                 SocketRequestSchema.parse(request);
-                this.socket.emit(PlayerEvent.coordinates, request);
+                this.socket.emit(Events.Player.coordinates, request);
             } catch (e) {
                 const message = e instanceof Error ? e.message : e.toString();
-                console.error(`[Client] Invalid SocketRequest for ${PlayerEvent.coordinates}: ${message}`);
+                console.error(`[Client] Invalid SocketRequest for ${Events.Player.coordinates}: ${message}`);
                 // Optionally show user feedback
             }
 
@@ -222,19 +206,21 @@ export class GameScene extends Phaser.Scene {
                             type: PickupType.AMMO,
                             id: this.localPlayerId,
                             amount: AmmoAmount.BULLET_AMMO,
+                            x: pickupTransform.sprite.x,
+                            y: pickupTransform.sprite.y,
                         };
 
-                        const request: SocketRequestDTO<AmmoPickupDTO> = { dto: ammoPickupDTO };
+                        const request = { ok: true, dto: ammoPickupDTO };
 
                         try {
                             SocketRequestSchema.parse(request);
-                            this.socket.emit(PlayerEvent.pickup, request);
+                            this.socket.emit(Events.Player.pickup, request);
                             // Destroy pickup
                             pickupTransform.sprite.destroy();
                             this.entityManager.removeEntity(this.pickupEntity.id);
                             this.pickupEntity = null;
                         } catch (error: Error | unknown) {
-                            return this.handleSocketError(PlayerEvent.hit, error);
+                            return this.handleSocketError(Events.Player.pickup, error);
                         }
                     }
                 }
@@ -250,13 +236,13 @@ export class GameScene extends Phaser.Scene {
                 if (distance < GameConfig.asteroid.collisionRadius) {
                     // Player hit by asteroid - game over
                     const playerDTO = PlayerEntityFactory.toDTO(localEntity);
-                    const hitRequest: SocketRequestDTO<PlayerDTO> = { dto: playerDTO };
+                    const hitRequest = { ok: true, dto: playerDTO };
                     try {
                         SocketRequestSchema.parse(hitRequest);
-                        this.socket.emit(PlayerEvent.hit, hitRequest);
+                        this.socket.emit(Events.Player.hit, hitRequest);
                         this.handlePlayerDeath(this.localPlayerId!);
                     } catch (error: Error | unknown) {
-                        return this.handleSocketError(PlayerEvent.hit, error);
+                        return this.handleSocketError(Events.Player.hit, error);
                     }
                 }
             });
@@ -277,24 +263,19 @@ export class GameScene extends Phaser.Scene {
                             continue;
                         }
 
-                        const distance = Phaser.Math.Distance.Between(
-                            bullet.x,
-                            bullet.y,
-                            asteroidTransform.sprite.x,
-                            asteroidTransform.sprite.y
-                        );
+                        const distance = Phaser.Math.Distance.Between(bullet.x, bullet.y, asteroidTransform.sprite.x, asteroidTransform.sprite.y);
 
                         if (distance < GameConfig.asteroid.ammoCollisionRadius) {
                             bullet.setActive(false);
                             bullet.setVisible(false);
                             const asteroidHitDTO = { asteroidId: asteroidComponent.id, damage: weapon.getDamage() };
-                            const hitRequest: SocketRequestDTO<AsteroidHitDTO> = { dto: asteroidHitDTO };
+                            const hitRequest = { ok: true, dto: asteroidHitDTO };
                             try {
                                 SocketRequestSchema.parse(hitRequest);
-                                this.socket.emit(AsteroidEvent.hit, hitRequest);
+                                this.socket.emit(Events.Asteroid.hit, hitRequest);
                                 this.asteroidSystem.flashAsteroid(asteroidTransform.sprite);
                             } catch (error: Error | unknown) {
-                                return this.handleSocketError(AsteroidEvent.hit, error);
+                                return this.handleSocketError(Events.Asteroid.hit, error);
                             }
                         }
                     }
@@ -367,7 +348,7 @@ export class GameScene extends Phaser.Scene {
      */
     private setupSocketListeners(): void {
         // Player joined
-        this.socket.on(PlayerEvent.joined, (response: SocketResponseDTO) => {
+        this.socket.on(Events.Player.joined, (response: SocketResponseDTO) => {
             try {
                 SocketResponseSchema.parse(response);
                 const playerDTO = response.dto as PlayerDTO;
@@ -377,13 +358,13 @@ export class GameScene extends Phaser.Scene {
                 const entity = factory.fromDTO(playerDTO);
                 this.playerEntities.set(playerDTO.id, entity);
                 console.info('[Client]', 'Player joined:', playerDTO);
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(PlayerEvent.joined, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Player.joined, error);
             }
         });
 
         // Local player (protagonist)
-        this.socket.on(PlayerEvent.protagonist, (response: SocketResponseDTO) => {
+        this.socket.on(Events.Player.protagonist, (response: SocketResponseDTO) => {
             try {
                 SocketResponseSchema.parse(response);
                 const playerDTO = response.dto as PlayerDTO;
@@ -394,13 +375,13 @@ export class GameScene extends Phaser.Scene {
                 this.playerEntities.set(playerDTO.id, entity);
                 this.localPlayerId = playerDTO.id;
                 console.info('[Client]', 'Local player:', playerDTO);
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(PlayerEvent.protagonist, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Player.protagonist, error);
             }
         });
 
         // Existing players
-        this.socket.on(PlayerEvent.players, (response: SocketResponseDTO) => {
+        this.socket.on(Events.Player.players, (response: SocketResponseDTO) => {
             try {
                 SocketResponseSchema.parse(response);
                 const players = response.dto as PlayerDTO[];
@@ -412,13 +393,13 @@ export class GameScene extends Phaser.Scene {
                     this.playerEntities.set(playerDTO.id, entity);
                 });
                 console.info('[Client]', 'Existing players:', players);
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(PlayerEvent.protagonist, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Player.players, error);
             }
         });
 
         // Player quit
-        this.socket.on(PlayerEvent.quit, (response: SocketResponseDTO<PlayerDTO>) => {
+        this.socket.on(Events.Player.quit, (response: SocketResponseDTO<PlayerDTO>) => {
             try {
                 SocketResponseSchema.parse(response);
                 const player = response.dto as PlayerDTO;
@@ -428,13 +409,13 @@ export class GameScene extends Phaser.Scene {
                     this.entityManager.removeEntity(entity.id);
                     this.playerEntities.delete(player.id);
                 }
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(PlayerEvent.quit, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Player.quit, error);
             }
         });
 
         // Player coordinates update
-        this.socket.on(PlayerEvent.coordinates, (response: SocketResponseDTO) => {
+        this.socket.on(Events.Player.coordinates, (response: SocketResponseDTO) => {
             try {
                 SocketResponseSchema.parse(response);
                 const playerDTO = response.dto as PlayerDTO;
@@ -453,13 +434,13 @@ export class GameScene extends Phaser.Scene {
                     }
                     // TODO: Add visual feedback for thrust (m) and firing (f) if needed
                 }
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(PlayerEvent.coordinates, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Player.coordinates, error);
             }
         });
 
         // Player hit
-        this.socket.on(PlayerEvent.hit, (response: SocketResponseDTO<PlayerDTO>) => {
+        this.socket.on(Events.Player.hit, (response: SocketResponseDTO<PlayerDTO>) => {
             try {
                 SocketResponseSchema.parse(response);
                 const player = response.dto as PlayerDTO;
@@ -482,14 +463,14 @@ export class GameScene extends Phaser.Scene {
                         this.playerEntities.delete(player.id);
                     }
                 }
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(PlayerEvent.hit, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Player.hit, error);
             }
         });
 
         // Pickup drop
-        this.socket.on(GameEvent.drop, (response: SocketResponseDTO<Coordinates>) => {
-             try {
+        this.socket.on(Events.Game.drop, (response: SocketResponseDTO<Coordinates>) => {
+            try {
                 SocketResponseSchema.parse(response);
                 const { x, y } = response.dto as Coordinates;
                 console.info('[Client]', 'Pickup dropped:', { x, y });
@@ -508,13 +489,13 @@ export class GameScene extends Phaser.Scene {
                     id: uuidv4(),
                 };
                 this.pickupEntity = new PickupEntityFactory(this, this.entityManager).create(dto);
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(GameEvent.drop, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Game.drop, error);
             }
         });
 
         // Player pickup
-        this.socket.on(PlayerEvent.pickup, (response: SocketResponseDTO<PickupDTO>) => {
+        this.socket.on(Events.Player.pickup, (response: SocketResponseDTO<PickupDTO>) => {
             try {
                 SocketResponseSchema.parse(response);
                 const pickupDTO = response.dto as PickupDTO;
@@ -531,7 +512,7 @@ export class GameScene extends Phaser.Scene {
                         case PickupType.HEALTH:
                             const health = entity.getComponent(HealthComponent);
                             if (health) {
-                                health.heal(pickupDTO.amount)
+                                health.heal(pickupDTO.amount);
                             }
                             break;
                         default:
@@ -550,13 +531,13 @@ export class GameScene extends Phaser.Scene {
 
                     this.pickupEntity = null;
                 }
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(PlayerEvent.pickup, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Player.pickup, error);
             }
         });
 
         // Asteroid created
-        this.socket.on(AsteroidEvent.create, (response: SocketResponseDTO<AsteroidDTO>) => {
+        this.socket.on(Events.Asteroid.create, (response: SocketResponseDTO<AsteroidDTO>) => {
             try {
                 SocketResponseSchema.parse(response);
                 const asteroidDTO = response.dto as AsteroidDTO;
@@ -571,13 +552,13 @@ export class GameScene extends Phaser.Scene {
                     }
                 }
                 this.asteroidEntities.set(asteroidDTO.id, entity);
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(AsteroidEvent.create, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Asteroid.create, error);
             }
         });
 
         // Asteroid coordinates
-        this.socket.on(AsteroidEvent.coordinates, (response: SocketResponseDTO<AsteroidDTO>) => {
+        this.socket.on(Events.Asteroid.coordinates, (response: SocketResponseDTO<AsteroidDTO>) => {
             try {
                 SocketResponseSchema.parse(response);
                 const asteroidDTO = response.dto as AsteroidDTO;
@@ -595,13 +576,13 @@ export class GameScene extends Phaser.Scene {
                         }
                     }
                 }
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(AsteroidEvent.coordinates, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Asteroid.coordinates, error);
             }
         });
 
         // Asteroid hit
-        this.socket.on(AsteroidEvent.hit, (response: SocketResponseDTO<AsteroidHitDTO>) => {
+        this.socket.on(Events.Asteroid.hit, (response: SocketResponseDTO<AsteroidHitDTO>) => {
             try {
                 SocketResponseSchema.parse(response);
                 const { asteroidId, damage } = response.dto as AsteroidHitDTO;
@@ -620,21 +601,21 @@ export class GameScene extends Phaser.Scene {
                         this.asteroidSystem.flashAsteroid(transform.sprite);
                     }
                 }
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(AsteroidEvent.hit, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Asteroid.hit, error);
             }
         });
 
         // Asteroid destroyed
-        this.socket.on(AsteroidEvent.destroy, (response: SocketResponseDTO<AsteroidDTO>) => {
+        this.socket.on(Events.Asteroid.destroy, (response: SocketResponseDTO<AsteroidDTO>) => {
             try {
                 SocketResponseSchema.parse(response);
                 const asteroidDTO = response.dto as AsteroidDTO;
                 console.info('[Client]', 'Asteroid destroyed:', asteroidDTO.id);
                 this.asteroidSystem.destroyAsteroidById(asteroidDTO.id);
                 this.asteroidEntities.delete(asteroidDTO.id);
-            } catch(error: Error | unknown) {
-                return this.handleSocketError(AsteroidEvent.destroy, error);
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Asteroid.destroy, error);
             }
         });
     }
@@ -682,6 +663,6 @@ export class GameScene extends Phaser.Scene {
     private handleSocketError(event: string, error: Error | unknown): void {
         const message = error instanceof Error ? error.message : String(error);
         console.error(`[Client] Socket error on event ${event}: ${message}`);
-        // TODO show user friendly message in the UI    
+        // TODO show user friendly message in the UI
     }
 }

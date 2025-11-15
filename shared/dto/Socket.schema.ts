@@ -1,17 +1,18 @@
-
 import { z } from 'zod';
+import { SignOnSchema } from './SignOn.schema';
 import { PlayerSchema } from './Player.schema';
 import { AsteroidSchema, AsteroidHitSchema } from './Asteroid.dto';
 import { PickupSchema } from './Pickup.schema';
 import { CoordinatesSchema } from './Coordinates.schema';
 
-// Accept Player, Asteroid, Pickup, Coordinates, and AsteroidHit DTOs
-const DtoSchema = z.union([
+export const DtoSchema = z.union([
+    SignOnSchema,
     PlayerSchema,
     AsteroidSchema,
     PickupSchema,
     CoordinatesSchema,
     AsteroidHitSchema,
+    z.array(SignOnSchema),
     z.array(PlayerSchema),
     z.array(AsteroidSchema),
     z.array(PickupSchema),
@@ -19,17 +20,19 @@ const DtoSchema = z.union([
     z.array(AsteroidHitSchema),
 ]);
 
-export const SocketResponseSchema = z.discriminatedUnion('ok', [
+const SocketSchema = z.discriminatedUnion('ok', [
     z.object({
         ok: z.literal(true),
-        status: z.number().optional(),
         message: z.string().optional(),
         dto: DtoSchema,
     }),
     z.object({
         ok: z.literal(false),
-        status: z.number().optional(),
         message: z.string().optional(),
         dto: DtoSchema.optional(),
     }),
 ]);
+
+export const SocketRequestSchema = SocketSchema;
+
+export const SocketResponseSchema = SocketSchema;

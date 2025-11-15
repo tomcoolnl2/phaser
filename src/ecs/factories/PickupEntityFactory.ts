@@ -28,7 +28,6 @@ export class PickupEntityFactory {
      * @returns The newly created pickup entity
      */
     public create(dto: PickupDTO): Entity {
-
         const result: ZodSafeParseResult<z.infer<typeof PickupSchema>> = PickupSchema.safeParse(dto);
         if (!result.success) {
             throw new Error('Invalid PickupDTO: ' + result.error.message);

@@ -5,7 +5,7 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"],
-            "@shared/*": ["./shared/*"]
+            "@shared/*": ["shared/*"]
         },
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
@@ -31,6 +31,6 @@
         "target": "ES2020",
         "jsx": "preserve"
     },
-    "include": ["src/**/*", "tests/**/*", "shared/dto/asteroidDTO.zod.ts"],
+    "include": ["src/**/*", "tests/**/*"],
     "exclude": ["node_modules"]
 }

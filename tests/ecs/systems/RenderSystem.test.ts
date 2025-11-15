@@ -1,5 +1,3 @@
-
-
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RenderSystem } from '@/ecs/systems/RenderSystem';
 import { Entity } from '@/ecs/core/Entity';
@@ -17,22 +15,32 @@ function createMockSprite(x: number, y: number) {
 function createMockText(text: string) {
     return {
         text,
-        setText: vi.fn(function (this: any, t: string) { this.text = t; return this; }),
-        setPosition: vi.fn(function (this: any, x: number, y: number) { this.x = x; this.y = y; return this; }),
-        setOrigin: vi.fn(function () { return this; }),
-        setScrollFactor: vi.fn(function () { return this; }),
+        setText: vi.fn(function (this: any, t: string) {
+            this.text = t;
+            return this;
+        }),
+        setPosition: vi.fn(function (this: any, x: number, y: number) {
+            this.x = x;
+            this.y = y;
+            return this;
+        }),
+        setOrigin: vi.fn(function () {
+            return this;
+        }),
+        setScrollFactor: vi.fn(function () {
+            return this;
+        }),
         destroy: vi.fn(),
         x: 0,
         y: 0,
     } as unknown as Phaser.GameObjects.Text;
 }
 
-
 // Helper to create a real UIComponent with spies
 function createRealUIComponent(isLocal = false) {
     const scene = {
         add: {
-        text: vi.fn((x: number, y: number, text: string) => createMockText(text)),
+            text: vi.fn((x: number, y: number, text: string) => createMockText(text)),
         },
     } as unknown as Phaser.Scene;
     const ui = new UIComponent(scene, 'Name', 1, isLocal, 0, 0);

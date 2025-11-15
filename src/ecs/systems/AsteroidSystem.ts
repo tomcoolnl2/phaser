@@ -25,7 +25,6 @@ import { HealthComponent } from '@/ecs/components/HealthComponent';
  * ```
  */
 export class AsteroidSystem extends System {
-
     /** Map of asteroid IDs to their health text displays */
     private healthTexts: Map<string, Phaser.GameObjects.Text> = new Map();
 

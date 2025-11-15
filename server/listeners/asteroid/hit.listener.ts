@@ -1,6 +1,6 @@
 // AsteroidHitListener.ts
-import { createListener } from '../../listener/createListener';
-import { AsteroidEvent } from '@shared/events';
+import { createListener } from '../createListener';
+import { Events } from '@shared/events';
 import { AsteroidHitDTO, AsteroidDTO, AsteroidCauseOfDeath } from '@shared/dto/Asteroid.dto';
 import { GameServerContext } from '../../GameServerContext';
 
@@ -11,14 +11,14 @@ import { GameServerContext } from '../../GameServerContext';
  * - When a hit happens, calls `server.broadcastAsteroidHit(...)` to emit a hit event.
  * - If the asteroid dies, calls `server.broadcastAsteroidDestroy(...)` to emit a destroy event.
  *
- * Validates incoming hit requests, applies damage, broadcasts hit and destroy events, 
+ * Validates incoming hit requests, applies damage, broadcasts hit and destroy events,
  * and updates asteroid state.
  *
  * @see createListener
  */
 export const AsteroidHitListener = createListener<AsteroidHitDTO, AsteroidDTO>({
-    
-    event: AsteroidEvent.hit,
+    event: Events.Asteroid.hit,
+    log: true,
 
     async handle(_socket, request) {
         const server = GameServerContext.get();

@@ -1,5 +1,3 @@
-
-
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { WeaponUpgradeSystem } from '@/ecs/systems/WeaponUpgradeSystem';
 import { Entity } from '@/ecs/core/Entity';
@@ -13,42 +11,42 @@ import { GameScene } from '@/scenes/GameScene';
 const mockGroup = {} as Phaser.Physics.Arcade.Group;
 
 describe('WeaponUpgradeSystem', () => {
-	let entity: Entity;
-	let player: PlayerComponent;
-	let weapon: WeaponComponent;
-	let system: WeaponUpgradeSystem;
+    let entity: Entity;
+    let player: PlayerComponent;
+    let weapon: WeaponComponent;
+    let system: WeaponUpgradeSystem;
 
-	// Mock GameScene for WeaponUpgradeSystem
-	const mockScene = {} as GameScene;
+    // Mock GameScene for WeaponUpgradeSystem
+    const mockScene = {} as GameScene;
 
-	beforeEach(() => {
-		entity = new Entity();
-		player = new PlayerComponent('id', 'name', true, 1);
-		const dto = new WeaponDTO('weapon-id', 1, AmmoType.BULLET, 100);
-		weapon = new WeaponComponent(mockGroup, dto, 'laser-level-0');
-		player.level = 1;
-		weapon.bulletSpriteKey = 'laser-level-0';
-		entity.addComponent(player);
-		entity.addComponent(weapon);
-		system = new WeaponUpgradeSystem(mockScene);
-	});
+    beforeEach(() => {
+        entity = new Entity();
+        player = new PlayerComponent('id', 'name', true, 1);
+        const dto = new WeaponDTO('weapon-id', 1, AmmoType.BULLET, 100);
+        weapon = new WeaponComponent(mockGroup, dto, 'laser-level-0');
+        player.level = 1;
+        weapon.bulletSpriteKey = 'laser-level-0';
+        entity.addComponent(player);
+        entity.addComponent(weapon);
+        system = new WeaponUpgradeSystem(mockScene);
+    });
 
-	it('sets bulletSpriteKey based on player level', () => {
-		player.level = 2;
-		system.update(entity, 0);
-		expect(weapon.bulletSpriteKey).toBe('laser-level-2');
-	});
+    it('sets bulletSpriteKey based on player level', () => {
+        player.level = 2;
+        system.update(entity, 0);
+        expect(weapon.bulletSpriteKey).toBe('laser-level-2');
+    });
 
-	it('does not update bulletSpriteKey if already correct', () => {
-		player.level = 3;
-		weapon.bulletSpriteKey = 'laser-level-3';
-		system.update(entity, 0);
-		expect(weapon.bulletSpriteKey).toBe('laser-level-3');
-	});
+    it('does not update bulletSpriteKey if already correct', () => {
+        player.level = 3;
+        weapon.bulletSpriteKey = 'laser-level-3';
+        system.update(entity, 0);
+        expect(weapon.bulletSpriteKey).toBe('laser-level-3');
+    });
 
-	it('does nothing if missing components', () => {
-		const entity = new Entity();
-		// No components
-		expect(() => system.update(entity, 0)).not.toThrow();
-	});
+    it('does nothing if missing components', () => {
+        const entity = new Entity();
+        // No components
+        expect(() => system.update(entity, 0)).not.toThrow();
+    });
 });

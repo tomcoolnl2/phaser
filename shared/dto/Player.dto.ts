@@ -1,14 +1,12 @@
 import { GameConfig } from '../../shared/config';
 import { Coordinates, PlayerLevel } from '../../shared/model';
 
-
 /**
  * Data Transfer Object representing a player in the game.
  * Implements Coordinates for position tracking.
  */
 export class PlayerDTO implements Coordinates {
-
-    private _level : number = GameConfig.player.startingLevel;
+    private _level: number = GameConfig.player.startingLevel;
 
     /**
      * @param id - Unique identifier for the player

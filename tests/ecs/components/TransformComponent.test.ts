@@ -5,7 +5,7 @@ function createMockSprite() {
     return {
         x: 0,
         y: 0,
-        rotation: 0
+        rotation: 0,
     } as Phaser.Physics.Arcade.Sprite;
 }
 

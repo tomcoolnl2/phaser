@@ -1,8 +1,6 @@
-import { createListener } from "../../listener/createListener";
-import { Events } from "@shared/events";
-import { SocketRequestSchema } from "@shared/dto/SocketRequest.schema";
-import { SocketResponseSchema } from "@shared/dto/SocketResponse.schema";
-import { PlayerDTO } from "@shared/dto/Player.dto";
+import { createListener } from '../createListener';
+import { Events } from '@shared/events';
+import { PlayerDTO } from '@shared/dto/Player.dto';
 
 /**
  * Listener for player hit events.
@@ -10,8 +8,8 @@ import { PlayerDTO } from "@shared/dto/Player.dto";
  * @see createListener
  */
 export const PlayerHitListener = createListener<PlayerDTO, PlayerDTO>({
-    
     event: Events.Player.hit,
+    log: true,
 
     /**
      * Handles a player hit event.
@@ -23,7 +21,7 @@ export const PlayerHitListener = createListener<PlayerDTO, PlayerDTO>({
     async handle(socket, request) {
         // request already validated by BaseListener
         const player = request.dto as PlayerDTO;
-        const response = { ok: true, dto: player};
+        const response = { ok: true, dto: player };
         // broadcast to everyone except the sender (same behavior as socket.broadcast.emit)
         socket.broadcast.emit(this.event, response);
         return response;
