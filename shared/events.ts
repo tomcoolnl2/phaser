@@ -8,6 +8,7 @@ export const Events = {
         players: 'player:players',
         quit: 'player:quit',
         hit: 'player:hit',
+        pickup: 'player:pickup',
         coordinates: 'player:coordinates',
         authenticate: 'player:authenticate',
     },
@@ -19,7 +20,6 @@ export const Events = {
     },
     Game: {
         drop: 'game:drop',
-        pickup: 'player:pickup',
     }
 } as const;
 

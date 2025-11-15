@@ -1,25 +1,26 @@
 import path from 'path';
-import express, { Express, Request, Response, } from 'express';
 import { createServer, Server as HttpServer } from 'http';
+import express, { Express, Request, Response } from 'express';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
+
 import { PlayerDTO } from '@shared/dto/Player.dto';
-import * as Utils from '@shared/utils';
+import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
+import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
+import { SocketRequestSchema } from '@shared/dto/SocketRequest.schema';
+import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
+import { SocketResponseSchema } from '@shared/dto/SocketResponse.schema';
+import { Coordinates } from '@shared/model';
 import { GameConfig } from '@shared/config';
 import { PlayerEvent, GameEvent, AsteroidEvent } from '@shared/events';
-import { Coordinates } from '@shared/model';
-import { SocketResponseSchema } from '@shared/dto/SocketResponse.schema';
-import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
-import { SocketRequestSchema } from '@shared/dto/SocketRequest.schema';
-import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
-import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
-import { PickupDTO } from '@shared/dto/Pickup.dto';
+import * as Utils from '@shared/utils';
+
+import { playerFeatureListeners } from './features/player';
+import { asteroidFeatureListeners } from './features/asteroid';
 import { GameSocket } from './model';
 import { logger } from './logger';
 import { HealthManager } from './HealthManager';
-
-const USE_NEW_LISTENERS = true; // flip for testing
-import { playerFeatureListeners } from "./features/player";
+import { GameServerContext } from './GameServerContext';
 
 
 /**
@@ -37,13 +38,6 @@ import { playerFeatureListeners } from "./features/player";
  *   server.start(3000);
  */
 export class GameServer {
-    
-    
-    private featureListeners = [
-        ...playerFeatureListeners,
-        // ...other feature listener arrays
-    ];
-
 
     private readonly app: Express;
     private readonly httpServer: HttpServer;
@@ -71,13 +65,19 @@ export class GameServer {
 
     private asteroidMap: Map<string, AsteroidDTO> = new Map();
 
+    private featureListeners = [
+        ...playerFeatureListeners,
+        ...asteroidFeatureListeners
+    ];
+
     constructor() {
         this.app = express();
         this.httpServer = createServer(this.app);
         this.io = new Server(this.httpServer, {
             cors: { origin: '*', methods: ['GET', 'POST'] }
         });
-
+        // Initialize GameServerContext with the current instance
+        GameServerContext.initialize(this);
         this.setupExpress();
         this.setupSocketIO();
     }
@@ -102,6 +102,8 @@ export class GameServer {
         this.io.on('connection', (socket: Socket) => {
             const gameSocket = socket as GameSocket;
             logger.info({ socketId: gameSocket.id }, 'Player connected');
+            this.registerFeatureListeners(gameSocket);
+            
             this.attachListeners(gameSocket);
         });
     }
@@ -112,18 +114,14 @@ export class GameServer {
      */
     private attachListeners(socket: GameSocket): void {
 
-        if (USE_NEW_LISTENERS) {
-            this.registerFeatureListeners(socket);
-        }
-
         // old monolithic listeners continue to work
         this.addSignOnListener(socket);
         // this.addMovementListener(socket);
         this.addSignOutListener(socket);
         // this.addHitListener(socket);
-        this.addAsteroidHitListener(socket);
-        this.addAsteroidDestroyListener(socket);
-        this.addPickupListener(socket);
+        // this.addAsteroidHitListener(socket);
+        // this.addAsteroidDestroyListener(socket);
+        // this.addPickupListener(socket);
     }
 
     private registerFeatureListeners(socket: GameSocket): void {
@@ -137,6 +135,67 @@ export class GameServer {
                 }
             });
         }
+    }
+
+    /**
+     * Checks if an asteroid has already been destroyed.
+     */
+    public isAsteroidDestroyed(asteroidId: string): boolean {
+        return this.destroyedAsteroids.has(asteroidId);
+    }
+
+    /**
+     * Retrieves an asteroid by its ID.
+     */
+    public getAsteroid(asteroidId: string): AsteroidDTO | undefined {
+        return this.asteroidMap.get(asteroidId);
+    }
+
+    /**
+     * Apply damage to an asteroid. Returns updated DTO or null if not found.
+     */
+    public damageAsteroid(asteroidId: string, damage: number): AsteroidDTO | null {
+        const asteroid = this.asteroidMap.get(asteroidId);
+        if (!asteroid) return null;
+
+        asteroid.health = this.healthManager.damage(asteroidId, damage);
+        asteroid.maxHealth = this.healthManager.getMaxHealth(asteroidId);
+
+        return asteroid;
+    }
+
+    /**
+     * Destroys an asteroid and cleans up its state.
+     */
+    public destroyAsteroid(asteroidId: string, cause: AsteroidCauseOfDeath): AsteroidDTO | null {
+        const asteroid = this.asteroidMap.get(asteroidId);
+        if (!asteroid) return null;
+
+        asteroid.causeOfDeath = cause;
+        this.destroyedAsteroids.add(asteroidId);
+        this.healthManager.remove(asteroidId);
+        this.hasAsteroid = false;
+        this.asteroidMap.delete(asteroidId);
+
+        return asteroid;
+    }
+
+    /**
+     * Broadcasts an asteroid hit event to all clients.
+     */
+    public broadcastAsteroidHit(payload: SocketResponseDTO<AsteroidHitDTO>): void {
+        this.io.emit(AsteroidEvent.hit, payload);
+    }
+
+    /**
+     * Broadcasts an asteroid destroy event to all clients.
+     */
+    public broadcastAsteroidDestroy(payload: SocketResponseDTO<AsteroidDTO>): void {
+        this.io.emit(AsteroidEvent.destroy, payload);
+    }
+
+    public markAsteroidDestroyed(id: string): void {
+        this.destroyedAsteroids.add(id);
     }
 
     /**
@@ -255,77 +314,77 @@ export class GameServer {
      * Handles asteroid hit events, updates health, and emits destroy if dead.
      * @param socket - The connected Socket
      */
-    private addAsteroidHitListener(socket: Socket): void {
-        socket.on(AsteroidEvent.hit, (request: SocketRequestDTO<AsteroidHitDTO>) => {
-            try {
-                SocketRequestSchema.parse(request);
-                const { asteroidId, damage } = request.dto as AsteroidHitDTO;
-                if (this.destroyedAsteroids.has(asteroidId)) {
-                    return;
-                }
-                const asteroidDTO = this.asteroidMap.get(asteroidId);
-                const health = this.healthManager.damage(asteroidId, damage);
-                const maxHealth = this.healthManager.getMaxHealth(asteroidId);
-                if (asteroidDTO) {
-                    const hitResponse: SocketResponseDTO<AsteroidHitDTO> = { ok: true, dto: { asteroidId, damage } };
-                    this.io.emit(AsteroidEvent.hit, hitResponse);
-                    asteroidDTO.health = health;
-                    asteroidDTO.maxHealth = maxHealth;
-                    if (this.healthManager.isDead(asteroidId)) {
-                        asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.HIT;
-                        const destroyResponse: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
-                        this.io.emit(AsteroidEvent.destroy, destroyResponse);
-                        this.destroyedAsteroids.add(asteroidId);
-                        this.healthManager.remove(asteroidId);
-                        this.hasAsteroid = false;
-                        this.asteroidMap.delete(asteroidId);
-                    }
-                }
-            } catch(e) {
-                const message = e instanceof Error ? e.message : e.toString();
-                socket.broadcast.emit(AsteroidEvent.destroy, { ok: false, message });
-                logger.error({ error: message }, `Invalid SocketResponse for ${AsteroidEvent.destroy}`);
-            }
-        });
-    }
+    // private addAsteroidHitListener(socket: Socket): void {
+    //     socket.on(AsteroidEvent.hit, (request: SocketRequestDTO<AsteroidHitDTO>) => {
+    //         try {
+    //             SocketRequestSchema.parse(request);
+    //             const { asteroidId, damage } = request.dto as AsteroidHitDTO;
+    //             if (this.destroyedAsteroids.has(asteroidId)) {
+    //                 return;
+    //             }
+    //             const asteroidDTO = this.asteroidMap.get(asteroidId);
+    //             const health = this.healthManager.damage(asteroidId, damage);
+    //             const maxHealth = this.healthManager.getMaxHealth(asteroidId);
+    //             if (asteroidDTO) {
+    //                 const hitResponse: SocketResponseDTO<AsteroidHitDTO> = { ok: true, dto: { asteroidId, damage } };
+    //                 this.io.emit(AsteroidEvent.hit, hitResponse);
+    //                 asteroidDTO.health = health;
+    //                 asteroidDTO.maxHealth = maxHealth;
+    //                 if (this.healthManager.isDead(asteroidId)) {
+    //                     asteroidDTO.causeOfDeath = AsteroidCauseOfDeath.HIT;
+    //                     const destroyResponse: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
+    //                     this.io.emit(AsteroidEvent.destroy, destroyResponse);
+    //                     this.destroyedAsteroids.add(asteroidId);
+    //                     this.healthManager.remove(asteroidId);
+    //                     this.hasAsteroid = false;
+    //                     this.asteroidMap.delete(asteroidId);
+    //                 }
+    //             }
+    //         } catch(e) {
+    //             const message = e instanceof Error ? e.message : e.toString();
+    //             socket.broadcast.emit(AsteroidEvent.destroy, { ok: false, message });
+    //             logger.error({ error: message }, `Invalid SocketResponse for ${AsteroidEvent.destroy}`);
+    //         }
+    //     });
+    // }
 
     /**
      * Handles asteroid destroy events and broadcasts to other clients.
      * @param socket - The connected Socket
      */
-    private addAsteroidDestroyListener(socket: Socket): void {
-        socket.on(AsteroidEvent.destroy, (asteroidDTO: AsteroidDTO) => {
-            try {
-                const response: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
-                SocketResponseSchema.parse(response);
-                socket.broadcast.emit(AsteroidEvent.destroy, response);
-            } catch (e) {
-                const message = e instanceof Error ? e.message : e.toString();
-                socket.broadcast.emit(AsteroidEvent.destroy, { ok: false, message, dto: asteroidDTO });
-                logger.error({ error: message }, `Invalid SocketResponse for ${AsteroidEvent.destroy}`);
-            }
-        });
-    }
+    // private addAsteroidDestroyListener(socket: Socket): void {
+    //     socket.on(AsteroidEvent.destroy, (asteroidDTO: AsteroidDTO) => {
+    //         try {
+    //             const response: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
+    //             SocketResponseSchema.parse(response);
+    //             socket.broadcast.emit(AsteroidEvent.destroy, response);
+    //         } catch (e) {
+    //             const message = e instanceof Error ? e.message : e.toString();
+    //             socket.broadcast.emit(AsteroidEvent.destroy, { ok: false, message, dto: asteroidDTO });
+    //             logger.error({ error: message }, `Invalid SocketResponse for ${AsteroidEvent.destroy}`);
+    //         }
+    //     });
+    // }
 
     /**
      * Handles pickup events and updates player state.
      * @param socket - The connected GameSocket
      */
-    private addPickupListener(socket: GameSocket): void {
-        socket.on(PlayerEvent.pickup, (request: SocketRequestDTO<PickupDTO>) => {
-            try {
-                SocketRequestSchema.parse(request);
-                const pickupDTO = request.dto as PickupDTO;
-                const response: SocketResponseDTO<PickupDTO> = { ok: true, dto: pickupDTO };
-                SocketResponseSchema.parse(response);
-                socket.broadcast.emit(PlayerEvent.pickup, response);
-            } catch (e) {
-                const message = e instanceof Error ? e.message : e.toString();
-                socket.broadcast.emit(PlayerEvent.pickup, { ok: false, message });
-                logger.error({ error: message }, `Invalid SocketResponse for ${PlayerEvent.pickup}`);
-            }
-        });
-    }
+    // private addPickupListener(socket: GameSocket): void {
+    //     socket.on(PlayerEvent.pickup, (request: SocketRequestDTO<PickupDTO>) => {
+    //         try {
+    //             SocketRequestSchema.parse(request);
+    //             const pickupDTO = request.dto as PickupDTO;
+    //             const response: SocketResponseDTO<PickupDTO> = { ok: true, dto: pickupDTO };
+    //             SocketResponseSchema.parse(response);
+    //             socket.broadcast.emit(PlayerEvent.pickup, response);
+    //         } catch (e) {
+    //             const message = e instanceof Error ? e.message : e.toString();
+    //             socket.broadcast.emit(PlayerEvent.pickup, { ok: false, message });
+    //             logger.error({ error: message }, `Invalid SocketResponse for ${PlayerEvent.pickup}`);
+    //         }
+    //     });
+    // }
 
     /**
      * Creates a new player entity and assigns it to the socket.

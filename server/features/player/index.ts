@@ -1,10 +1,10 @@
-import { CoordinatesListener } from "./coordinates.listener";
-import { HitListener } from "./hit.listener";
+import { PlayerCoordinatesListener } from "./coordinates.listener";
+import { PlayerHitListener } from "./hit.listener";
 
 /**
  * Array of all player feature listeners.
  */
 export const playerFeatureListeners = [
-    CoordinatesListener,
-    HitListener
+    PlayerCoordinatesListener,
+    PlayerHitListener
 ];

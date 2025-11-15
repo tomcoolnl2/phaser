@@ -7,16 +7,12 @@ import { PlayerDTO } from "@shared/dto/Player.dto";
 
 /**
  * Listener for player coordinates update events.
- *
  * Validates incoming coordinate updates and responds with an updated PlayerDTO.
- *
  * @see createListener
  */
-export const CoordinatesListener = createListener<Coordinates, PlayerDTO>({
+export const PlayerCoordinatesListener = createListener<Coordinates, PlayerDTO>({
     
     event: Events.Player.coordinates,
-    requestSchema: SocketRequestSchema,
-    responseSchema: SocketResponseSchema,
     
     /**
      * Handles a player coordinates update event.
