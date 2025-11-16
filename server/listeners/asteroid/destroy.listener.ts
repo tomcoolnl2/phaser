@@ -33,15 +33,9 @@ export const AsteroidDestroyListener = createListener<AsteroidDTO, AsteroidDTO>(
 
         const response = { ok: true, dto: asteroidDTO };
 
-        try {
-            // Broadcast to all other clients (excluding sender)
-            socket.broadcast.emit(this.event, response);
-            return response;
-        } catch (e) {
-            const message = e instanceof Error ? e.message : e.toString();
-            const errorResponse = { ok: false, dto: asteroidDTO, message };
-            socket.broadcast.emit(this.event, errorResponse);
-            return errorResponse;
-        }
+        // Broadcast to all other clients (excluding sender)
+        socket.broadcast.emit(this.event, response);
+        
+        return response;
     },
 });

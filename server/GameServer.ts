@@ -309,15 +309,6 @@ export class GameServer {
     }
 
     /**
-     * Destroys all asteroids and clears their state.
-     */
-    public destroyAllAsteroids(): void {
-        this.asteroidMap.clear();
-        this.destroyedAsteroids.clear();
-        this.hasAsteroid = false;
-    }
-
-    /**
      * Checks if an asteroid has already been destroyed.
      * @param asteroidId - The ID of the asteroid
      * @returns True if the asteroid is destroyed, false otherwise
@@ -333,6 +324,10 @@ export class GameServer {
      */
     public getAsteroid(asteroidId: string): AsteroidDTO | undefined {
         return this.asteroidMap.get(asteroidId);
+    }
+
+    public getAllAsteroids(): AsteroidDTO[] {
+        return Array.from(this.asteroidMap.values());
     }
 
     /**
