@@ -37,16 +37,16 @@ export class PlayerComponent extends Component implements WeaponLevelProvider<Pl
 
     /**
      * Creates a new PlayerComponent.
-     * @param playerId - Unique player identifier
+     * @param id - Unique player identifier
      * @param playerName - Display name
      * @param isLocal - True if this is the local player
      * @param level - Starting level (1-5)
      */
     constructor(
         /** Unique player identifier */
-        public playerId: string,
+        public id: string,
         /** Display name for the player */
-        public playerName: string,
+        public name: string,
         /** True if this is the local player */
         public isLocal = false,
         /** Starting level (1-5) */
@@ -87,6 +87,7 @@ export class PlayerComponent extends Component implements WeaponLevelProvider<Pl
         this._score = score;
     }
 
+    // TODO: Remove this method and use the UpgradesComponent to manage level ups
     public levelUp(): PlayerLevel {
         this.level += 1;
         return this.level as PlayerLevel;
@@ -96,6 +97,7 @@ export class PlayerComponent extends Component implements WeaponLevelProvider<Pl
      * Adds to the player's score.
      * @param amount - Amount to add to the score
      */
+    // TODO: Remove this method and use the UpgradesComponent to manage level ups
     public addScore(amount: number): void {
         this._score += amount;
     }

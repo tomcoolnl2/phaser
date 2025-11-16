@@ -18,6 +18,7 @@ import { WeaponUpgradeSystem } from '@/ecs/systems/WeaponUpgradeSystem';
 import { RenderSystem } from '@/ecs/systems/RenderSystem';
 import { AsteroidSystem } from '@/ecs/systems/AsteroidSystem';
 import { PickupSystem } from '@/ecs/systems/PickupSystem';
+import { PlayerSystem } from '@/ecs/systems/PlayerSystem';
 import { Entity } from '@/ecs/core/Entity';
 import { AsteroidEntityFactory } from '@/ecs/factories/AsteroidEntityFactory';
 import { PickupEntityFactory } from '@/ecs/factories/PickupEntityFactory';
@@ -74,6 +75,8 @@ export class GameScene extends Phaser.Scene {
     private renderSystem!: RenderSystem;
     /** System handling asteroid behavior and destruction */
     private asteroidSystem!: AsteroidSystem;
+    /** System handling player visuals and lifecycle */
+    private playerSystem!: PlayerSystem;
     /** System handling pickup animations */
     private pickupSystem!: PickupSystem;
 
@@ -132,6 +135,7 @@ export class GameScene extends Phaser.Scene {
         this.weaponUpgradeSystem = new WeaponUpgradeSystem(this);
         this.renderSystem = new RenderSystem(this);
         this.asteroidSystem = new AsteroidSystem(this);
+        this.playerSystem = new PlayerSystem(this);
         this.pickupSystem = new PickupSystem(this);
 
         // Register systems with entity manager
@@ -141,6 +145,7 @@ export class GameScene extends Phaser.Scene {
         this.entityManager.addSystem(this.weaponUpgradeSystem);
         this.entityManager.addSystem(this.renderSystem);
         this.entityManager.addSystem(this.asteroidSystem);
+        this.entityManager.addSystem(this.playerSystem);
         this.entityManager.addSystem(this.pickupSystem);
     }
 
@@ -240,7 +245,7 @@ export class GameScene extends Phaser.Scene {
                     try {
                         SocketRequestSchema.parse(hitRequest);
                         this.socket.emit(Events.Player.hit, hitRequest);
-                        this.handlePlayerDeath(this.localPlayerId!);
+                        this.handlePlayerDeath(playerDTO);
                     } catch (error: Error | unknown) {
                         return this.handleSocketError(Events.Player.hit, error);
                     }
@@ -292,8 +297,38 @@ export class GameScene extends Phaser.Scene {
      *
      * @param _playerId - The ID of the player who died (unused but kept for future extensions)
      */
-    private handlePlayerDeath(_playerId: string): void {
-        this.scene.pause();
+    private handlePlayerDeath(player: PlayerDTO): void {
+        // Play explosion at player's position, then pause so the player sees it
+        const localEntity = this.playerEntities.get(player.id);
+        let played = false;
+        if (localEntity) {
+            const transform = localEntity.getComponent(TransformComponent);
+            if (transform && transform.sprite) {
+                const explosion = this.add.sprite(transform.sprite.x, transform.sprite.y, 'kaboom');
+                if (explosion.anims) {
+                    explosion.play('explode');
+                    explosion.once('animationcomplete', () => {
+                        explosion.destroy();
+                        played = true;
+                        // After explosion completes, pause and notify server
+                        this.scene.pause();
+                        this.socket.emit(Events.Player.destroy, { ok: true, dto: player });
+                        this.showDeathUI();
+                    });
+                } else {
+                    explosion.destroy();
+                }
+            }
+        }
+
+        // Fallback: if no animation ran, pause after short delay and emit
+        setTimeout(() => {
+            if (!played) {
+                this.scene.pause();
+                this.socket.emit(Events.Player.destroy, { ok: true, dto: player });
+                this.showDeathUI();
+            }
+        }, 600);
 
         // TODO: Display "YOU DIED!" message using HUD/UI system
         this.add
@@ -311,6 +346,38 @@ export class GameScene extends Phaser.Scene {
             .setOrigin(0.5);
 
         // Countdown timer
+        let countdown = 3;
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                countdownText.setText(`Reloading in ${countdown} second${countdown !== 1 ? 's' : ''}...`);
+            } else {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+
+        setTimeout(() => window.location.reload(), 3000);
+    }
+
+    /**
+     * Shows death UI and reload countdown. Extracted to allow reuse after explosion.
+     */
+    private showDeathUI(): void {
+        // TODO: Display "YOU DIED!" message using HUD/UI system
+        this.add
+            .text(this.scale.width / 2, this.scale.height / 2, 'YOU DIED!', {
+                fontSize: '64px',
+                color: '#ff0000',
+            })
+            .setOrigin(0.5);
+
+        const countdownText = this.add
+            .text(this.scale.width / 2, this.scale.height / 2 + 60, 'Reloading in 3 seconds...', {
+                fontSize: '24px',
+                color: '#ffffff',
+            })
+            .setOrigin(0.5);
+
         let countdown = 3;
         const countdownInterval = setInterval(() => {
             countdown--;
@@ -447,21 +514,16 @@ export class GameScene extends Phaser.Scene {
                 SocketResponseSchema.parse(response);
                 const player = response.dto as PlayerDTO;
                 console.info('[Client]', 'Player hit:', player);
-                const entity = this.playerEntities.get(player.id);
-                if (entity) {
+
+                const entity = this.playerEntities.get(player.id)!;
+                const health = entity.getComponent(HealthComponent)!;
+                health.currentHealth = player.health;
+                if (entity && health.currentHealth <= 0) {
                     if (player.id === this.localPlayerId) {
-                        // Game over for local player
-                        this.scene.pause();
-                        this.add
-                            .text(this.scale.width / 2, this.scale.height / 2, 'YOU DIED!', {
-                                fontSize: '64px',
-                                color: '#ff0000',
-                            })
-                            .setOrigin(0.5);
-                        setTimeout(() => window.location.reload(), 3000); // TODO Let player select reload, or rematch
+                        this.handlePlayerDeath(player);
                     } else {
-                        // Remote player died
-                        this.entityManager.removeEntity(entity.id);
+                        // Remote player died - play death animation and cleanup via PlayerSystem
+                        this.playerSystem.destroyPlayerById(player.id);
                         this.playerEntities.delete(player.id);
                     }
                 }
@@ -470,12 +532,27 @@ export class GameScene extends Phaser.Scene {
             }
         });
 
+        this.socket.on(Events.Player.destroy, (response: SocketResponseDTO<PlayerDTO>) => {
+            try {
+                SocketResponseSchema.parse(response);
+                const player = response.dto as PlayerDTO;
+                console.info('[Client]', 'Player destroyed:', player.id);
+                const entity = this.playerEntities.get(player.id);
+                if (entity) {
+                    this.playerSystem.destroyPlayerById(player.id);
+                    this.playerEntities.delete(player.id);
+                }
+            } catch (error: Error | unknown) {
+                return this.handleSocketError(Events.Player.destroy, error);
+            }
+        });
+
         // Pickup drop
         this.socket.on(Events.Game.drop, (response: SocketResponseDTO<Coordinates>) => {
             try {
                 SocketResponseSchema.parse(response);
                 const { x, y } = response.dto as Coordinates;
-                console.info('[Client]', 'Pickup dropped:', { x, y });
+                console.info('[Client] Pickup dropped:', { x, y });
                 if (this.pickupEntity) {
                     const transform = this.pickupEntity.getComponent(TransformComponent);
                     if (transform) {
@@ -588,7 +665,7 @@ export class GameScene extends Phaser.Scene {
             try {
                 SocketResponseSchema.parse(response);
                 const { asteroidId, damage } = response.dto as AsteroidHitDTO;
-                console.info('[Client]', 'Asteroid hit', asteroidId, 'damage:', damage);
+                console.info('[Client] Asteroid hit', asteroidId, 'damage:', damage);
                 if (typeof damage !== 'number' || isNaN(damage)) {
                     throw new Error(`Invalid damage value received for asteroid hit: ${damage}`);
                 }
@@ -613,7 +690,7 @@ export class GameScene extends Phaser.Scene {
             try {
                 SocketResponseSchema.parse(response);
                 const asteroidDTO = response.dto as AsteroidDTO;
-                console.info('[Client]', 'Asteroid destroyed:', asteroidDTO.id);
+                console.info('[Client] Asteroid destroyed:', asteroidDTO.id);
                 this.asteroidSystem.destroyAsteroidById(asteroidDTO.id);
                 this.asteroidEntities.delete(asteroidDTO.id);
             } catch (error: Error | unknown) {
@@ -641,6 +718,9 @@ export class GameScene extends Phaser.Scene {
         const player = entity.getComponent(PlayerComponent);
         const weapon = entity.getComponent(WeaponComponent)!;
 
+        // TODO ask the current level from the UpgradesComponent
+        // TODO add health indicator
+
         if (!player) {
             return;
         }
@@ -648,7 +728,7 @@ export class GameScene extends Phaser.Scene {
         window.dispatchEvent(
             new CustomEvent('updatePlayerData', {
                 detail: {
-                    name: player.playerName,
+                    name: player.name,
                     level: player.level,
                     ammo: weapon.getAmmo(),
                     score: 0, // TODO: Add score tracking

@@ -1,7 +1,7 @@
-export interface EntityDTO {
+import { CoordinatesDTO } from './Coordinates.dto';
+
+export interface EntityDTO extends CoordinatesDTO {
     id: string;
-    x: number;
-    y: number;
 }
 
 export interface EntityWithHealthDTO extends EntityDTO {

@@ -68,7 +68,7 @@ describe('PlayerEntityFactory', () => {
 
     describe('toDTO', () => {
         it('converts a player entity to PlayerDTO', () => {
-            const dto = new PlayerDTO('id', 'name', 1, 2, 'sprite', true, 3);
+            const dto = new PlayerDTO('id', 'name', 1, 2, 'sprite', true, 3, 1, 1);
             const entity = factory.fromDTO(dto);
             const result = PlayerEntityFactory.toDTO(entity);
             expect(result).toBeInstanceOf(PlayerDTO);
@@ -79,6 +79,8 @@ describe('PlayerEntityFactory', () => {
             expect(result.spriteKey).toBe('sprite');
             expect(result.isLocal).toBe(true);
             expect(result.level).toBe(3);
+            expect(result.health).toBe(1);
+            expect(result.maxHealth).toBe(1);
         });
 
         it('throws if missing components', () => {

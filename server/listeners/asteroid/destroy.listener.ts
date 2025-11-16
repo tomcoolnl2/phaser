@@ -26,7 +26,7 @@ export const AsteroidDestroyListener = createListener<AsteroidDTO, AsteroidDTO>(
         const server = GameServerContext.get();
         const asteroidDTO = request.dto as AsteroidDTO;
 
-        // Mark asteroid as destroyed using public API
+        // Mark asteroid as destroyed
         if (!server.isAsteroidDestroyed(asteroidDTO.id)) {
             server.markAsteroidDestroyed(asteroidDTO.id);
         }
@@ -35,7 +35,7 @@ export const AsteroidDestroyListener = createListener<AsteroidDTO, AsteroidDTO>(
 
         // Broadcast to all other clients (excluding sender)
         socket.broadcast.emit(this.event, response);
-        
+
         return response;
     },
 });

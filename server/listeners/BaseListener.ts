@@ -47,9 +47,6 @@ export abstract class BaseListener<TReq, TRes> {
      * @returns The validated response DTO (possibly async).
      */
     private async _wrappedHandle(socket: GameSocket, request: SocketRequestDTO<TReq>): Promise<SocketResponseDTO<TRes>> {
-        const playerId = socket.player?.id;
-        const playerName = socket.player?.name;
-
         if (this.log) {
             logger.info({ event: this.event, dto: request.dto }, `Incoming event: ${this.event}`);
         }

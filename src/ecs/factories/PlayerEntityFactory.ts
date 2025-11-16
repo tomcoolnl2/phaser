@@ -31,6 +31,7 @@ import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
  * - UpgradesComponent: Stat progression
  */
 export class PlayerEntityFactory {
+    //
     constructor(
         private scene: Phaser.Scene,
         private entityManager: EntityManager
@@ -50,6 +51,7 @@ export class PlayerEntityFactory {
      * @returns The newly created player entity
      */
     public fromDTO(playerDTO: PlayerDTO): Entity {
+        // Validate the PlayerDTO using Zod schema
         const result = PlayerSchema.safeParse(playerDTO);
         if (!result.success) {
             throw new Error('Invalid PlayerDTO: ' + result.error.message);
@@ -57,9 +59,10 @@ export class PlayerEntityFactory {
 
         // Create the entity
         const entity = this.entityManager.createEntity();
+        const { id, name, x, y, spriteKey, isLocal, level, maxHealth } = playerDTO;
 
         // Create player sprite
-        const sprite = this.scene.physics.add.sprite(playerDTO.x, playerDTO.y, playerDTO.spriteKey).setOrigin(0.5, 0.5);
+        const sprite = this.scene.physics.add.sprite(x, y, spriteKey).setOrigin(0.5, 0.5);
 
         // Setup physics
         sprite.setCollideWorldBounds(true);
@@ -68,16 +71,17 @@ export class PlayerEntityFactory {
         sprite.setDrag(0.99);
         sprite.setMaxVelocity(GameConfig.player.maxVelocity);
         sprite.setAngularDrag(GameConfig.player.angularDrag);
-        sprite.setData('id', playerDTO.id);
+        sprite.setData('id', id);
 
         // Transform component - owns the sprite
         const transform = new TransformComponent(sprite);
         entity.addComponent(transform);
 
         // Movement component
+        const { maxVelocity, acceleration } = GameConfig.player;
         const movement = new MovementComponent(
-            GameConfig.player.maxVelocity,
-            GameConfig.player.acceleration,
+            maxVelocity,
+            acceleration,
             0.97, // drag value
             2.0 // rotation speed
         );
@@ -85,28 +89,28 @@ export class PlayerEntityFactory {
         entity.addComponent(movement);
 
         // Player component
-        const player = new PlayerComponent(playerDTO.id, playerDTO.name, playerDTO.isLocal, playerDTO.level);
+        const player = new PlayerComponent(id, name, isLocal, level);
         entity.addComponent(player);
 
         // Weapon component - only for local players
-        if (playerDTO.isLocal) {
+        if (isLocal) {
             const bulletGroup = this.scene.physics.add.group({
                 classType: Phaser.Physics.Arcade.Sprite,
                 maxSize: 10,
             }) as Phaser.Physics.Arcade.Group;
 
-            const dto = new WeaponDTO(playerDTO.id + '-weapon');
+            const dto = new WeaponDTO(id + '-weapon');
             // Pass the bulletGroup directly; use getArray() where needed for iteration
-            const weapon = new WeaponComponent(bulletGroup, dto, `laser-level-${playerDTO.level}`);
+            const weapon = new WeaponComponent(bulletGroup, dto, `laser-level-${level}`);
             entity.addComponent(weapon);
         }
 
         // Health component
-        const health = new HealthComponent(100);
+        const health = new HealthComponent(maxHealth);
         entity.addComponent(health);
 
         // Collider component
-        const collider = new ColliderComponent(GameConfig.player.maxVelocity / 2, CollisionLayer.PLAYER);
+        const collider = new ColliderComponent(maxVelocity / 2, CollisionLayer.PLAYER);
         entity.addComponent(collider);
 
         // Upgrades component
@@ -124,11 +128,16 @@ export class PlayerEntityFactory {
     public static toDTO(entity: Entity): PlayerDTO {
         const player = entity.getComponent(PlayerComponent);
         const transform = entity.getComponent(TransformComponent);
-        if (!player || !transform) {
+        const health = entity.getComponent(HealthComponent);
+
+        if (!player || !health || !transform) {
             throw new Error('Entity missing PlayerComponent or TransformComponent');
         }
         // spriteKey is not on PlayerComponent, so we must infer it from the sprite texture key
         const spriteKey = transform.sprite.texture.key;
-        return new PlayerDTO(player.playerId, player.playerName, transform.x, transform.y, spriteKey, player.isLocal, player.level);
+        const { id, name, isLocal, level } = player;
+        const { x, y } = transform;
+        const { currentHealth, maxHealth } = health;
+        return new PlayerDTO(id, name, x, y, spriteKey, isLocal, level, currentHealth, maxHealth);
     }
 }
