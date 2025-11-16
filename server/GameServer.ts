@@ -35,24 +35,44 @@ import { GameServerContext } from './GameServerContext';
  *   const server = new GameServer();
  *   server.start(3000);
  */
-export class GameServer {
 
+/**
+ * The main authoritative multiplayer game server for Phaser ECS.
+ * Handles player management, asteroid and pickup spawning, event broadcasting, and server setup.
+ */
+export class GameServer {
     // --- Server Setup & Infrastructure ---
+
+    /** Express app instance for HTTP server. */
     private readonly app: Express;
+    /** Node HTTP server instance. */
     private readonly httpServer: HttpServer;
+    /** Socket.IO server instance. */
     private readonly io: Server;
+    /** Combined feature listeners for player and asteroid events. */
     private featureListeners = [...playerFeatureListeners, ...asteroidFeatureListeners];
 
     // --- Game Lifecycle & Player Management ---
+
+    /** Indicates if the game has started. */
     private gameHasStarted: boolean = false;
 
     // --- Asteroid Lifecycle ---
+
+    /** True if an asteroid is currently active in the game. */
     private hasAsteroid: boolean = false;
+    /** Map of asteroid IDs to their DTOs. */
     private asteroidMap: Map<string, AsteroidDTO> = new Map();
+    /** Set of destroyed asteroid IDs to prevent duplicate events. */
     private destroyedAsteroids: Set<string> = new Set();
+    /** Manages health state for all asteroids. */
     private healthManager = new HealthManager();
 
     // --- Constructor ---
+
+    /**
+     * Constructs a new GameServer instance, sets up Express, HTTP, and Socket.IO, and registers listeners.
+     */
     constructor() {
         this.app = express();
         this.httpServer = createServer(this.app);
@@ -66,12 +86,22 @@ export class GameServer {
     }
 
     // --- Game Lifecycle & Player Management ---
+
+    /**
+     * Starts the game server on the specified port.
+     * @param port - Port number to listen on (default: 3000)
+     */
     public start(port: number = 3000): void {
         this.httpServer.listen(port, () => {
             logger.info({ port }, '🚀 Game server running');
         });
     }
 
+
+    /**
+     * Initializes the game, spawning asteroids and pickups if not started.
+     * @param socket - The connected GameSocket
+     */
     public gameInitialised(socket: GameSocket): void {
         if (!this.gameHasStarted) {
             this.gameHasStarted = true;
@@ -81,6 +111,13 @@ export class GameServer {
         }
     }
 
+
+    /**
+     * Creates a new player entity and assigns it to the socket.
+     * @param socket - The connected GameSocket
+     * @param playerName - The player's name
+     * @param windowSize - The game window size
+     */
     public createPlayer(socket: GameSocket, playerName: string, windowSize: Coordinates): void {
         const id = uuidv4();
         const name = playerName || `Player ${Math.floor(Math.random() * 1000)}`;
@@ -92,12 +129,22 @@ export class GameServer {
         socket.player = new PlayerDTO(id, name, x, y, spriteKey, isLocal, level);
     }
 
+
+    /**
+     * Returns all currently connected player entities.
+     * @returns Array of PlayerDTO player objects
+     */
     public getAllPlayers(): PlayerDTO[] {
         const sockets = Array.from(this.io.sockets.sockets.values()) as GameSocket[];
         return sockets.filter(s => s.player).map(s => s.player!);
     }
 
     // --- Asteroid Lifecycle ---
+    /**
+     * Spawns a new asteroid at a random edge and starts its movement.
+     * @param socket - The connected GameSocket
+     * @param interval - Asteroid spawn interval in ms
+     */
     private createAsteroid(socket: GameSocket, interval: number): void {
         setInterval(() => {
             if (!this.hasAsteroid) {
@@ -181,6 +228,11 @@ export class GameServer {
         }, interval);
     }
 
+    /**
+     * Updates asteroid position, health, and destroys if off screen.
+     * @param _socket - The connected GameSocket (unused)
+     * @param asteroidDTO - The asteroid DTO to update
+     */
     private updateAsteroid(_socket: GameSocket, asteroidDTO: AsteroidDTO): void {
         if (this.hasAsteroid) {
             const update = setInterval(() => {
@@ -219,6 +271,12 @@ export class GameServer {
         }
     }
 
+    /**
+     * Apply damage to an asteroid. Returns updated DTO or null if not found.
+     * @param asteroidId - The ID of the asteroid
+     * @param damage - The amount of damage to apply
+     * @returns The updated AsteroidDTO, or null if not found
+     */
     public damageAsteroid(asteroidId: string, damage: number): AsteroidDTO | null {
         const asteroid = this.asteroidMap.get(asteroidId);
         if (!asteroid) return null;
@@ -229,6 +287,12 @@ export class GameServer {
         return asteroid;
     }
 
+    /**
+     * Destroys an asteroid and cleans up its state.
+     * @param asteroidId - The ID of the asteroid
+     * @param cause - The cause of death for the asteroid
+     * @returns The destroyed AsteroidDTO, or null if not found
+     */
     public destroyAsteroid(asteroidId: string, cause: AsteroidCauseOfDeath): AsteroidDTO | null {
         const asteroid = this.asteroidMap.get(asteroidId);
         if (!asteroid) {
@@ -244,33 +308,63 @@ export class GameServer {
         return asteroid;
     }
 
+    /**
+     * Destroys all asteroids and clears their state.
+     */
     public destroyAllAsteroids(): void {
         this.asteroidMap.clear();
         this.destroyedAsteroids.clear();
         this.hasAsteroid = false;
     }
 
+    /**
+     * Checks if an asteroid has already been destroyed.
+     * @param asteroidId - The ID of the asteroid
+     * @returns True if the asteroid is destroyed, false otherwise
+     */
     public isAsteroidDestroyed(asteroidId: string): boolean {
         return this.destroyedAsteroids.has(asteroidId);
     }
 
+    /**
+     * Retrieves an asteroid by its ID.
+     * @param asteroidId - The ID of the asteroid
+     * @returns The AsteroidDTO if found, otherwise undefined
+     */
     public getAsteroid(asteroidId: string): AsteroidDTO | undefined {
         return this.asteroidMap.get(asteroidId);
     }
 
+    /**
+     * Marks an asteroid as destroyed in the server state.
+     * @param id - The ID of the asteroid
+     */
     public markAsteroidDestroyed(id: string): void {
         this.destroyedAsteroids.add(id);
     }
 
+    /**
+     * Broadcasts an asteroid hit event to all clients.
+     * @param payload - The SocketResponseDTO containing the hit data
+     */
     public broadcastAsteroidHit(payload: SocketResponseDTO<AsteroidHitDTO>): void {
         this.io.emit(Events.Asteroid.hit, payload);
     }
 
+    /**
+     * Broadcasts an asteroid destroy event to all clients.
+     * @param payload - The SocketResponseDTO containing the destroyed asteroid data
+     */
     public broadcastAsteroidDestroy(payload: SocketResponseDTO<AsteroidDTO>): void {
         this.io.emit(Events.Asteroid.destroy, payload);
     }
 
     // --- Pickup Lifecycle ---
+    /**
+     * Spawns pickup items at random locations at a set interval.
+     * @param _socket - The connected Socket
+     * @param interval - Pickup spawn interval in ms
+     */
     private spawnPickups(_socket: Socket, interval: number): void {
         setInterval(() => {
             try {
@@ -286,6 +380,10 @@ export class GameServer {
         }, interval);
     }
 
+    /**
+     * Generates random coordinates for pickup spawning.
+     * @returns Coordinates object with x and y
+     */
     private generateRandomCoordinates(): Coordinates {
         return {
             x: Utils.randomInt(100, 924),
@@ -294,6 +392,9 @@ export class GameServer {
     }
 
     // --- Server Setup & Infrastructure ---
+    /**
+     * Configures Express to serve static files and the main HTML page.
+     */
     private setupExpress(): void {
         this.app.use(express.static('public'));
         this.app.get('/', (_req: Request, res: Response) => {
@@ -301,6 +402,9 @@ export class GameServer {
         });
     }
 
+    /**
+     * Sets up Socket.IO and attaches all event listeners for multiplayer sync.
+     */
     private setupSocketIO(): void {
         this.io.on('connection', (socket: Socket) => {
             const gameSocket = socket as GameSocket;
@@ -309,6 +413,10 @@ export class GameServer {
         });
     }
 
+    /**
+     * Registers all feature listeners (player, asteroid, etc.) for a given socket.
+     * @param socket - The connected GameSocket
+     */
     private registerFeatureListeners(socket: GameSocket): void {
         for (const listener of this.featureListeners) {
             socket.on(listener.event, async (request: SocketRequestDTO<never>) => {
