@@ -1,11 +1,14 @@
 import { GameConfig } from '../../shared/config';
+import { EntityWithHealthDTO } from './Entity.dto';
 import { Coordinates, PlayerLevel } from '../../shared/model';
 
 /**
  * Data Transfer Object representing a player in the game.
  * Implements Coordinates for position tracking.
  */
-export class PlayerDTO implements Coordinates {
+export class PlayerDTO implements EntityWithHealthDTO {
+    // Backing field for level property
+    // TODO make it a UpgradeComponent in ECS
     private _level: number;
 
     /**
@@ -16,6 +19,8 @@ export class PlayerDTO implements Coordinates {
      * @param spriteKey - Key for the player's sprite asset
      * @param isLocal - Whether this player is the local player
      * @param level - Initial level of the player (default: starting level from GameConfig)
+     * @param health - Current health of the player (default: starting health from GameConfig)
+     * @param maxHealth - Maximum health of the player (default: starting max health from GameConfig)
      */
     constructor(
         public id: string,
@@ -24,7 +29,9 @@ export class PlayerDTO implements Coordinates {
         public y: number,
         public spriteKey: string,
         public isLocal: boolean,
-        level = GameConfig.player.startingLevel
+        level = GameConfig.player.startingLevel,
+        public health = GameConfig.player.startingMaxHealth,
+        public maxHealth = GameConfig.player.startingMaxHealth
     ) {
         this._level = level;
     }

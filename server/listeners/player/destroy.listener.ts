@@ -1,16 +1,15 @@
-import { createListener } from '../createListener';
 import { Events } from '@shared/events';
 import { PlayerDTO } from '@shared/dto/Player.dto';
 import { GameServerContext } from '../../GameServerContext';
+import { createListener } from '../createListener';
 
 /**
  * Listener for player hit events.
  * Validates incoming requests and responses using Zod schemas, then broadcasts the hit event to all other clients.
  * @see createListener
  */
-export const PlayerHitListener = createListener<PlayerDTO, PlayerDTO>({
-    //
-    event: Events.Player.hit,
+export const PlayerDestroyListener = createListener<PlayerDTO, PlayerDTO>({
+    event: Events.Player.destroy,
     log: true,
 
     /**
@@ -20,21 +19,12 @@ export const PlayerHitListener = createListener<PlayerDTO, PlayerDTO>({
      * @param request - The validated request DTO containing the player data.
      * @returns The response DTO, also broadcast to other clients.
      */
-    async handle(socket, request) {
+    async handle(_socket, request) {
         // request already validated by BaseListener
         const player = request.dto as PlayerDTO;
         const response = { ok: true, dto: player };
-        // broadcast to everyone except the sender (same behavior as socket.broadcast.emit)
-        socket.broadcast.emit(this.event, response);
-
         const server = GameServerContext.get();
-        const updatedPlayer = server.damagePlayer(player.id, player.health);
-        if (updatedPlayer && typeof updatedPlayer.health === 'number' && updatedPlayer.health <= 0) {
-            const destroyed = server.destroyPlayer(updatedPlayer);
-            if (destroyed) {
-                server.broadcastPlayerDied({ ok: response.ok, dto: destroyed });
-            }
-        }
+        server.detonateAllAsteroids();
 
         return response;
     },

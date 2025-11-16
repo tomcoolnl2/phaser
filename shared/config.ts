@@ -27,6 +27,7 @@ export const GameConfig = {
         height: 768,
     },
     player: {
+        startingMaxHealth: 1, // for now, we die instantly on a hit
         startingLevel: 1,
         playerMaxLevel: 5,
         angularVelocity: 300,

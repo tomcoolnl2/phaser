@@ -9,6 +9,7 @@ export enum UpgradeType {
     SPEED = 'SPEED',
     HEALTH = 'HEALTH',
     ROTATION_SPEED = 'ROTATION_SPEED',
+    SCORE = 'SCORE',
 }
 
 /**

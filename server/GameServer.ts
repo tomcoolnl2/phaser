@@ -49,6 +49,7 @@ export class GameServer {
     private readonly httpServer: HttpServer;
     /** Socket.IO server instance. */
     private readonly io: Server;
+
     /** Combined feature listeners for player and asteroid events. */
     private featureListeners = [...playerFeatureListeners, ...asteroidFeatureListeners];
 
@@ -97,7 +98,6 @@ export class GameServer {
         });
     }
 
-
     /**
      * Initializes the game, spawning asteroids and pickups if not started.
      * @param socket - The connected GameSocket
@@ -111,9 +111,8 @@ export class GameServer {
         }
     }
 
-
     /**
-     * Creates a new player entity and assigns it to the socket.
+     * Creates a new player DTO and assigns it to the socket.
      * @param socket - The connected GameSocket
      * @param playerName - The player's name
      * @param windowSize - The game window size
@@ -127,8 +126,54 @@ export class GameServer {
         const isLocal = false;
         const level = GameConfig.player.startingLevel;
         socket.player = new PlayerDTO(id, name, x, y, spriteKey, isLocal, level);
+        this.healthManager.setHealth(id, socket.player.maxHealth, socket.player.maxHealth);
     }
 
+    /**
+     * Subtracts health from a player and triggers destroy logic if health reaches zero.
+     * @param playerId - The ID of the player
+     * @param damage - The amount of health to subtract
+     * @returns The updated PlayerDTO, or null if not found
+     */
+    public damagePlayer(playerId: string, damage: number): PlayerDTO | null {
+        const sockets = Array.from(this.io.sockets.sockets.values()) as GameSocket[];
+        const socket = sockets.find(s => s.player && s.player.id === playerId);
+        if (!socket || !socket.player) {
+            return null;
+        }
+
+        socket.player.health = Math.max(0, (socket.player.health || 0) - damage);
+        console.log(`Player ${playerId} took ${damage} damage, health now ${socket.player.health}`);
+        if (socket.player.health <= 0) {
+            const response = { ok: true, dto: socket.player };
+            this.broadcastPlayerDied(response);
+            this.detonateAllAsteroids();
+        }
+
+        return socket.player;
+    }
+
+    /**
+     * Destroys an asteroid and cleans up its state.
+     * @param asteroidId - The ID of the asteroid
+     * @param cause - The cause of death for the asteroid
+     * @returns The destroyed AsteroidDTO, or null if not found
+     */
+    public destroyPlayer(playerDTO: PlayerDTO): PlayerDTO | null {
+        if (!playerDTO.id) {
+            return null;
+        }
+        this.healthManager.remove(playerDTO.id);
+        return playerDTO;
+    }
+
+    /**
+     * Broadcasts when a player dies  event to all clients.
+     * @param payload - The SocketResponseDTO containing the destroyed player data
+     */
+    public broadcastPlayerDied(payload: SocketResponseDTO<PlayerDTO>): void {
+        this.io.emit(Events.Player.destroy, payload);
+    }
 
     /**
      * Returns all currently connected player entities.
@@ -146,8 +191,11 @@ export class GameServer {
      * @param interval - Asteroid spawn interval in ms
      */
     private createAsteroid(socket: GameSocket, interval: number): void {
+        // TODO: clear interval when game is paused or ended
+        // TODO: resume interval when game is resumed
         setInterval(() => {
             if (!this.hasAsteroid) {
+                // TODO: allow more asteroids at the same time
                 const initialAsteroidHealth = GameConfig.asteroid.health;
                 const asteroidId = uuidv4();
                 const dto: AsteroidDTO = { id: asteroidId, health: initialAsteroidHealth, maxHealth: initialAsteroidHealth, x: 0, y: 0 };
@@ -306,6 +354,16 @@ export class GameServer {
         this.asteroidMap.delete(asteroidId);
 
         return asteroid;
+    }
+
+    public detonateAllAsteroids(): void {
+        // get all asteroids and end their life
+        for (const asteroid of this.getAllAsteroids()) {
+            // emit to server Events.Asteroid.destroy
+            asteroid.causeOfDeath = AsteroidCauseOfDeath.GAME_ENDED;
+            const request = { ok: true, dto: asteroid };
+            this.broadcastAsteroidDestroy(request);
+        }
     }
 
     /**

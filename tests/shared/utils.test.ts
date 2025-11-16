@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { isOutOfBounds, randomInt } from '../../shared/utils';
 
-
 describe('isOutOfBounds', () => {
     it('returns false for point inside bounds', () => {
         expect(isOutOfBounds({ x: 100, y: 100, bounds: { width: 200, height: 200 } })).toBe(false);
