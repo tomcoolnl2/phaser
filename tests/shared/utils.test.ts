@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { isOutOfBounds } from '../../shared/utils';
+import { isOutOfBounds, randomInt } from '../../shared/utils';
+
 
 describe('isOutOfBounds', () => {
     it('returns false for point inside bounds', () => {
@@ -18,5 +19,18 @@ describe('isOutOfBounds', () => {
         expect(isOutOfBounds({ x: 205, y: 100, threshold: 10, bounds: { width: 200, height: 200 } })).toBe(false);
         expect(isOutOfBounds({ x: -15, y: 100, threshold: 10, bounds: { width: 200, height: 200 } })).toBe(true);
         expect(isOutOfBounds({ x: 215, y: 100, threshold: 10, bounds: { width: 200, height: 200 } })).toBe(true);
+    });
+});
+
+describe('randomInt', () => {
+    it('returns an integer within the specified range for various ranges', () => {
+        for (let i = 0; i < 10; i++) {
+            const low = i;
+            const high = i + 5;
+            const result = randomInt(low, high);
+            expect(Number.isInteger(result)).toBe(true);
+            expect(result).toBeGreaterThanOrEqual(low);
+            expect(result).toBeLessThan(high);
+        }
     });
 });
