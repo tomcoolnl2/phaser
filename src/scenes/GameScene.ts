@@ -294,6 +294,8 @@ export class GameScene extends Phaser.Scene {
      */
     private handlePlayerDeath(_playerId: string): void {
         this.scene.pause();
+
+        // TODO: Display "YOU DIED!" message using HUD/UI system
         this.add
             .text(this.scale.width / 2, this.scale.height / 2, 'YOU DIED!', {
                 fontSize: '64px',

@@ -147,6 +147,17 @@ export class AsteroidSystem extends System {
     }
 
     /**
+     * Plays explosion animation at given coordinates.
+     * @param x - X coordinate
+     * @param y - Y coordinate
+     */
+    private animateAsteroidExplosion(x: number, y: number): void {
+        const explosion = this.scene.add.sprite(x, y, 'kaboom-big');
+        explosion.play('explode-big');
+        explosion.once('animationcomplete', () => explosion.destroy());
+    }
+
+    /**
      * Destroys an asteroid with explosion animation.
      *
      * @param entity - The asteroid entity to destroy
@@ -160,9 +171,7 @@ export class AsteroidSystem extends System {
         }
 
         // Play big explosion at asteroid's position
-        const explosion = this.scene.add.sprite(transform.sprite.x, transform.sprite.y, 'kaboom-big');
-        explosion.play('explode-big');
-        explosion.once('animationcomplete', () => explosion.destroy());
+        this.animateAsteroidExplosion(transform.sprite.x, transform.sprite.y)
 
         // Destroy sprite
         transform.sprite.destroy();

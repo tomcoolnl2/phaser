@@ -10,6 +10,7 @@ export enum AsteroidSize {
 export enum AsteroidCauseOfDeath {
     HIT = 'Hit by Player',
     OFFSCREEN = 'Out of bounds',
+    GAME_ENDED = 'Game Ended',
 }
 
 export interface AsteroidDTO extends EntityWithHealthDTO {

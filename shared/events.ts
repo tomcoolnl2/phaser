@@ -11,6 +11,7 @@ export const Events = {
         players: 'player:players',
         quit: 'player:quit',
         hit: 'player:hit',
+        destroy: 'player:destroy',
         pickup: 'player:pickup',
         coordinates: 'player:coordinates',
         authenticate: 'player:authenticate',

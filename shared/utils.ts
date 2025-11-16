@@ -26,3 +26,13 @@ export function isOutOfBounds({ x, y, threshold = 0, bounds = GameConfig.playAre
     const { width, height } = bounds;
     return x < -threshold || x > width + threshold || y < -threshold || y > height + threshold;
 }
+
+/**
+ * Returns a random integer between low (inclusive) and high (exclusive).
+ * @param low - The lower bound (inclusive)
+ * @param high - The upper bound (exclusive)
+ * @returns A random integer in the range [low, high)
+ */
+export function randomInt(low: number, high: number): number {
+    return (Math.random() * (high - low) + low) << 0;
+}
