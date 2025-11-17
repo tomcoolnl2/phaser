@@ -24,9 +24,7 @@ export class ScoreSystem extends System {
         const player = entity.getComponent(PlayerComponent);
         const score = entity.getComponent(ScoreComponent);
         if (player && score && player.isLocal) {
-            window.dispatchEvent(
-                new CustomEvent('updatePlayerScore', { detail: { score: score.score } })
-            );
+            window.dispatchEvent(new CustomEvent('updatePlayerScore', { detail: { score: score.score } }));
         }
     }
 }

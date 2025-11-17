@@ -26,7 +26,6 @@ import { PickupType } from '@shared/dto/Pickup.dto';
  * ```
  */
 export class PickupSystem extends System {
-    
     /** Track tweens for cleanup */
     private tweens: Map<Entity, Phaser.Tweens.Tween[]> = new Map();
 
@@ -89,10 +88,10 @@ export class PickupSystem extends System {
      * @type {Partial<Record<PickupType, (sprite: Phaser.GameObjects.Sprite) => Phaser.Tweens.Tween[]>>}
      */
     private animationStrategies: Partial<Record<PickupType, (sprite: Phaser.GameObjects.Sprite) => Phaser.Tweens.Tween[]>> = {
-        [PickupType.COIN]: (_sprite) => {
+        [PickupType.COIN]: _sprite => {
             return []; // Coin stays in place, no animation
         },
-        [PickupType.AMMO]: (sprite) => {
+        [PickupType.AMMO]: sprite => {
             const floatTween = this.scene.tweens.add({
                 targets: sprite,
                 y: sprite.y - 10,
@@ -109,7 +108,7 @@ export class PickupSystem extends System {
             });
             return [floatTween, rotateTween];
         },
-        [PickupType.HEALTH]: (sprite) => {
+        [PickupType.HEALTH]: sprite => {
             const floatTween = this.scene.tweens.add({
                 targets: sprite,
                 y: sprite.y - 10,

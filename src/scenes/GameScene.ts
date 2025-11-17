@@ -1,13 +1,10 @@
 import { ScoreSystem } from '@/ecs/systems/ScoreSystem';
 import Phaser from 'phaser';
-import { v4 as uuidv4 } from 'uuid';
 import { Socket } from 'socket.io-client';
 import { Events } from '@shared/events';
-import { Coordinates } from '@shared/model';
 import { GameConfig } from '@shared/config';
-import { AmmoAmount } from '@shared/types';
 import { PlayerDTO } from '@shared/dto/Player.dto';
-import { AmmoPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
+import { PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
 import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
 import { SocketResponseSchema, SocketRequestSchema } from '@shared/dto/Socket.schema';
@@ -52,7 +49,6 @@ import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
  * ```
  */
 export class GameScene extends Phaser.Scene {
-
     /** Socket.IO connection for multiplayer networking */
     private socket!: Socket;
     /** Map of player entities by player ID */
@@ -180,7 +176,6 @@ export class GameScene extends Phaser.Scene {
                 return;
             }
 
-            const player = localEntity.getComponent(PlayerComponent)!;
             const transform = localEntity.getComponent(TransformComponent)!;
             const weapon = localEntity.getComponent(WeaponComponent)!;
 
@@ -572,7 +567,9 @@ export class GameScene extends Phaser.Scene {
                     const existing = this.pickupEntities.get(dto.id);
                     if (existing) {
                         const transform = existing.getComponent(TransformComponent);
-                        if (transform) { transform.sprite.destroy(); }
+                        if (transform) {
+                            transform.sprite.destroy();
+                        }
                         this.entityManager.removeEntity(existing.id);
                     }
                 }

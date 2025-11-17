@@ -1,4 +1,3 @@
-
 import { PickupType } from '@shared/dto/Pickup.dto';
 import { Events } from '@shared/events';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
@@ -138,8 +137,7 @@ export class PlayerSystem extends System {
         if (!playerComponent) {
             return;
         }
-        
-        
+
         const pickupTransform = pickupEntity.getComponent(TransformComponent);
         const pickupComponent = pickupEntity.getComponent(PickupComponent);
         if (!pickupTransform || !pickupComponent) {
@@ -152,7 +150,7 @@ export class PlayerSystem extends System {
             const newLevel = playerComponent.levelUp();
             weapon.setDamageForLevel(newLevel);
         }
-        
+
         // Emit pickup event
         const ammoPickupDTO = {
             type: PickupType.AMMO,

@@ -155,13 +155,13 @@ export class BootScene extends Phaser.Scene {
      * - 'asteroid-spin': 31-frame looping asteroid rotation
      */
     private createAnimations(): void {
-                // Coin/Star pickup animation
-                this.anims.create({
-                    key: 'pickup-coin-spin',
-                    frames: this.anims.generateFrameNumbers('pickup-coin', { start: 0, end: 15 }),
-                    frameRate: 16,
-                    repeat: -1,
-                });
+        // Coin/Star pickup animation
+        this.anims.create({
+            key: 'pickup-coin-spin',
+            frames: this.anims.generateFrameNumbers('pickup-coin', { start: 0, end: 15 }),
+            frameRate: 16,
+            repeat: -1,
+        });
         // Ship acceleration animation
         this.anims.create({
             key: 'accelerating',

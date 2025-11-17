@@ -59,7 +59,6 @@ export class PickupEntityFactory {
             sprite.play('pickup-coin-spin');
         }
 
-
         // Give the pickup a random velocity, except for coins
         let angle = 0;
         let speed = 0;

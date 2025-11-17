@@ -432,19 +432,28 @@ export class GameServer {
                 switch (type) {
                     case PickupType.AMMO:
                         dto = {
-                            type, id, x, y,
+                            type,
+                            id,
+                            x,
+                            y,
                             amount: AmmoAmount.BULLET,
                         };
                         break;
                     case PickupType.HEALTH:
                         dto = {
-                            type, id, x, y,
+                            type,
+                            id,
+                            x,
+                            y,
                             amount: 1,
                         };
                         break;
                     case PickupType.COIN:
                         dto = {
-                            type, id, x, y,
+                            type,
+                            id,
+                            x,
+                            y,
                             points: 50,
                         };
                         break;

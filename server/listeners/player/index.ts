@@ -7,10 +7,4 @@ import { PickupListener } from './pickup.listener';
 /**
  * Array of all player feature listeners.
  */
-export const playerFeatureListeners = [
-    PlayerSignOnListener, 
-    PlayerSignOutListener, 
-    PlayerCoordinatesListener, 
-    PlayerHitListener, 
-    PickupListener
-];
+export const playerFeatureListeners = [PlayerSignOnListener, PlayerSignOutListener, PlayerCoordinatesListener, PlayerHitListener, PickupListener];
