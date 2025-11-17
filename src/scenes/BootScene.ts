@@ -61,8 +61,8 @@ export class BootScene extends Phaser.Scene {
         this.load.image('pickup-health', 'assets/pickup/pickup-health.png');
 
         this.load.spritesheet('pickup-coin', 'assets/pickup/pickup-coin.png', {
-            frameWidth: 32,
-            frameHeight: 32,
+            frameWidth: 24,
+            frameHeight: 24,
         });
 
         this.load.spritesheet('dust', 'assets/dust.png', {
@@ -159,7 +159,7 @@ export class BootScene extends Phaser.Scene {
         this.anims.create({
             key: 'pickup-coin-spin',
             frames: this.anims.generateFrameNumbers('pickup-coin', { start: 0, end: 15 }),
-            frameRate: 16,
+            frameRate: 10,
             repeat: -1,
         });
         // Ship acceleration animation
