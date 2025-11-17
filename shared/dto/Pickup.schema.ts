@@ -21,4 +21,11 @@ export const HealthPickupSchema = z.object({
     ...CoordinatesSchema,
 });
 
-export const PickupSchema = z.discriminatedUnion('type', [AmmoPickupSchema, HealthPickupSchema]);
+export const CoinPickupSchema = z.object({
+    type: z.literal(PickupType.COIN),
+    id: z.string().min(1),
+    points: z.number().int().min(1),
+    ...CoordinatesSchema,
+});
+
+export const PickupSchema = z.discriminatedUnion('type', [AmmoPickupSchema, HealthPickupSchema, CoinPickupSchema]);

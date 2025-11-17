@@ -6,12 +6,14 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { PlayerDTO } from '@shared/dto/Player.dto';
 import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
+import { AmmoPickupDTO, CoinPickupDTO, HealthPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
 import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
 import { SocketResponseSchema } from '@shared/dto/Socket.schema';
 import { Coordinates } from '@shared/model';
 import { GameConfig } from '@shared/config';
 import { Events } from '@shared/events';
+import { AmmoAmount } from '@shared/types';
 import * as Utils from '@shared/utils';
 
 import { playerFeatureListeners } from './listeners/player';
@@ -421,11 +423,38 @@ export class GameServer {
     private spawnPickups(_socket: Socket, interval: number): void {
         setInterval(() => {
             try {
-                const coordinates = this.generateRandomCoordinates();
-                const response: SocketResponseDTO<Coordinates> = { ok: true, dto: coordinates };
-                SocketResponseSchema.parse(response);
-                logger.debug({ coordinates }, 'Spawning pickup');
-                this.io.emit(Events.Game.drop, response);
+                // Use PickupType enum for type safety
+                const pickupTypes = [PickupType.AMMO, PickupType.HEALTH, PickupType.COIN];
+                const type = pickupTypes[Math.floor(Math.random() * pickupTypes.length)];
+                const { x, y } = this.generateRandomCoordinates();
+                const id = uuidv4();
+                let dto = {
+                    type,
+                    id,
+                    x,
+                    y,
+                } as Partial<PickupDTO>
+                switch (type) {
+                    case PickupType.AMMO:
+                        dto = {
+                            ...dto,
+                            amount: AmmoAmount.BULLET,
+                        } as AmmoPickupDTO;
+                        break;
+                    case PickupType.HEALTH:
+                        dto = {
+                            ...dto,
+                            amount: 1,
+                        } as HealthPickupDTO;
+                        break;
+                    case PickupType.COIN:
+                        dto = {
+                            ...dto,
+                            points: 50,
+                        } as CoinPickupDTO;
+                        break;
+                }
+                this.io.emit(Events.Game.drop, { ok: true, dto });
             } catch (e) {
                 const message = e instanceof Error ? e.message : e.toString();
                 logger.error({ error: message }, 'Failed to spawn pickup due to invalid coordinates');

@@ -22,7 +22,7 @@ const AMMO_SPEED: Record<AmmoType, number> = {
 const AMMO_DAMAGE: Record<AmmoType, number> = {
     [AmmoType.BULLET]: 1,
     [AmmoType.ROCKET]: 5,
-    [AmmoType.MINE]: 10,
+    [AmmoType.MINE]: 6,
 };
 
 /**

@@ -62,11 +62,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Level } from '../../shared/model';
+import type { PlayerLevel } from '../../shared/model';
 
 defineProps<{
     playerName: string;
-    level: Level;
+    level: PlayerLevel;
     ammo: number;
     score: number;
 }>();

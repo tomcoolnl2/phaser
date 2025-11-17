@@ -30,7 +30,7 @@ describe('PickupEntityFactory', () => {
         const dto: PickupDTO = { id: 'p1', x: 10, y: 20, type: PickupType.AMMO, amount: 2 };
         const entity = factory.create(dto);
         expect(entity).toBeDefined();
-        expect(mockPhysics.add.sprite).toHaveBeenCalledWith(10, 20, 'pickup');
+        expect(mockPhysics.add.sprite).toHaveBeenCalledWith(10, 20, 'pickup-ammo');
     });
 
     it('throws error for invalid DTO', () => {
