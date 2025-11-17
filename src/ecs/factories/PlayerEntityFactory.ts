@@ -1,3 +1,4 @@
+import { ScoreComponent } from '@/ecs/components/ScoreComponent';
 import Phaser from 'phaser';
 import { GameConfig } from '@shared/config';
 import { CollisionLayer } from '@shared/types';
@@ -116,6 +117,10 @@ export class PlayerEntityFactory {
         // Upgrades component
         const upgrades = new UpgradesComponent();
         entity.addComponent(upgrades);
+
+        // Score component (all players start with 0)
+        const score = new ScoreComponent();
+        entity.addComponent(score);
 
         return entity;
     }

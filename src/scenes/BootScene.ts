@@ -56,7 +56,14 @@ export class BootScene extends Phaser.Scene {
             this.load.image(`laser-level-${i}`, `assets/bullet/bullet${i}.png`);
         }
 
-        this.load.image('pickup', 'assets/pickup/pickup-ammo.png');
+        this.load.image('pickup-ammo', 'assets/pickup/pickup-ammo.png');
+
+        this.load.image('pickup-health', 'assets/pickup/pickup-health.png');
+
+        this.load.spritesheet('pickup-coin', 'assets/pickup/pickup-coin.png', {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
 
         this.load.spritesheet('dust', 'assets/dust.png', {
             frameWidth: 64,
@@ -148,6 +155,13 @@ export class BootScene extends Phaser.Scene {
      * - 'asteroid-spin': 31-frame looping asteroid rotation
      */
     private createAnimations(): void {
+                // Coin/Star pickup animation
+                this.anims.create({
+                    key: 'pickup-coin-spin',
+                    frames: this.anims.generateFrameNumbers('pickup-coin', { start: 0, end: 15 }),
+                    frameRate: 16,
+                    repeat: -1,
+                });
         // Ship acceleration animation
         this.anims.create({
             key: 'accelerating',

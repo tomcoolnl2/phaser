@@ -20,6 +20,7 @@ import { GameScene } from '@/scenes/GameScene';
  * ```
  */
 export class Game {
+    
     /** The Phaser game instance */
     private game: Phaser.Game;
     /** Socket.IO connection to the server */

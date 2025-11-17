@@ -1,9 +1,10 @@
 import * as Utils from '@shared/utils';
 import { System } from '@/ecs/core/System';
 import { Entity } from '@/ecs/core/Entity';
+import { ComponentClass } from '@/ecs/core/Component';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
-import { ComponentClass } from '@/ecs/core/Component';
+import { PickupType } from '@shared/dto/Pickup.dto';
 
 /**
  * System that manages pickup animations.
@@ -25,6 +26,7 @@ import { ComponentClass } from '@/ecs/core/Component';
  * ```
  */
 export class PickupSystem extends System {
+    
     /** Track tweens for cleanup */
     private tweens: Map<Entity, Phaser.Tweens.Tween[]> = new Map();
 
@@ -43,6 +45,7 @@ export class PickupSystem extends System {
      * @param _deltaTime - Time elapsed since last frame (unused)
      */
     public update(entity: Entity, _deltaTime: number): void {
+        // Get components
         const transform = entity.getComponent(TransformComponent)!;
         const sprite = transform.sprite;
         const { x, y } = sprite;
@@ -73,27 +76,73 @@ export class PickupSystem extends System {
     }
 
     /**
+     * Animation strategies for each PickupType.
+     *
+     * Maps a pickup type to a function that applies the correct animation(s) to the pickup's sprite.
+     *
+     * - COIN: No animation (remains in place)
+     * - AMMO: Floating and slow rotation
+     * - HEALTH: Slower floating and rotation
+     *
+     * Extend this map to add new pickup types or custom animations.
+     *
+     * @type {Partial<Record<PickupType, (sprite: Phaser.GameObjects.Sprite) => Phaser.Tweens.Tween[]>>}
+     */
+    private animationStrategies: Partial<Record<PickupType, (sprite: Phaser.GameObjects.Sprite) => Phaser.Tweens.Tween[]>> = {
+        [PickupType.COIN]: (_sprite) => {
+            return []; // Coin stays in place, no animation
+        },
+        [PickupType.AMMO]: (sprite) => {
+            const floatTween = this.scene.tweens.add({
+                targets: sprite,
+                y: sprite.y - 10,
+                duration: 1000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+            });
+            const rotateTween = this.scene.tweens.add({
+                targets: sprite,
+                angle: 360,
+                duration: 25000,
+                repeat: -1,
+            });
+            return [floatTween, rotateTween];
+        },
+        [PickupType.HEALTH]: (sprite) => {
+            const floatTween = this.scene.tweens.add({
+                targets: sprite,
+                y: sprite.y - 10,
+                duration: 2000,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+            });
+            const rotateTween = this.scene.tweens.add({
+                targets: sprite,
+                angle: 360,
+                duration: 5000,
+                repeat: -1,
+            });
+            return [floatTween, rotateTween];
+        },
+    };
+
+    /**
      * Initializes animations for a pickup.
      *
      * @param entity - The pickup entity
      * @param transform - The transform component
      */
     private initializePickup(entity: Entity, transform: TransformComponent): void {
-        const floatTween = this.scene.tweens.add({
-            targets: transform.sprite,
-            y: transform.sprite.y - 10,
-            duration: 1000,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.easeInOut',
-        });
-        const rotateTween = this.scene.tweens.add({
-            targets: transform.sprite,
-            angle: 360,
-            duration: 25000,
-            repeat: -1,
-        });
-        this.tweens.set(entity, [floatTween, rotateTween]);
+        // Get pickup component
+        const pickup = entity.getComponent(PickupComponent);
+        if (!pickup) {
+            return;
+        }
+        // Use strategy or fallback to no animation
+        const tweens = (this.animationStrategies[pickup.type] || (() => []))(transform.sprite);
+        this.tweens.set(entity, tweens);
     }
 
     /**
