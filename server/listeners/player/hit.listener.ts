@@ -22,7 +22,7 @@ export const PlayerHitListener = createListener<PlayerDTO, PlayerDTO>({
      */
     async handle(socket, request) {
         // request already validated by BaseListener
-        const player = request.dto as PlayerDTO;
+        const player = request.dto;
         const response = { ok: true, dto: player };
         // broadcast to everyone except the sender (same behavior as socket.broadcast.emit)
         socket.broadcast.emit(this.event, response);

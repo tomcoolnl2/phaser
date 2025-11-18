@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
-import { EntityManager } from '@/ecs/core/EntityManager';
+import { z, ZodSafeParseResult } from 'zod';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { MovementComponent } from '@/ecs/components/MovementComponent';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
 import { PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { PickupSchema } from '@shared/dto/Pickup.schema';
-import { z, ZodSafeParseResult } from 'zod';
+import { GameScene } from '@/scenes/GameScene';
 
 /**
  * PickupEntityFactory - OOP ECS factory for pickups.
@@ -16,10 +16,7 @@ import { z, ZodSafeParseResult } from 'zod';
  *   const pickup = factory.create(dto);
  */
 export class PickupEntityFactory {
-    constructor(
-        private scene: Phaser.Scene,
-        private entityManager: EntityManager
-    ) {}
+    constructor(private scene: GameScene) {}
 
     /**
      * Creates a pickup entity from a PickupDTO.
@@ -34,7 +31,7 @@ export class PickupEntityFactory {
             throw new Error('Invalid PickupDTO: ' + result.error.message);
         }
 
-        const entity = this.entityManager.createEntity();
+        const entity = this.scene.entityManager.createEntity();
 
         // Choose sprite key based on pickup type
         let spriteKey = 'pickup';
@@ -80,10 +77,12 @@ export class PickupEntityFactory {
         entity.addComponent(movement);
 
         // Pickup component
-        // For star, use points as value; for others, use amount
-        let value = (dto as any).amount;
+        // For coin, use points as value; for others, use amount
+        let value: number | undefined = undefined;
         if (dto.type === PickupType.COIN && 'points' in dto) {
             value = dto.points;
+        } else if ('amount' in dto && typeof dto.amount === 'number') {
+            value = dto.amount;
         }
         const pickup = new PickupComponent(dto.type, value);
         entity.addComponent(pickup);

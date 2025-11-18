@@ -3,12 +3,16 @@
  */
 export const Events = {
     Socket: {
+        error: 'socket:error',
         disconnect: 'disconnect',
+    },
+    Game: {
+        drop: 'game:drop',
     },
     Player: {
         joined: 'player:joined',
         protagonist: 'player:protagonist',
-        players: 'player:players',
+        competitors: 'player:competitors',
         quit: 'player:quit',
         hit: 'player:hit',
         destroy: 'player:destroy',
@@ -21,9 +25,6 @@ export const Events = {
         coordinates: 'asteroid:coordinates',
         destroy: 'asteroid:destroy',
         hit: 'asteroid:hit',
-    },
-    Game: {
-        drop: 'game:drop',
     },
 } as const;
 

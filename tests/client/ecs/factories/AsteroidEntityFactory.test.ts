@@ -30,7 +30,7 @@ describe('AsteroidEntityFactory', () => {
     });
 
     it('creates an asteroid entity with valid DTO', () => {
-        const dto: AsteroidDTO = { id: 'a1', x: 10, y: 20, health: 5 };
+        const dto = new AsteroidDTO('a1', 10, 20, 5, 5);
         const entity = factory.create(dto);
         expect(entity).toBeDefined();
         expect(mockPhysics.add.sprite).toHaveBeenCalledWith(10, 20, 'asteroid');

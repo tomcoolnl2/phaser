@@ -4,6 +4,6 @@
  */
 export interface SocketRequestDTO<T = unknown> {
     ok: boolean;
-    dto: T | T[];
+    dto: T;
     message?: string;
 }

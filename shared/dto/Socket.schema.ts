@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { SignOnSchema } from './SignOn.schema';
 import { PlayerSchema } from './Player.schema';
-import { AsteroidSchema, AsteroidHitSchema } from './Asteroid.dto';
+import { AsteroidSchema, AsteroidHitSchema } from './Asteroid.schema';
 import { PickupSchema } from './Pickup.schema';
 import { CoordinatesSchema } from './Coordinates.schema';
 

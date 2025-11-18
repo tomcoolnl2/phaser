@@ -19,7 +19,7 @@ export const PickupListener = createListener<AmmoPickupDTO | HealthPickupDTO, Pi
      * @returns The response DTO, also broadcast to other clients.
      */
     async handle(socket, request) {
-        const pickup = request.dto as PickupDTO;
+        const pickup = request.dto;
         if (pickup.type === PickupType.AMMO) {
             const response = {
                 ok: true,
@@ -29,7 +29,7 @@ export const PickupListener = createListener<AmmoPickupDTO | HealthPickupDTO, Pi
                     amount: pickup.amount,
                     x: pickup.x,
                     y: pickup.y,
-                    ammoType: pickup.ammoType ?? 'bullet', // default if undefined
+                    ammoType: pickup.ammoType ?? 'bullet',
                 } as AmmoPickupDTO,
             };
             socket.broadcast.emit(this.event, response);

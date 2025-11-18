@@ -1,9 +1,9 @@
 import { AmmoAmount, AmmoType } from '@shared/types';
 
 export enum PickupType {
-    AMMO = 'ammo',
-    HEALTH = 'health',
-    COIN = 'coin',
+    AMMO = 'pickup-ammo',
+    HEALTH = 'pickup-health',
+    COIN = 'pickup-coin',
 }
 
 export type PickupDTO = AmmoPickupDTO | HealthPickupDTO | CoinPickupDTO;

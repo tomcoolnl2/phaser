@@ -1,14 +1,19 @@
-import { ScoreSystem } from '@/ecs/systems/ScoreSystem';
 import Phaser from 'phaser';
 import { Socket } from 'socket.io-client';
+
 import { Events } from '@shared/events';
 import { GameConfig } from '@shared/config';
 import { PlayerDTO } from '@shared/dto/Player.dto';
 import { PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
-import { AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
-import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
-import { SocketResponseSchema, SocketRequestSchema } from '@shared/dto/Socket.schema';
+import { AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
+import { SocketRequestSchema } from '@shared/dto/Socket.schema';
+import { SignOnDTO } from '@shared/dto/SignOn.dto';
+import { CoordinatesDTO } from '@shared/dto/Coordinates.dto';
+
+import { Entity } from '@/ecs/core/Entity';
 import { EntityManager } from '@/ecs/core/EntityManager';
+
+import { ScoreSystem } from '@/ecs/systems/ScoreSystem';
 import { InputSystem } from '@/ecs/systems/InputSystem';
 import { MovementSystem } from '@/ecs/systems/MovementSystem';
 import { WeaponSystem } from '@/ecs/systems/WeaponSystem';
@@ -17,17 +22,15 @@ import { RenderSystem } from '@/ecs/systems/RenderSystem';
 import { AsteroidSystem } from '@/ecs/systems/AsteroidSystem';
 import { PickupSystem } from '@/ecs/systems/PickupSystem';
 import { PlayerSystem } from '@/ecs/systems/PlayerSystem';
-import { Entity } from '@/ecs/core/Entity';
-import { AsteroidEntityFactory } from '@/ecs/factories/AsteroidEntityFactory';
-import { PickupEntityFactory } from '@/ecs/factories/PickupEntityFactory';
+import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
+
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { ScoreComponent } from '@/ecs/components/ScoreComponent';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
-import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
-import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
+import { createFeatureListeners } from '@/listeners';
 
 /**
  * Main gameplay scene that manages all game entities and ECS systems.
@@ -48,43 +51,109 @@ import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
  * // Socket events trigger player/asteroid/pickup creation
  * ```
  */
+
 export class GameScene extends Phaser.Scene {
-    /** Socket.IO connection for multiplayer networking */
+    /**
+     * Socket.IO connection for multiplayer networking.
+     * Set during scene creation from the registry.
+     * @private
+     */
     private socket!: Socket;
-    /** Map of player entities by player ID */
+
+    /**
+     * Map of player entities by player ID.
+     * Used for quick lookup and management of all player ECS entities.
+     * @private
+     */
     private playerEntities: Map<string, Entity> = new Map();
-    /** Reference to the local player entity ID */
+
+    /**
+     * The ID of the local player entity, or null if not set.
+     * Used to distinguish the local player from remote players.
+     * @private
+     */
     private localPlayerId: string | null = null;
-    /** Map of all asteroid entities by asteroid ID */
+
+    /**
+     * Map of all asteroid entities by asteroid ID.
+     * Used for collision detection and ECS management.
+     * @private
+     */
     private asteroidEntities: Map<string, Entity> = new Map();
-    /** Map of all pickup entities by pickup ID */
+
+    /**
+     * Map of all pickup entities by pickup ID.
+     * Used for pickup collection and ECS management.
+     * @private
+     */
     private pickupEntities: Map<string, Entity> = new Map();
 
     // ECS System Components
-    /** Entity-Component-System manager for coordinating entities and systems */
+
+    /**
+     * Entity-Component-System manager for coordinating entities and systems.
+     * Created in setupECS().
+     * @public
+     */
     public entityManager!: EntityManager;
-    /** System handling keyboard input for the local player */
+
+    /**
+     * System handling keyboard input for the local player.
+     * @private
+     */
     private inputSystem!: InputSystem;
-    /** System handling physics-based movement */
+
+    /**
+     * System handling physics-based movement for all entities.
+     * @private
+     */
     private movementSystem!: MovementSystem;
-    /** System handling weapon firing and bullet lifecycle */
+
+    /**
+     * System handling weapon firing and bullet lifecycle for all players.
+     * @private
+     */
     private weaponSystem!: WeaponSystem;
-    /** System handling weapon visual upgrades based on level */
+
+    /**
+     * System handling weapon visual upgrades based on player level.
+     * @private
+     */
     private weaponUpgradeSystem!: WeaponUpgradeSystem;
-    /** System handling UI text updates */
+
+    /**
+     * System handling UI text updates and rendering.
+     * @private
+     */
     private renderSystem!: RenderSystem;
-    /** System handling asteroid behavior and destruction */
+
+    /**
+     * System handling asteroid behavior, movement, and destruction.
+     * @private
+     */
     private asteroidSystem!: AsteroidSystem;
-    /** System handling player visuals and lifecycle */
+
+    /**
+     * System handling player visuals, state, and lifecycle.
+     * @private
+     */
     private playerSystem!: PlayerSystem;
-    /** System handling pickup animations */
+
+    /**
+     * System handling pickup animations and logic.
+     * @private
+     */
     private pickupSystem!: PickupSystem;
 
-    /** System handling player score and HUD updates */
+    /**
+     * System handling player score and HUD updates.
+     * @private
+     */
     private scoreSystem!: ScoreSystem;
 
     /**
      * Creates the GameScene with key 'GameScene'.
+     * Called by Phaser when the scene is constructed.
      */
     constructor() {
         super({ key: 'GameScene' });
@@ -95,6 +164,7 @@ export class GameScene extends Phaser.Scene {
      *
      * Sets up the complete game environment and waits for the player to enter
      * their name via the Vue.js modal before authenticating with the server.
+     * Called automatically by Phaser after the scene is started.
      */
     public create(): void {
         // Get socket from registry
@@ -106,16 +176,14 @@ export class GameScene extends Phaser.Scene {
         // Setup world
         this.createWorld();
 
-        // Setup socket listeners
-        this.setupSocketListeners();
-
         // Wait for player name from Vue modal
         window.addEventListener(
             'playerNameSubmitted',
             ((event: CustomEvent) => {
                 const playerName = event.detail.name || `Player ${Math.floor(Math.random() * 1000)}`;
-                const signonDto = { name: playerName as string, x: this.scale.width, y: this.scale.height };
-                this.socket.emit(Events.Player.authenticate, { ok: true, dto: signonDto });
+                const dto = new SignOnDTO(playerName as string, this.scale.width, this.scale.height);
+                this.socket.emit(Events.Player.authenticate, { ok: true, dto });
+                createFeatureListeners({ socket: this.socket, scene: this });
             }) as EventListener,
             { once: true }
         );
@@ -125,7 +193,9 @@ export class GameScene extends Phaser.Scene {
      * Initializes the Entity-Component-System architecture.
      *
      * Creates the EntityManager and all game systems (input, movement, weapons,
-     * upgrades, render), then registers systems with the manager for coordinated updates.
+     * upgrades, render, asteroids, players, pickups, score), then registers systems with the manager for coordinated updates.
+     * Called from create().
+     * @private
      */
     private setupECS(): void {
         // Create entity manager
@@ -140,8 +210,6 @@ export class GameScene extends Phaser.Scene {
         this.asteroidSystem = new AsteroidSystem(this);
         this.playerSystem = new PlayerSystem(this);
         this.pickupSystem = new PickupSystem(this);
-
-        // Score system for player score and HUD
         this.scoreSystem = new ScoreSystem(this);
 
         // Register systems with entity manager
@@ -157,11 +225,26 @@ export class GameScene extends Phaser.Scene {
     }
 
     /**
-     * Main update loop called every frame.
+     * Creates the game world with background and physics bounds.
+     *
+     * Sets up a tiled space background and configures the physics world
+     * to match the screen dimensions (1024x768).
+     * @private
+     */
+    private createWorld(): void {
+        // Add background
+        this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'space').setOrigin(0, 0);
+        // Setup world bounds
+        this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
+    }
+
+    /**
+     * Main update loop called every frame by Phaser.
      *
      * Updates all ECS systems for entity processing, syncs local player state
      * to the server, handles collision detection, and emits player data to the Vue.js HUD.
      * All players are now managed by ECS systems.
+     * @public
      */
     public update(): void {
         // Update ECS systems (handles input, movement, weapons, and UI for all entities)
@@ -184,7 +267,7 @@ export class GameScene extends Phaser.Scene {
 
             try {
                 const { x, y } = transform.sprite;
-                const request = { ok: true, dto: { x, y } };
+                const request = { ok: true, dto: new CoordinatesDTO(x, y) };
                 SocketRequestSchema.parse(request);
                 this.socket.emit(Events.Player.coordinates, request);
             } catch (e) {
@@ -259,8 +342,7 @@ export class GameScene extends Phaser.Scene {
                             if (scoreComponent) {
                                 scoreComponent.add(damage);
                             }
-                            const asteroidHitDTO = { asteroidId: asteroidComponent.id, damage };
-                            const hitRequest = { ok: true, dto: asteroidHitDTO };
+                            const hitRequest = { ok: true, dto: new AsteroidHitDTO(asteroidComponent.id, damage) };
                             try {
                                 SocketRequestSchema.parse(hitRequest);
                                 this.socket.emit(Events.Asteroid.hit, hitRequest);
@@ -278,8 +360,10 @@ export class GameScene extends Phaser.Scene {
     /**
      * Emits a player pickup event to the server.
      * Used by PlayerSystem to avoid accessing private socket property directly.
+     * @param request - The PickupDTO describing the pickup event
+     * @public
      */
-    public emitPlayerPickup(request: any): void {
+    public emitPlayerPickup(request: PickupDTO): void {
         this.socket.emit(Events.Player.pickup, request);
     }
 
@@ -289,9 +373,10 @@ export class GameScene extends Phaser.Scene {
      * Displays "YOU DIED!" message with a 3-second countdown before
      * reloading the page to restart the game.
      *
-     * @param _playerId - The ID of the player who died (unused but kept for future extensions)
+     * @param player - The PlayerDTO for the player who died
+     * @public
      */
-    private handlePlayerDeath(player: PlayerDTO): void {
+    public handlePlayerDeath(player: PlayerDTO): void {
         // Play explosion at player's position, then pause so the player sees it
         const localEntity = this.playerEntities.get(player.id);
         let played = false;
@@ -324,37 +409,12 @@ export class GameScene extends Phaser.Scene {
             }
         }, 600);
 
-        // TODO: Display "YOU DIED!" message using HUD/UI system
-        this.add
-            .text(this.scale.width / 2, this.scale.height / 2, 'YOU DIED!', {
-                fontSize: '64px',
-                color: '#ff0000',
-            })
-            .setOrigin(0.5);
-
-        const countdownText = this.add
-            .text(this.scale.width / 2, this.scale.height / 2 + 60, 'Reloading in 3 seconds...', {
-                fontSize: '24px',
-                color: '#ffffff',
-            })
-            .setOrigin(0.5);
-
-        // Countdown timer
-        let countdown = 3;
-        const countdownInterval = setInterval(() => {
-            countdown--;
-            if (countdown > 0) {
-                countdownText.setText(`Reloading in ${countdown} second${countdown !== 1 ? 's' : ''}...`);
-            } else {
-                clearInterval(countdownInterval);
-            }
-        }, 1000);
-
         setTimeout(() => window.location.reload(), 3000);
     }
 
     /**
      * Shows death UI and reload countdown. Extracted to allow reuse after explosion.
+     * @private
      */
     private showDeathUI(): void {
         // TODO: Display "YOU DIED!" message using HUD/UI system
@@ -386,21 +446,12 @@ export class GameScene extends Phaser.Scene {
     }
 
     /**
-     * Creates the game world with background and physics bounds.
-     *
-     * Sets up a tiled space background and configures the physics world
-     * to match the screen dimensions (1024x768).
-     */
-    private createWorld(): void {
-        // Add background
-        this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'space').setOrigin(0, 0);
-        // Setup world bounds
-        this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
-    }
-
-    /**
      * Removes and destroys a pickup entity by its ID.
+     *
+     * Destroys the pickup's sprite, removes the entity from the ECS, and deletes it from the pickupEntities map.
+     *
      * @param id - The pickup entity ID
+     * @public
      */
     public destroyPickupEntity(id: string): void {
         const pickupEntity = this.pickupEntities.get(id);
@@ -414,269 +465,66 @@ export class GameScene extends Phaser.Scene {
     }
 
     /**
-     * Registers all Socket.IO event listeners for multiplayer synchronization.
-     *
-     * Handles events for:
-     * - Player joins/leaves
-     * - Local player (protagonist) spawning
-     * - Position updates for all players
-     * - Player level updates
-     * - Asteroid spawning/destruction
-     * - Pickup spawning/collection
+     * Gets the local player ID for HUD updates.
+     * @returns The local player ID or null if not set
+     * @public
      */
-    private setupSocketListeners(): void {
-        // Player joined
-        this.socket.on(Events.Player.joined, (response: SocketResponseDTO) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const playerDTO = response.dto as PlayerDTO;
-                playerDTO.spriteKey = 'shooter-sprite-enemy';
-                playerDTO.isLocal = false;
-                const factory = new PlayerEntityFactory(this, this.entityManager);
-                const entity = factory.fromDTO(playerDTO);
-                this.playerEntities.set(playerDTO.id, entity);
-                console.info('[Client]', 'Player joined:', playerDTO);
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Player.joined, error);
-            }
-        });
+    public getLocalPlayerId(): string | null {
+        return this.localPlayerId;
+    }
 
-        // Local player (protagonist)
-        this.socket.on(Events.Player.protagonist, (response: SocketResponseDTO) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const playerDTO = response.dto as PlayerDTO;
-                playerDTO.spriteKey = 'shooter-sprite';
-                playerDTO.isLocal = true;
-                const factory = new PlayerEntityFactory(this, this.entityManager);
-                const entity = factory.fromDTO(playerDTO);
-                this.playerEntities.set(playerDTO.id, entity);
-                this.localPlayerId = playerDTO.id;
-                console.info('[Client]', 'Local player:', playerDTO);
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Player.protagonist, error);
-            }
-        });
+    /**
+     * Sets the local player ID for HUD updates.
+     * @param id The local player ID
+     * @public
+     */
+    public setLocalPlayerId(id: string | null): void {
+        this.localPlayerId = id;
+    }
 
-        // Existing players
-        this.socket.on(Events.Player.players, (response: SocketResponseDTO) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const players = response.dto as PlayerDTO[];
-                const factory = new PlayerEntityFactory(this, this.entityManager);
-                players.forEach(playerDTO => {
-                    playerDTO.spriteKey = 'shooter-sprite-enemy';
-                    playerDTO.isLocal = false;
-                    const entity = factory.fromDTO(playerDTO);
-                    this.playerEntities.set(playerDTO.id, entity);
-                });
-                console.info('[Client]', 'Existing players:', players);
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Player.players, error);
-            }
-        });
+    /**
+     * Gets the map of player entities.
+     * @returns Map of player entities by player ID
+     * @public
+     */
+    public getPlayerEntities(): Map<string, Entity> {
+        return this.playerEntities;
+    }
 
-        // Player quit
-        this.socket.on(Events.Player.quit, (response: SocketResponseDTO<PlayerDTO>) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const player = response.dto as PlayerDTO;
-                console.info('[Client]', 'Player quit:', player.id);
-                const entity = this.playerEntities.get(player.id);
-                if (entity) {
-                    this.entityManager.removeEntity(entity.id);
-                    this.playerEntities.delete(player.id);
-                }
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Player.quit, error);
-            }
-        });
+    /**
+     * Gets the PlayerSystem instance.
+     * @returns The PlayerSystem instance
+     * @public
+     */
+    public getPlayerSystem(): PlayerSystem {
+        return this.playerSystem;
+    }
 
-        // Player coordinates update
-        this.socket.on(Events.Player.coordinates, (response: SocketResponseDTO) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const playerDTO = response.dto as PlayerDTO;
-                if (!playerDTO.id) {
-                    throw new Error('PlayerDTO missing id');
-                }
-                // Skip local player (we control them locally)
-                if (playerDTO.id === this.localPlayerId) {
-                    return;
-                }
-                const entity = this.playerEntities.get(playerDTO.id);
-                if (entity) {
-                    const transform = entity.getComponent(TransformComponent);
-                    if (transform) {
-                        transform.sprite.setPosition(playerDTO.x, playerDTO.y);
-                    }
-                    // TODO: Add visual feedback for thrust (m) and firing (f) if needed
-                }
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Player.coordinates, error);
-            }
-        });
+    /**
+     * Gets the map of asteroid entities.
+     * @returns Map of asteroid entities by asteroid ID
+     * @public
+     */
+    public getAsteroidEntities(): Map<string, Entity> {
+        return this.asteroidEntities;
+    }
 
-        // Player hit
-        this.socket.on(Events.Player.hit, (response: SocketResponseDTO<PlayerDTO>) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const player = response.dto as PlayerDTO;
-                console.info('[Client]', 'Player hit:', player);
+    /**
+     * Gets the AsteroidSystem instance.
+     * @returns The AsteroidSystem instance
+     * @public
+     */
+    public getAsteroidSystem(): AsteroidSystem {
+        return this.asteroidSystem;
+    }
 
-                const entity = this.playerEntities.get(player.id)!;
-                const health = entity.getComponent(HealthComponent)!;
-                health.currentHealth = player.health;
-                if (entity && health.currentHealth <= 0) {
-                    if (player.id === this.localPlayerId) {
-                        this.handlePlayerDeath(player);
-                    } else {
-                        // Remote player died - play death animation and cleanup via PlayerSystem
-                        this.playerSystem.destroyPlayerById(player.id);
-                        this.playerEntities.delete(player.id);
-                    }
-                }
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Player.hit, error);
-            }
-        });
-
-        this.socket.on(Events.Player.destroy, (response: SocketResponseDTO<PlayerDTO>) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const player = response.dto as PlayerDTO;
-                console.info('[Client]', 'Player destroyed:', player.id);
-                const entity = this.playerEntities.get(player.id);
-                if (entity) {
-                    this.playerSystem.destroyPlayerById(player.id);
-                    this.playerEntities.delete(player.id);
-                }
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Player.destroy, error);
-            }
-        });
-
-        // Pickup drop
-        this.socket.on(Events.Game.drop, (response: SocketResponseDTO<PickupDTO>) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const dto = response.dto as PickupDTO;
-                console.info('[Client] Pickup dropped:', dto);
-                // If a pickup with this ID already exists, remove it first (shouldn't happen, but safe)
-                if (this.pickupEntities.has(dto.id)) {
-                    const existing = this.pickupEntities.get(dto.id);
-                    if (existing) {
-                        const transform = existing.getComponent(TransformComponent);
-                        if (transform) {
-                            transform.sprite.destroy();
-                        }
-                        this.entityManager.removeEntity(existing.id);
-                    }
-                }
-                // Create and store the new pickup entity
-                const pickupEntity = new PickupEntityFactory(this, this.entityManager).create(dto);
-                this.pickupEntities.set(dto.id, pickupEntity);
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Game.drop, error);
-            }
-        });
-
-        // Player pickup
-        this.socket.on(Events.Player.pickup, (response: SocketResponseDTO<PickupDTO>) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const pickupDTO = response.dto as PickupDTO;
-                console.info('[Client]', 'Player picked up:', pickupDTO);
-                // Remove the pickup entity with this ID
-                this.destroyPickupEntity(pickupDTO.id);
-                // (Optional) handle player entity update if needed
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Player.pickup, error);
-            }
-        });
-
-        // Asteroid created
-        this.socket.on(Events.Asteroid.create, (response: SocketResponseDTO<AsteroidDTO>) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const asteroidDTO = response.dto as AsteroidDTO;
-                console.info('[Client]', 'Asteroid created:', asteroidDTO);
-                const entity = new AsteroidEntityFactory(this, this.entityManager).create(asteroidDTO);
-                // Set HP and maxHp if HealthComponent exists
-                const health = entity.getComponent(HealthComponent);
-                if (health) {
-                    health.currentHealth = asteroidDTO.health;
-                    if (asteroidDTO.maxHealth !== undefined) {
-                        health.maxHealth = asteroidDTO.maxHealth;
-                    }
-                }
-                this.asteroidEntities.set(asteroidDTO.id, entity);
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Asteroid.create, error);
-            }
-        });
-
-        // Asteroid coordinates
-        this.socket.on(Events.Asteroid.coordinates, (response: SocketResponseDTO<AsteroidDTO>) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const asteroidDTO = response.dto as AsteroidDTO;
-                const entity = this.asteroidEntities.get(asteroidDTO.id);
-                if (entity) {
-                    const transform = entity.getComponent(TransformComponent);
-                    if (transform) {
-                        transform.sprite.setPosition(asteroidDTO.x, asteroidDTO.y);
-                    }
-                    const health = entity.getComponent(HealthComponent);
-                    if (health) {
-                        health.currentHealth = asteroidDTO.health;
-                        if (asteroidDTO.maxHealth !== undefined) {
-                            health.maxHealth = asteroidDTO.maxHealth;
-                        }
-                    }
-                }
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Asteroid.coordinates, error);
-            }
-        });
-
-        // Asteroid hit
-        this.socket.on(Events.Asteroid.hit, (response: SocketResponseDTO<AsteroidHitDTO>) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const { asteroidId, damage } = response.dto as AsteroidHitDTO;
-                console.info('[Client] Asteroid hit', asteroidId, 'damage:', damage);
-                if (typeof damage !== 'number' || isNaN(damage)) {
-                    throw new Error(`Invalid damage value received for asteroid hit: ${damage}`);
-                }
-                const entity = this.asteroidEntities.get(asteroidId);
-                if (entity) {
-                    const health = entity.getComponent(HealthComponent);
-                    if (health) {
-                        health.currentHealth = Math.max(0, health.currentHealth - damage);
-                    }
-                    const transform = entity.getComponent(TransformComponent);
-                    if (transform) {
-                        this.asteroidSystem.flashAsteroid(transform.sprite);
-                    }
-                }
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Asteroid.hit, error);
-            }
-        });
-
-        // Asteroid destroyed
-        this.socket.on(Events.Asteroid.destroy, (response: SocketResponseDTO<AsteroidDTO>) => {
-            try {
-                SocketResponseSchema.parse(response);
-                const asteroidDTO = response.dto as AsteroidDTO;
-                console.info('[Client] Asteroid destroyed:', asteroidDTO.id);
-                this.asteroidSystem.destroyAsteroidById(asteroidDTO.id);
-                this.asteroidEntities.delete(asteroidDTO.id);
-            } catch (error: Error | unknown) {
-                return this.handleSocketError(Events.Asteroid.destroy, error);
-            }
-        });
+    /**
+     * Gets the map of pickup entities.
+     * @returns Map of pickup entities by pickup ID
+     * @public
+     */
+    public getPickupEntities(): Map<string, Entity> {
+        return this.pickupEntities;
     }
 
     /**
@@ -684,6 +532,7 @@ export class GameScene extends Phaser.Scene {
      *
      * Sends custom events with current player stats (name, level, ammo, score)
      * to be consumed by the Vue frontend components.
+     * @private
      */
     private emitPlayerDataToVue(): void {
         if (!this.localPlayerId) {
@@ -726,8 +575,10 @@ export class GameScene extends Phaser.Scene {
 
     /**
      * Handles socket errors by logging and optionally showing user feedback.
+     *
      * @param event The socket event where the error occurred
      * @param error The error object or message
+     * @public
      */
     public handleSocketError(event: string, error: Error | unknown): void {
         const message = error instanceof Error ? error.message : String(error);
