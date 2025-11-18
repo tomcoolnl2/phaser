@@ -31,6 +31,7 @@ import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
 import { createFeatureListeners } from '@/listeners';
+import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
 
 /**
  * Main gameplay scene that manages all game entities and ECS systems.
@@ -363,7 +364,7 @@ export class GameScene extends Phaser.Scene {
      * @param request - The PickupDTO describing the pickup event
      * @public
      */
-    public emitPlayerPickup(request: PickupDTO): void {
+    public emitPlayerPickup(request: SocketResponseDTO<PickupDTO>): void {
         this.socket.emit(Events.Player.pickup, request);
     }
 
