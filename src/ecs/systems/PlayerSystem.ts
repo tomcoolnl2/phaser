@@ -1,4 +1,4 @@
-import { PickupType } from '@shared/dto/Pickup.dto';
+import { AmmoPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { Events } from '@shared/events';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
 import { ScoreComponent } from '@/ecs/components/ScoreComponent';
@@ -115,7 +115,7 @@ export class PlayerSystem extends System {
             points: 50,
         };
 
-        const request = { ok: true, dto: coinPickupDTO };
+        const request = { ok: true, dto: coinPickupDTO as PickupDTO };
         try {
             scene.emitPlayerPickup(request);
             scene.destroyPickupEntity(coinPickupDTO.id);
@@ -159,7 +159,7 @@ export class PlayerSystem extends System {
             x: pickupTransform.sprite.x,
             y: pickupTransform.sprite.y,
         };
-        const request = { ok: true, dto: ammoPickupDTO };
+        const request = { ok: true, dto: ammoPickupDTO as PickupDTO };
         try {
             scene.emitPlayerPickup(request);
             scene.destroyPickupEntity(ammoPickupDTO.id);
@@ -196,7 +196,7 @@ export class PlayerSystem extends System {
             x: pickupTransform.sprite.x,
             y: pickupTransform.sprite.y,
         };
-        const request = { ok: true, dto: healthPickupDTO };
+        const request = { ok: true, dto: healthPickupDTO as PickupDTO };
         try {
             scene.emitPlayerPickup(request);
             scene.destroyPickupEntity(healthPickupDTO.id);
