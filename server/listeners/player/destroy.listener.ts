@@ -19,13 +19,10 @@ export const PlayerDestroyListener = createListener<PlayerDTO, PlayerDTO>({
      * @param request - The validated request DTO containing the player data.
      * @returns The response DTO, also broadcast to other clients.
      */
-    async handle(_socket, request) {
-        // request already validated by BaseListener
-        const player = request.dto as PlayerDTO;
-        const response = { ok: true, dto: player };
+    async handle(_socket, { dto }) {
+        const response = { ok: true, dto };
         const server = GameServerContext.get();
         server.detonateAllAsteroids();
-
         return response;
     },
 });

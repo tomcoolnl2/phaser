@@ -5,7 +5,6 @@ import { ScoreComponent } from '@/ecs/components/ScoreComponent';
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { GameScene } from '@/scenes/GameScene';
 
-
 const mockScene = {} as GameScene;
 
 // Provide a global window mock for dispatchEvent in Node/Vitest

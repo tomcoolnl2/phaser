@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GameConfig } from '../../../shared/config';
+import { GameConfig } from '@shared/config';
 import { MovementComponent } from '@/ecs/components/MovementComponent';
 
 describe('MovementComponent', () => {

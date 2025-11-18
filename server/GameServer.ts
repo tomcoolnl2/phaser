@@ -5,7 +5,7 @@ import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import { PlayerDTO } from '@shared/dto/Player.dto';
-import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
+import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO, AsteroidSize } from '@shared/dto/Asteroid.dto';
 import { AmmoPickupDTO, CoinPickupDTO, HealthPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
 import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
@@ -200,8 +200,7 @@ export class GameServer {
                 // TODO: allow more asteroids at the same time
                 const initialAsteroidHealth = GameConfig.asteroid.health;
                 const asteroidId = uuidv4();
-                const dto: AsteroidDTO = { id: asteroidId, health: initialAsteroidHealth, maxHealth: initialAsteroidHealth, x: 0, y: 0 };
-                socket.asteroid = dto;
+                socket.asteroid = new AsteroidDTO(asteroidId, 0, 0, initialAsteroidHealth, initialAsteroidHealth);
                 this.hasAsteroid = true;
                 this.healthManager.setHealth(asteroidId, initialAsteroidHealth, initialAsteroidHealth);
                 this.destroyedAsteroids.delete(asteroidId); // ensure not marked destroyed
@@ -253,16 +252,7 @@ export class GameServer {
                 dx = (dx / norm) * asteroidSpeed;
                 dy = (dy / norm) * asteroidSpeed;
 
-                const asteroidDTO: AsteroidDTO = {
-                    id: asteroidId,
-                    x,
-                    y,
-                    dx,
-                    dy,
-                    health: initialAsteroidHealth,
-                    maxHealth: initialAsteroidHealth,
-                };
-
+                const asteroidDTO = new AsteroidDTO(asteroidId, x, y, initialAsteroidHealth, initialAsteroidHealth, AsteroidSize.LARGE, dx, dy);
                 this.asteroidMap.set(asteroidId, asteroidDTO);
 
                 try {
@@ -292,7 +282,7 @@ export class GameServer {
                     asteroidDTO.health = this.healthManager.getHealth(asteroidDTO.id);
                     asteroidDTO.maxHealth = this.healthManager.getMaxHealth(asteroidDTO.id);
                     this.asteroidMap.set(asteroidDTO.id, asteroidDTO);
-                    const response: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
+                    const response = { ok: true, dto: asteroidDTO };
                     SocketResponseSchema.parse(response);
                     this.io.emit(Events.Asteroid.coordinates, response);
 
@@ -433,7 +423,7 @@ export class GameServer {
                     id,
                     x,
                     y,
-                } as Partial<PickupDTO>
+                } as Partial<PickupDTO>;
                 switch (type) {
                     case PickupType.AMMO:
                         dto = {

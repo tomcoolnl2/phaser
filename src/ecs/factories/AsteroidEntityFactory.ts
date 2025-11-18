@@ -1,13 +1,16 @@
 import Phaser from 'phaser';
+
 import { GameConfig } from '@shared/config';
 import { CollisionLayer } from '@shared/types';
+import { AsteroidDTO } from '@shared/dto/Asteroid.dto';
+import { AsteroidSchema } from '@shared/dto/Asteroid.schema';
+
 import { EntityManager } from '@/ecs/core/EntityManager';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
-import { AsteroidDTO, AsteroidSchema } from '@shared/dto/Asteroid.dto';
 
 /**
  * AsteroidEntityFactory - OOP ECS factory for asteroid entities.

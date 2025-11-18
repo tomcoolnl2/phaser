@@ -1,12 +1,13 @@
 import { GameConfig } from '../../shared/config';
-import { EntityWithHealthDTO } from './Entity.dto';
 import { Coordinates, PlayerLevel } from '../../shared/model';
 
 /**
  * Data Transfer Object representing a player in the game.
  * Implements Coordinates for position tracking.
  */
-export class PlayerDTO implements EntityWithHealthDTO {
+export class PlayerDTO {
+    public readonly type: string = 'player';
+
     // Backing field for level property
     // TODO make it a UpgradeComponent in ECS
     private _level: number;

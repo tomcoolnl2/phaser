@@ -22,7 +22,7 @@ export const AsteroidHitListener = createListener<AsteroidHitDTO, AsteroidDTO>({
 
     async handle(_socket, request) {
         const server = GameServerContext.get();
-        const { asteroidId, damage } = request.dto as AsteroidHitDTO;
+        const { asteroidId, damage } = request.dto;
 
         // Ignore hits on already destroyed asteroids
         if (server.isAsteroidDestroyed(asteroidId)) {
@@ -35,7 +35,7 @@ export const AsteroidHitListener = createListener<AsteroidHitDTO, AsteroidDTO>({
         }
 
         // Broadcast the hit to all clients
-        server.broadcastAsteroidHit({ ok: true, dto: { asteroidId, damage } });
+        server.broadcastAsteroidHit({ ok: true, dto: new AsteroidHitDTO(asteroidId, damage) });
 
         // If asteroid is dead, destroy it and broadcast
         if (asteroid.health <= 0) {

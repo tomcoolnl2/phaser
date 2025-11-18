@@ -158,17 +158,17 @@ export class BootScene extends Phaser.Scene {
         // Coin/Star pickup animation
         this.anims.create({
             key: 'pickup-coin-spin',
-            frames: this.anims.generateFrameNumbers('pickup-coin', { start: 0, end: 15 }),
+            frames: this.anims.generateFrameNumbers('pickup-coin', { start: 0, end: 5 }),
             frameRate: 10,
             repeat: -1,
         });
         // Ship acceleration animation
-        this.anims.create({
-            key: 'accelerating',
-            frames: this.anims.generateFrameNumbers('shooter-sprite', { start: 0, end: 1 }),
-            frameRate: 10,
-            repeat: 0,
-        });
+        // this.anims.create({
+        //     key: 'accelerating',
+        //     frames: this.anims.generateFrameNumbers('shooter-sprite', { start: 0, end: 1 }),
+        //     frameRate: 10,
+        //     repeat: 0,
+        // });
 
         // Explosion animations
         this.anims.create({
@@ -180,7 +180,7 @@ export class BootScene extends Phaser.Scene {
 
         this.anims.create({
             key: 'explode-big',
-            frames: this.anims.generateFrameNumbers('kaboom-big', { start: 0, end: 15 }),
+            frames: this.anims.generateFrameNumbers('kaboom-big', { start: 0, end: 11 }),
             frameRate: 30,
             hideOnComplete: true,
         });

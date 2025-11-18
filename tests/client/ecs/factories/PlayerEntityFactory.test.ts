@@ -4,8 +4,7 @@ import { EntityManager } from '@/ecs/core/EntityManager';
 import { PlayerDTO } from '@shared/dto/Player.dto';
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
-
-import { TransformComponent } from '@/ecs/components/TransformComponent';
+import { GameScene } from '@/scenes/GameScene';
 
 const mockSprite = {
     setOrigin: () => mockSprite,
@@ -35,7 +34,7 @@ const mockPhysics = {
         group: vi.fn(() => bulletGroup),
     },
 };
-const mockScene = { physics: mockPhysics } as any;
+const mockScene = { physics: mockPhysics } as unknown as GameScene;
 
 describe('PlayerEntityFactory', () => {
     let factory: PlayerEntityFactory;
@@ -43,7 +42,8 @@ describe('PlayerEntityFactory', () => {
 
     beforeEach(() => {
         entityManager = new EntityManager(mockScene);
-        factory = new PlayerEntityFactory(mockScene, entityManager);
+        mockScene.entityManager = entityManager;
+        factory = new PlayerEntityFactory(mockScene);
         mockPhysics.add.sprite.mockClear();
         mockPhysics.add.group.mockClear();
     });

@@ -95,7 +95,6 @@ export class WeaponSystem extends System {
         const sprite = transform.sprite;
 
         // Get bullet from pool using dynamic sprite key
-        console.info(`[Client] [WeaponSystem] Firing bullet with sprite: ${weapon.bulletSpriteKey}`);
         const bullet = weapon.bullets.get(sprite.x, sprite.y, weapon.bulletSpriteKey) as Phaser.Physics.Arcade.Sprite;
 
         // Explicitly set the texture to ensure it's correct (Phaser pool reuse can cause issues)

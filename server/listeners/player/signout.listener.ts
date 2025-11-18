@@ -37,7 +37,7 @@ export const PlayerSignOutListener = createListener<string, PlayerDTO[]>({
         const server = GameServerContext.get();
         const players = server.getAllPlayers();
         const listResponse: SocketResponseDTO<PlayerDTO[]> = { ok: true, dto: players };
-        socket.broadcast.emit(Events.Player.players, listResponse);
+        socket.broadcast.emit(Events.Player.competitors, listResponse);
 
         return listResponse;
     },

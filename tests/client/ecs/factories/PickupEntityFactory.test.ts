@@ -23,7 +23,8 @@ describe('PickupEntityFactory', () => {
 
     beforeEach(() => {
         entityManager = new EntityManager(mockScene);
-        factory = new PickupEntityFactory(mockScene, entityManager);
+        factory = new PickupEntityFactory(mockScene);
+        mockScene.entityManager = entityManager;
     });
 
     it('creates a pickup entity with valid DTO', () => {

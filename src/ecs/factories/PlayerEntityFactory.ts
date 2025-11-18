@@ -1,11 +1,9 @@
-import { ScoreComponent } from '@/ecs/components/ScoreComponent';
 import Phaser from 'phaser';
 import { GameConfig } from '@shared/config';
 import { CollisionLayer } from '@shared/types';
 import { PlayerDTO } from '@shared/dto/Player.dto';
 import { PlayerSchema } from '@shared/dto/Player.schema';
 import { WeaponDTO } from '@shared/dto/Weapon.dto';
-import { EntityManager } from '@/ecs/core/EntityManager';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { MovementComponent } from '@/ecs/components/MovementComponent';
@@ -14,12 +12,14 @@ import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
+import { ScoreComponent } from '@/ecs/components/ScoreComponent';
+import { GameScene } from '@/scenes/GameScene';
 
 /**
  * PlayerEntityFactory - OOP ECS factory for player entities.
  *
  * Usage:
- *   const factory = new PlayerEntityFactory(scene, entityManager);
+ *   const factory = new PlayerEntityFactory(scene);
  *   const player = factory.create(playerDTO, spriteKey, isLocal);
  *
  * The created entity includes:
@@ -33,10 +33,7 @@ import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
  */
 export class PlayerEntityFactory {
     //
-    constructor(
-        private scene: Phaser.Scene,
-        private entityManager: EntityManager
-    ) {}
+    constructor(private scene: GameScene) {}
 
     /**
      * Creates a player entity with all necessary ECS components:
@@ -59,7 +56,7 @@ export class PlayerEntityFactory {
         }
 
         // Create the entity
-        const entity = this.entityManager.createEntity();
+        const entity = this.scene.entityManager.createEntity();
         const { id, name, x, y, spriteKey, isLocal, level, maxHealth } = playerDTO;
 
         // Create player sprite

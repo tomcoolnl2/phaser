@@ -51,16 +51,11 @@ export class PickupSystem extends System {
 
         // Warn if pickup is spawned out of bounds (should only happen on first update)
         if (!this.tweens.has(entity) && sprite.active) {
-            // Check if pickup is already out of bounds on spawn
-            if (Utils.isOutOfBounds({ x, y, bounds: this.scene.scale })) {
-                console.warn(`[PickupSystem] Pickup spawned out of bounds at (${x.toFixed(1)}, ${y.toFixed(1)})`);
-            }
             this.initializePickup(entity, transform);
         }
 
         // Destroy pickup if it moves fully off-screen (with margin)
         if (Utils.isOutOfBounds({ x, y, threshold: 16, bounds: this.scene.scale })) {
-            console.info(`[PickupSystem] Destroying pickup for moving off-screen at (${x.toFixed(1)}, ${y.toFixed(1)})`);
             sprite.destroy();
             this.cleanupPickup(entity);
             // Remove the entity from the ECS/entity manager to stop further updates

@@ -38,7 +38,7 @@ describe('PlayerSystem', () => {
         const mockBullets = new MockArcadeGroup() as unknown as Phaser.Physics.Arcade.Group;
         const mockWeaponDTO = new MockWeaponDTO();
         const mockBulletSpriteKey = 'test-bullet';
-        
+
         player.addComponent(new WeaponComponent(mockBullets, mockWeaponDTO as unknown as WeaponDTO, mockBulletSpriteKey));
         player.addComponent(new HealthComponent(1));
         player.addComponent(new TransformComponent(new MockArcadeSprite() as unknown as Phaser.Physics.Arcade.Sprite));

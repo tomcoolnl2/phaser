@@ -16,6 +16,7 @@ import { GameServerContext } from '../../GameServerContext';
  */
 export const PlayerSignOnListener = createListener<SignOnDTO, PlayerDTO[]>({
     event: Events.Player.authenticate,
+
     log: true,
 
     /**
@@ -31,7 +32,7 @@ export const PlayerSignOnListener = createListener<SignOnDTO, PlayerDTO[]>({
 
         // Send existing players to new player
         const playersResponse = { ok: true, dto: server.getAllPlayers() };
-        socket.emit(Events.Player.players, playersResponse);
+        socket.emit(Events.Player.competitors, playersResponse);
 
         // Create new player
         const windowSize = { x: GameConfig.playArea.width, y: GameConfig.playArea.height };
