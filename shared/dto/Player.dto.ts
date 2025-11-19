@@ -6,10 +6,10 @@ import { Coordinates, PlayerLevel } from '../../shared/model';
  * Implements Coordinates for position tracking.
  */
 export class PlayerDTO {
+    //
     public readonly type: string = 'player';
 
     // Backing field for level property
-    // TODO make it a UpgradeComponent in ECS
     private _level: number;
 
     /**

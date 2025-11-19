@@ -1,16 +1,13 @@
-import Phaser from 'phaser';
-
 import { GameConfig } from '@shared/config';
 import { CollisionLayer } from '@shared/types';
 import { AsteroidDTO } from '@shared/dto/Asteroid.dto';
 import { AsteroidSchema } from '@shared/dto/Asteroid.schema';
-
-import { EntityManager } from '@/ecs/core/EntityManager';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
 import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
+import { GameScene } from '@/scenes/GameScene';
 
 /**
  * AsteroidEntityFactory - OOP ECS factory for asteroid entities.
@@ -26,10 +23,13 @@ import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
  * - AsteroidComponent: Asteroid metadata (id)
  */
 export class AsteroidEntityFactory {
-    constructor(
-        private scene: Phaser.Scene,
-        private entityManager: EntityManager
-    ) {}
+
+    /**
+     * Constructs a new AsteroidEntityFactory.
+     *
+     * @param scene - The current GameScene instance (used for ECS entity management).
+     */
+    constructor(private scene: GameScene) {}
 
     /**
      * Creates an asteroid entity with all necessary ECS components:
@@ -48,7 +48,7 @@ export class AsteroidEntityFactory {
             throw new Error('Invalid AsteroidDTO: ' + result.error.message);
         }
 
-        const entity = this.entityManager.createEntity();
+        const entity = this.scene.entityManager.createEntity();
         const sprite = this.scene.physics.add.sprite(dto.x, dto.y, 'asteroid').setOrigin(0.5, 0.5);
         sprite.setCollideWorldBounds(false);
         sprite.setImmovable(true);
