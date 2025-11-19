@@ -1,28 +1,37 @@
 import { GameConfig } from '../../shared/config';
-import { AmmoAmount, AmmoMaxAmount, AmmoType } from '../types';
+import { ProjectileRefillAmount, ProjectileMaxAmount, ProjectileType, ProjectileSpeed } from '../types';
 
-const MAX_AMMO: Record<AmmoType, number> = {
-    [AmmoType.BULLET]: AmmoMaxAmount.BULLET_MAX_AMMO,
-    [AmmoType.ROCKET]: AmmoMaxAmount.ROCKET_MAX_AMMO,
-    [AmmoType.MINE]: AmmoMaxAmount.MINE_MAX_COUNT,
+
+const MAX_AMMO: Record<ProjectileType, ProjectileMaxAmount> = {
+    [ProjectileType.BULLET]: ProjectileMaxAmount.BULLET,
+    [ProjectileType.ROCKET]: ProjectileMaxAmount.ROCKET,
+    [ProjectileType.LASER]: ProjectileMaxAmount.LASER,
+    [ProjectileType.PLASMA]: ProjectileMaxAmount.PLASMA,
+    [ProjectileType.MINE]: ProjectileMaxAmount.MINE,
 };
 
-export const DEFAULT_AMMO: Record<AmmoType, number> = {
-    [AmmoType.BULLET]: AmmoAmount.BULLET,
-    [AmmoType.ROCKET]: AmmoAmount.ROCKET,
-    [AmmoType.MINE]: AmmoAmount.MINE,
+export const DEFAULT_AMMO: Record<ProjectileType, ProjectileRefillAmount> = {
+    [ProjectileType.BULLET]: ProjectileRefillAmount.BULLET,
+    [ProjectileType.ROCKET]: ProjectileRefillAmount.ROCKET,
+    [ProjectileType.LASER]: ProjectileRefillAmount.LASER,
+    [ProjectileType.PLASMA]: ProjectileRefillAmount.PLASMA,
+    [ProjectileType.MINE]: ProjectileRefillAmount.MINE,
 };
 
-const AMMO_SPEED: Record<AmmoType, number> = {
-    [AmmoType.BULLET]: 650,
-    [AmmoType.ROCKET]: 100,
-    [AmmoType.MINE]: 0,
+const AMMO_SPEED: Record<ProjectileType, ProjectileSpeed> = {
+    [ProjectileType.BULLET]: ProjectileSpeed.BULLET,
+    [ProjectileType.ROCKET]: ProjectileSpeed.ROCKET,
+    [ProjectileType.LASER]: ProjectileSpeed.LASER,
+    [ProjectileType.PLASMA]: ProjectileSpeed.PLASMA,
+    [ProjectileType.MINE]: ProjectileSpeed.MINE,
 };
 
-const AMMO_DAMAGE: Record<AmmoType, number> = {
-    [AmmoType.BULLET]: 1,
-    [AmmoType.ROCKET]: 5,
-    [AmmoType.MINE]: 6,
+const AMMO_DAMAGE: Record<ProjectileType, number> = {
+    [ProjectileType.BULLET]: 1,
+    [ProjectileType.ROCKET]: 5,
+    [ProjectileType.LASER]: 3,
+    [ProjectileType.PLASMA]: 4,
+    [ProjectileType.MINE]: 6,
 };
 
 /**
@@ -39,27 +48,27 @@ export class WeaponDTO {
     public level: number;
 
     /** Currently selected ammo type */
-    private _ammoType: AmmoType;
+    private _ammoType: ProjectileType;
 
     /** Weapon fire rate (shots per second or ms between shots) */
     public fireRate: number;
 
     /** Bullet speed for each ammo type */
-    private _speed: Record<AmmoType, number>;
+    private _speed: Record<ProjectileType, number>;
 
     /** Current ammo count for each ammo type */
-    private _ammo: Record<AmmoType, number>;
+    private _ammo: Record<ProjectileType, number>;
 
     /** Maximum ammo allowed for each ammo type */
-    private readonly _maxAmmo: Record<AmmoType, number>;
+    private readonly _maxAmmo: Record<ProjectileType, number>;
 
-    private _damage: Record<AmmoType, number>;
+    private _damage: Record<ProjectileType, number>;
 
     /**
      * Create a new WeaponDTO.
      * @param id - Unique weapon identifier
      * @param level - Weapon level (default: startingLevel)
-     * @param ammoType - Initial selected ammo type (default: startingAmmoType)
+     * @param ammoType - Initial selected ammo type (default: startingProjectileType)
      * @param fireRate - Weapon fire rate (default: baseFireRate)
      * @param speed - Initial bullet speed for the selected ammo type
      * @param ammoOverride - Optional override for starting ammo of the selected type
@@ -67,7 +76,7 @@ export class WeaponDTO {
     constructor(
         id: string,
         level: number = GameConfig.player.startingLevel,
-        ammoType: AmmoType = GameConfig.weapon.startingAmmoType,
+        ammoType: ProjectileType = GameConfig.weapon.startingProjectileType,
         fireRate: number = GameConfig.weapon.baseFireRate,
         ammoOverride?: number
     ) {
@@ -149,7 +158,7 @@ export class WeaponDTO {
      * @param type - The ammo type to query
      * @returns Ammo count for the specified type
      */
-    public getAmmo(type: AmmoType): number {
+    public getAmmo(type: ProjectileType): number {
         return this._ammo[type];
     }
 
@@ -168,7 +177,7 @@ export class WeaponDTO {
      * @param type - The ammo type to query
      * @returns Ammo count for the specified type
      */
-    public getAmmoSpeed(type: AmmoType): number {
+    public getAmmoSpeed(type: ProjectileType): number {
         return this._speed[type];
     }
 
@@ -176,7 +185,7 @@ export class WeaponDTO {
      * Get the current ammoType
      * @returns Current ammoType
      */
-    public get ammoType(): AmmoType {
+    public get ammoType(): ProjectileType {
         return this._ammoType;
     }
 
@@ -184,7 +193,7 @@ export class WeaponDTO {
      * Switch the currently selected ammo type.
      * @param type - The new ammo type to select
      */
-    public switchAmmoType(type: AmmoType) {
+    public switchProjectileType(type: ProjectileType) {
         this._ammoType = type;
         this.ammo = this._ammo[type];
         this.speed = this._speed[type];
@@ -196,7 +205,7 @@ export class WeaponDTO {
      * @param value - The value to clamp
      * @returns The clamped ammo value
      */
-    private clampAmmo(type: AmmoType, value: number): number {
+    private clampAmmo(type: ProjectileType, value: number): number {
         return Math.max(0, Math.min(this._maxAmmo[type], value));
     }
 }

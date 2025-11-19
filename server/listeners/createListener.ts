@@ -2,7 +2,7 @@ import { ZodType } from 'zod';
 import { EventName } from '@shared/events';
 import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
 import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
-import { SocketRequestSchema, SocketResponseSchema } from '@shared/dto/Socket.schema';
+import { SocketRequestSchema, SocketResponseSchema } from '@shared/schema/Socket.schema';
 import { GameSocket } from 'server/model';
 import { BaseListener } from './BaseListener';
 

@@ -9,11 +9,11 @@ import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO, AsteroidSize } from 
 import { AmmoPickupDTO, CoinPickupDTO, HealthPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
 import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
-import { SocketResponseSchema } from '@shared/dto/Socket.schema';
+import { SocketResponseSchema } from '@shared/schema/Socket.schema';
 import { Coordinates } from '@shared/model';
 import { GameConfig } from '@shared/config';
 import { Events } from '@shared/events';
-import { AmmoAmount } from '@shared/types';
+import { ProjectileRefillAmount } from '@shared/types';
 import * as Utils from '@shared/utils';
 
 import { playerFeatureListeners } from './listeners/player';
@@ -70,6 +70,8 @@ export class GameServer {
     private destroyedAsteroids: Set<string> = new Set();
     /** Manages health state for all asteroids. */
     private healthManager = new HealthManager();
+    /** Manages health state for all asteroids. */
+    private playerScoreManager = new HealthManager();
 
     // --- Constructor ---
 
@@ -428,7 +430,7 @@ export class GameServer {
                     case PickupType.AMMO:
                         dto = {
                             ...dto,
-                            amount: AmmoAmount.BULLET,
+                            amount: ProjectileRefillAmount.BULLET,
                         } as AmmoPickupDTO;
                         break;
                     case PickupType.HEALTH:

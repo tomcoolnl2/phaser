@@ -10,8 +10,8 @@ import { WeaponComponent } from '@/ecs/components/WeaponComponent';
  *
  * This system monitors the player's level and updates the bullet sprite texture key
  * to match. As players level up (1-5), their bullets change appearance:
- * - Level 1 → 'laser-level-1' (bullet1.png)
- * - Level 2 → 'laser-level-2' (bullet2.png)
+ * - Level 1 → 'projectile-1' (bullet1.png)
+ * - Level 2 → 'projectile-2' (bullet2.png)
  * - ...and so on
  *
  * The system detects level changes and updates WeaponComponent.bulletSpriteKey,
@@ -49,6 +49,6 @@ export class WeaponUpgradeSystem extends System {
     }
 
     private getBulletSpriteForLevel(level: PlayerLevel): string {
-        return `laser-level-${level}`;
+        return `projectile-${level}`;
     }
 }

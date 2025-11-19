@@ -5,7 +5,7 @@ import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { MovementComponent } from '@/ecs/components/MovementComponent';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
 import { PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
-import { PickupSchema } from '@shared/dto/Pickup.schema';
+import { PickupSchema } from '@shared/schema/Pickup.schema';
 import { GameScene } from '@/scenes/GameScene';
 
 /**

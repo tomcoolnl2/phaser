@@ -6,7 +6,7 @@ import { GameConfig } from '@shared/config';
 import { PlayerDTO } from '@shared/dto/Player.dto';
 import { PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
-import { SocketRequestSchema } from '@shared/dto/Socket.schema';
+import { SocketRequestSchema } from '@shared/schema/Socket.schema';
 import { SignOnDTO } from '@shared/dto/SignOn.dto';
 import { CoordinatesDTO } from '@shared/dto/Coordinates.dto';
 
@@ -88,6 +88,13 @@ export class GameScene extends Phaser.Scene {
      * @private
      */
     private pickupEntities: Map<string, Entity> = new Map();
+
+    /**
+     * Map of all projectile entities by projectile ID.
+     * Used for projectile management and ECS updates.
+     * @private
+     */
+    private projectileEntities: Map<string, Entity> = new Map();
 
     // ECS System Components
 
@@ -277,28 +284,6 @@ export class GameScene extends Phaser.Scene {
                 // Optionally show user feedback
             }
 
-            // Check pickup collisions (support multiple pickups)
-            this.pickupEntities.forEach((pickupEntity, pickupId) => {
-                const pickupTransform = pickupEntity.getComponent(TransformComponent);
-                if (pickupTransform && pickupTransform.sprite.active) {
-                    const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, pickupTransform.sprite.x, pickupTransform.sprite.y);
-                    if (distance < GameConfig.pickup.collisionRadius) {
-                        // Player collected the pickup
-                        const pickupComp = pickupEntity.getComponent(PickupComponent);
-                        const type = pickupComp?.type;
-                        if (type === PickupType.COIN) {
-                            this.playerSystem.handleCoinPickup(localEntity, pickupEntity, this);
-                        } else if (type === PickupType.AMMO) {
-                            this.playerSystem.handleAmmoPickup(localEntity, pickupEntity, this);
-                        } else if (type === PickupType.HEALTH) {
-                            this.playerSystem.handleHealthPickup(localEntity, pickupEntity, this);
-                        }
-                        // Remove the pickup locally
-                        this.destroyPickupEntity(pickupId);
-                    }
-                }
-            });
-
             // Check asteroid collisions with local player
             this.asteroidEntities.forEach(asteroidEntity => {
                 const asteroidTransform = asteroidEntity.getComponent(TransformComponent);
@@ -319,6 +304,8 @@ export class GameScene extends Phaser.Scene {
                     }
                 }
             });
+
+            this.updatePickupEntities(transform, localEntity);
 
             // Check bullet collisions with asteroids
             if (weapon && weapon.bullets) {
@@ -343,19 +330,38 @@ export class GameScene extends Phaser.Scene {
                             if (scoreComponent) {
                                 scoreComponent.add(damage);
                             }
-                            const hitRequest = { ok: true, dto: new AsteroidHitDTO(asteroidComponent.id, damage) };
-                            try {
-                                SocketRequestSchema.parse(hitRequest);
-                                this.socket.emit(Events.Asteroid.hit, hitRequest);
-                                this.asteroidSystem.flashAsteroid(asteroidTransform.sprite);
-                            } catch (error: Error | unknown) {
-                                return this.handleSocketError(Events.Asteroid.hit, error);
-                            }
+                            const request = { ok: true, dto: new AsteroidHitDTO(asteroidComponent.id, damage) };
+                            this.socket.emit(Events.Asteroid.hit, request);
+                            this.asteroidSystem.flashAsteroid(asteroidTransform.sprite);
                         }
                     }
                 });
             }
         }
+    }
+
+    private updatePickupEntities(transform: TransformComponent, localEntity: Entity): void {
+        // Check pickup collisions (support multiple pickups)
+        this.pickupEntities.forEach((pickupEntity, pickupId) => {
+            const pickupTransform = pickupEntity.getComponent(TransformComponent);
+            if (pickupTransform && pickupTransform.sprite.active) {
+                const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, pickupTransform.sprite.x, pickupTransform.sprite.y);
+                if (distance < GameConfig.pickup.collisionRadius) {
+                    // Player collected the pickup
+                    const pickupComp = pickupEntity.getComponent(PickupComponent);
+                    const type = pickupComp?.type;
+                    if (type === PickupType.COIN) {
+                        this.playerSystem.handleCoinPickup(localEntity, pickupEntity, this);
+                    } else if (type === PickupType.AMMO) {
+                        this.playerSystem.handleAmmoPickup(localEntity, pickupEntity, this);
+                    } else if (type === PickupType.HEALTH) {
+                        this.playerSystem.handleHealthPickup(localEntity, pickupEntity, this);
+                    }
+                    // Remove the pickup locally
+                    this.destroyPickupEntity(pickupId);
+                }
+            }
+        });
     }
 
     /**

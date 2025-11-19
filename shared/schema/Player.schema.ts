@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { GameConfig } from '../../shared/config';
+import { GameConfig } from '../config';
 
 /**
  * Zod schema for PlayerDTO validation

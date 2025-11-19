@@ -15,7 +15,7 @@ import { PlayerLevel } from '@shared/model';
  * const weapon = new WeaponComponent(
  *     bulletGroup,        // Phaser bullet pool
  *     dto,                // WeaponDTO instance
- *     'laser-level-1'     // bullet sprite key
+ *     'projectile-1'      // bullet sprite key
  * );
  *
  * if (weapon.canFire()) {
@@ -25,6 +25,7 @@ import { PlayerLevel } from '@shared/model';
  * ```
  */
 export class WeaponComponent extends Component {
+    //
     public lastFired: number = 0;
 
     public triggerPulled: boolean = false;

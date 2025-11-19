@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 import { WeaponDTO } from '@shared/dto/Weapon.dto';
-import { AmmoType } from '@shared/types';
+import { ProjectileType } from '@shared/types';
 
 // Mock Phaser group
 const mockGroup = {
@@ -13,7 +13,7 @@ describe('WeaponComponent', () => {
     let weapon: WeaponComponent;
 
     beforeEach(() => {
-        dto = new WeaponDTO('test-id', 1, AmmoType.BULLET, 100);
+        dto = new WeaponDTO('test-id', 1, ProjectileType.BULLET, 100);
         weapon = new WeaponComponent(mockGroup, dto, 'bullet-sprite');
         weapon.lastFired = 0;
     });

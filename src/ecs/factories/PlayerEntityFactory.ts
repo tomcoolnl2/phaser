@@ -99,7 +99,7 @@ export class PlayerEntityFactory {
 
             const dto = new WeaponDTO(id + '-weapon');
             // Pass the bulletGroup directly; use getArray() where needed for iteration
-            const weapon = new WeaponComponent(bulletGroup, dto, `laser-level-${level}`);
+            const weapon = new WeaponComponent(bulletGroup, dto, `projectile-${level}`);
             entity.addComponent(weapon);
         }
 

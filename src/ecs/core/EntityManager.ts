@@ -100,7 +100,6 @@ export class EntityManager {
             for (const system of this.systems) {
                 const requiredComponents = system.getRequiredComponents();
                 const hasAllComponents = requiredComponents.every(componentClass => entity.hasComponent(componentClass));
-
                 // Only notify systems that were tracking this entity
                 if (hasAllComponents && system.onEntityRemoved) {
                     system.onEntityRemoved(entity);

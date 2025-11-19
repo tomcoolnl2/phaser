@@ -1,7 +1,7 @@
 import { GameConfig } from '@shared/config';
 import { CollisionLayer } from '@shared/types';
 import { AsteroidDTO } from '@shared/dto/Asteroid.dto';
-import { AsteroidSchema } from '@shared/dto/Asteroid.schema';
+import { AsteroidSchema } from '@shared/schema/Asteroid.schema';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
