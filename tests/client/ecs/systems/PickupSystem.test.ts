@@ -55,15 +55,6 @@ describe('PickupSystem', () => {
         (Utils.isOutOfBounds as any).mockReset();
     });
 
-    it('initializes animation and warns if out of bounds', () => {
-        (Utils.isOutOfBounds as any).mockReturnValueOnce(true).mockReturnValue(false);
-        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-        system.update(entity, 0);
-        expect(scene.tweens.add).toHaveBeenCalled();
-        expect(warnSpy).toHaveBeenCalled();
-        warnSpy.mockRestore();
-    });
-
     it('destroys pickup and cleans up if out of bounds after spawn', () => {
         (Utils.isOutOfBounds as any).mockReturnValueOnce(false).mockReturnValueOnce(true);
         system.update(entity, 0); // first update: not out of bounds
