@@ -3,7 +3,7 @@ import { Events } from '@shared/events';
 import { PickupType, PickupDTO, AmmoPickupDTO, HealthPickupDTO, CoinPickupDTO } from '@shared/dto/Pickup.dto';
 import { ProjectileType } from '@shared/types';
 import { SocketResponseDTOSuccess } from '@shared/dto/SocketResponse.dto';
-import { GameServerContext } from 'server/GameServerContext';
+import { GameServerContext } from '../../GameServerContext';
 
 /**
  * Listener for player pickup events.

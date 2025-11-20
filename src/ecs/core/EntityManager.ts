@@ -61,8 +61,8 @@ export class EntityManager {
      * player.addComponent(new HealthComponent(100));
      * ```
      */
-    public createEntity(name?: string): Entity {
-        const entity = new Entity(name);
+    public createEntity(id?: string): Entity {
+        const entity = new Entity(id);
         this.addEntity(entity);
         return entity;
     }

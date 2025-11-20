@@ -13,6 +13,7 @@ class MockSocket {
 }
 
 class MockEntityManager {
+    addEntity = vi.fn();
     removeEntity = vi.fn();
     createEntity = vi.fn(() => new MockEntity('created'));
 }
