@@ -1,3 +1,4 @@
+
 /**
  * Defines the event names used for communication between the server and clients.
  */
@@ -10,15 +11,16 @@ export const Events = {
         drop: 'game:drop',
     },
     Player: {
+        authenticate: 'player:authenticate',
         joined: 'player:joined',
         protagonist: 'player:protagonist',
         competitors: 'player:competitors',
-        quit: 'player:quit',
+        coordinates: 'player:coordinates',
+        shoot: 'player:shoot',
         hit: 'player:hit',
         destroy: 'player:destroy',
         pickup: 'player:pickup',
-        coordinates: 'player:coordinates',
-        authenticate: 'player:authenticate',
+        quit: 'player:quit',
     },
     Asteroid: {
         create: 'asteroid:create',
@@ -26,6 +28,11 @@ export const Events = {
         destroy: 'asteroid:destroy',
         hit: 'asteroid:hit',
     },
+    Projectile: {
+        create: 'projectile:create',
+        coordinates: 'projectile:coordinates',
+        destroy: 'projectile:destroy',
+    }
 } as const;
 
 export type EventTree = typeof Events;

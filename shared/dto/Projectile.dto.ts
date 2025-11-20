@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { ProjectileType } from '../types';
 
 
@@ -26,8 +27,6 @@ export class ProjectileDTO {
      * @param damage - The damage this projectile deals on impact.
      * @param x - The current X position of the projectile.
      * @param y - The current Y position of the projectile.
-     * @param directionX - The X component of the projectile's direction vector.
-     * @param directionY - The Y component of the projectile's direction vector.
      * @param speed - The speed of the projectile.
      */
     constructor(
@@ -37,10 +36,8 @@ export class ProjectileDTO {
         public readonly damage: number,
         public x: number,
         public y: number,
-        public directionX: number,
-        public directionY: number,
         public speed: number,
     ) {
-        this.id = crypto.randomUUID();
+        this.id = uuidv4();
     }
 }

@@ -16,6 +16,10 @@ import { GameScene } from '@/scenes/GameScene';
  *   const pickup = factory.create(dto);
  */
 export class PickupEntityFactory {
+    /**
+     * Creates a new PickupEntityFactory.
+     * @param scene - The GameScene instance where the pickup will be created
+     */
     constructor(private scene: GameScene) {}
 
     /**
@@ -31,7 +35,7 @@ export class PickupEntityFactory {
             throw new Error('Invalid PickupDTO: ' + result.error.message);
         }
 
-        const entity = this.scene.entityManager.createEntity();
+        const entity = this.scene.entityManager.createEntity(dto.id);
 
         // Choose sprite key based on pickup type
         let spriteKey = 'pickup';

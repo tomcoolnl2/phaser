@@ -1,8 +1,7 @@
-import Phaser from 'phaser';
 import { GameConfig } from '@shared/config';
 import { CollisionLayer } from '@shared/types';
 import { PlayerDTO } from '@shared/dto/Player.dto';
-import { PlayerSchema } from '@shared/dto/Player.schema';
+import { PlayerSchema } from '@shared/schema/Player.schema';
 import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
@@ -92,14 +91,9 @@ export class PlayerEntityFactory {
 
         // Weapon component - only for local players
         if (isLocal) {
-            const bulletGroup = this.scene.physics.add.group({
-                classType: Phaser.Physics.Arcade.Sprite,
-                maxSize: 10,
-            }) as Phaser.Physics.Arcade.Group;
-
             const dto = new WeaponDTO(id + '-weapon');
             // Pass the bulletGroup directly; use getArray() where needed for iteration
-            const weapon = new WeaponComponent(bulletGroup, dto, `projectile-${level}`);
+            const weapon = new WeaponComponent(dto);
             entity.addComponent(weapon);
         }
 

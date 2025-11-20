@@ -52,6 +52,9 @@ export const GameConfig = {
     pickup: {
         collisionRadius: 40,
     },
+    projectile: {
+        collisionRaduis: 10,
+    },
     server: {
         asteroidSpeed: 2, // pixels per update
         asteroidSpawnInterval: 5000, // milliseconds

@@ -1,4 +1,4 @@
-import { AmmoPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
+import { PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { Events } from '@shared/events';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
 import { ScoreComponent } from '@/ecs/components/ScoreComponent';
@@ -93,10 +93,15 @@ export class PlayerSystem extends System {
      * @param scene - The current GameScene (for socket, entityManager, etc.)
      */
     public handleCoinPickup(playerEntity: Entity, pickupEntity: Entity, scene: GameScene): void {
+        
         const playerComponent = playerEntity.getComponent(PlayerComponent);
-        if (!playerComponent) return;
+        if (!playerComponent) {
+            return;
+        }
         const pickupTransform = pickupEntity.getComponent(TransformComponent);
-        if (!pickupTransform) return;
+        if (!pickupTransform) {
+            return;
+        }
 
         const scoreComponent = playerEntity.getComponent(ScoreComponent);
         if (scoreComponent) {
@@ -109,7 +114,7 @@ export class PlayerSystem extends System {
         // Emit pickup event
         const coinPickupDTO = {
             type: PickupType.COIN,
-            id: playerComponent.id,
+            id: pickupEntity.id, // Use the ECS pickup entity id
             x: pickupTransform.sprite.x,
             y: pickupTransform.sprite.y,
             points: 50,
@@ -118,11 +123,8 @@ export class PlayerSystem extends System {
         const request = { ok: true, dto: coinPickupDTO as PickupDTO };
         try {
             scene.emitPlayerPickup(request);
-            scene.destroyPickupEntity(coinPickupDTO.id);
         } catch (error) {
-            if (scene.handleSocketError) {
-                scene.handleSocketError(Events.Player.pickup, error);
-            }
+            scene.handleSocketError(Events.Player.pickup, error);
         }
     }
 
@@ -154,7 +156,7 @@ export class PlayerSystem extends System {
         // Emit pickup event
         const ammoPickupDTO = {
             type: PickupType.AMMO,
-            id: playerComponent.id,
+            id: pickupEntity.id, // Use the ECS pickup entity id
             amount: pickupComponent.value,
             x: pickupTransform.sprite.x,
             y: pickupTransform.sprite.y,
@@ -162,9 +164,11 @@ export class PlayerSystem extends System {
         const request = { ok: true, dto: ammoPickupDTO as PickupDTO };
         try {
             scene.emitPlayerPickup(request);
-            scene.destroyPickupEntity(ammoPickupDTO.id);
+                // Removal is now server-authoritative; do not remove locally
         } catch (error) {
-            if (scene.handleSocketError) scene.handleSocketError(Events.Player.pickup, error);
+            if (scene.handleSocketError) {
+                scene.handleSocketError(Events.Player.pickup, error);
+            }
         }
     }
 
@@ -191,7 +195,7 @@ export class PlayerSystem extends System {
         // Emit pickup event
         const healthPickupDTO = {
             type: PickupType.HEALTH,
-            id: playerComponent.id,
+            id: pickupEntity.id, // Use the ECS pickup entity id
             amount: pickupComponent.value,
             x: pickupTransform.sprite.x,
             y: pickupTransform.sprite.y,
@@ -199,7 +203,7 @@ export class PlayerSystem extends System {
         const request = { ok: true, dto: healthPickupDTO as PickupDTO };
         try {
             scene.emitPlayerPickup(request);
-            scene.destroyPickupEntity(healthPickupDTO.id);
+                // Removal is now server-authoritative; do not remove locally
         } catch (error) {
             if (scene.handleSocketError) scene.handleSocketError(Events.Player.pickup, error);
         }

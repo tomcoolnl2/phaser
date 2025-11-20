@@ -58,6 +58,7 @@ export abstract class BaseListener<T> {
     }
 
     private bindEventListener() {
+        this.log = false;
         this.socket.on(this.event, (responsePayload: SocketResponseDTO<T>) => {
             if (this.log) {
                 this.logMessage('Received event', responsePayload);

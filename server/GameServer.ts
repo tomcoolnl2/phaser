@@ -22,6 +22,8 @@ import { GameSocket } from './model';
 import { logger } from './logger';
 import { HealthManager } from './HealthManager';
 import { GameServerContext } from './GameServerContext';
+import { ProjectileDTO } from '@shared/dto/Projectile.dto';
+import { WeaponDTO } from '@shared/dto/Weapon.dto';
 
 /**
  * GameServer is the authoritative multiplayer game server for Phaser ECS.
@@ -180,12 +182,26 @@ export class GameServer {
     }
 
     /**
+     * Broadcasts when a player dies  event to all clients.
+     * @param payload - The SocketResponseDTO containing the destroyed player data
+     */
+    public broadcastPlayerPickup(payload: SocketResponseDTO<PickupDTO>): void {
+        this.io.emit(Events.Player.pickup, payload);
+    }
+
+    /**
      * Returns all currently connected player entities.
      * @returns Array of PlayerDTO player objects
      */
     public getAllPlayers(): PlayerDTO[] {
         const sockets = Array.from(this.io.sockets.sockets.values()) as GameSocket[];
         return sockets.filter(s => s.player).map(s => s.player!);
+    }
+
+    public createProjectile({ id, x, y }: PlayerDTO, { ammoType, damage, speed }: WeaponDTO): ProjectileDTO {
+        const collisionRadius = GameConfig.projectile.collisionRaduis; // TODO: adjust per ammoType if needed
+        const projectile = new ProjectileDTO(id, ammoType, collisionRadius, damage, x, y, speed);
+        return projectile;
     }
 
     // --- Asteroid Lifecycle ---
@@ -419,13 +435,8 @@ export class GameServer {
                 const pickupTypes = [PickupType.AMMO, PickupType.HEALTH, PickupType.COIN];
                 const type = pickupTypes[Math.floor(Math.random() * pickupTypes.length)];
                 const { x, y } = this.generateRandomCoordinates();
-                const id = uuidv4();
-                let dto = {
-                    type,
-                    id,
-                    x,
-                    y,
-                } as Partial<PickupDTO>;
+                const id =  uuidv4();
+                let dto = { type, id, x, y } as Partial<PickupDTO>;
                 switch (type) {
                     case PickupType.AMMO:
                         dto = {
