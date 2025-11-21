@@ -31,8 +31,8 @@ export class Entity {
      * Creates a new Entity.
      * @param name - Optional name for the entity. If not provided, generates a unique ID.
      */
-    constructor(name?: string) {
-        this.id = name || `entity_${Entity.nextId++}`;
+    constructor(id?: string) {
+        this.id = id || `entity_${Entity.nextId++}`;
     }
 
     /**

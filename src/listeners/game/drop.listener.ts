@@ -51,22 +51,20 @@ export class GameDropListener extends BaseListener<PickupDTO> {
      * @param response - The validated SocketResponseDTOSuccess containing the PickupDTO for the dropped pickup.
      * @protected
      */
-    protected override handle(response: SocketResponseDTOSuccess<PickupDTO>) {
-        const dto = response.dto;
+    protected override handle({ dto }: SocketResponseDTOSuccess<PickupDTO>) {
         const pickupEntities = this.scene.getPickupEntities();
-        // If a pickup with this ID already exists, remove it first (shouldn't happen, but safe)
         if (pickupEntities.has(dto.id)) {
             const existing = pickupEntities.get(dto.id);
             if (existing) {
+                this.scene.entityManager.removeEntity(existing.id);
                 const transform = existing.getComponent(TransformComponent);
                 if (transform) {
                     transform.sprite.destroy();
                 }
-                this.scene.entityManager.removeEntity(existing.id);
             }
         }
-        // Create and store the new pickup entity
         const pickupEntity = new PickupEntityFactory(this.scene).create(dto);
         pickupEntities.set(dto.id, pickupEntity);
+        this.scene.entityManager.addEntity(pickupEntity);
     }
 }

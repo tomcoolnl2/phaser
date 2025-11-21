@@ -2,7 +2,7 @@ import { ZodType } from 'zod';
 import { EventBus } from '@/listeners/EventBus';
 import { Socket } from 'socket.io-client';
 import { SocketResponseDTO, SocketResponseDTOFailure, SocketResponseDTOSuccess } from '@shared/dto/SocketResponse.dto';
-import { SocketResponseSchema } from '@shared/dto/Socket.schema';
+import { SocketResponseSchema } from '@shared/schema/Socket.schema';
 import { Events } from '@shared/events';
 
 interface ListenerConstructor {
@@ -58,6 +58,7 @@ export abstract class BaseListener<T> {
     }
 
     private bindEventListener() {
+        this.log = false;
         this.socket.on(this.event, (responsePayload: SocketResponseDTO<T>) => {
             if (this.log) {
                 this.logMessage('Received event', responsePayload);

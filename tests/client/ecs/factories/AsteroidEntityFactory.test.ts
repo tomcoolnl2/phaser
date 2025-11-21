@@ -26,7 +26,8 @@ describe('AsteroidEntityFactory', () => {
 
     beforeEach(() => {
         entityManager = new EntityManager(mockScene);
-        factory = new AsteroidEntityFactory(mockScene, entityManager);
+        mockScene.entityManager = entityManager;
+        factory = new AsteroidEntityFactory(mockScene);
     });
 
     it('creates an asteroid entity with valid DTO', () => {

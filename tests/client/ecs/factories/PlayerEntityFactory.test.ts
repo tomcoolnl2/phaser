@@ -55,7 +55,6 @@ describe('PlayerEntityFactory', () => {
         expect(mockPhysics.add.sprite).toHaveBeenCalledWith(1, 2, 'sprite');
         expect(entity.getComponent(PlayerComponent)).toBeDefined();
         expect(entity.getComponent(WeaponComponent)).toBeDefined();
-        expect(mockPhysics.add.group).toHaveBeenCalled();
     });
 
     it('creates a player entity for a remote player (no WeaponComponent)', () => {

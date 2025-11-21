@@ -1,4 +1,3 @@
-import * as Utils from '@shared/utils';
 import { Entity } from '@/ecs/core/Entity';
 import { System } from '@/ecs/core/System';
 import { ComponentClass, Component } from '@/ecs/core/Component';
@@ -44,70 +43,20 @@ export class WeaponSystem extends System {
      * @param _deltaTime - The frame delta time (unused).
      */
     public update(entity: Entity, _deltaTime: number): void {
+
         const transform = entity.getComponent(TransformComponent);
         const weapon = entity.getComponent(WeaponComponent);
-
-        // Clean up bullets that have left the play area
-        if (weapon?.bullets) {
-            this.cleanupBullets(weapon);
-        }
 
         if (!transform?.sprite || !weapon?.triggerPulled) {
             return;
         }
 
-        if (!weapon.canFire()) {
-            return;
+        if (weapon.canFire()) {
+            weapon.lastFired = Date.now();
+            weapon.dto.ammo = Math.max(weapon.dto.ammo - 1, 0);
+            console.log(`Firing weapon. Ammo left: ${weapon.dto.ammo}`);
+            // Emit shooting event to server
+            this.scene.emitPlayerShoot(weapon.dto);
         }
-
-        this.fireWeapon(transform, weapon);
-    }
-
-    /**
-     * Deactivates bullets that have left the play area to prevent pool exhaustion.
-     * @param weapon The WeaponComponent containing the bullet group.
-     */
-    private cleanupBullets(weapon: WeaponComponent): void {
-        const bullets = weapon.bullets.children.getArray() as Phaser.GameObjects.Sprite[];
-        for (const bullet of bullets) {
-            if (!bullet.active) {
-                continue;
-            }
-            const { x, y } = bullet;
-            if (Utils.isOutOfBounds({ x, y, threshold: 64 })) {
-                bullet.setActive(false);
-                bullet.setVisible(false);
-            }
-        }
-    }
-
-    /**
-     * Fires a weapon for the given entity, spawning a bullet and applying damage scaling.
-     *
-     * @param transform - The entity's TransformComponent (position, rotation, sprite).
-     * @param weapon - The WeaponComponent (firing logic, bullet pool, etc.).
-     * @param levelProvider - The provider component implementing WeaponLevelProvider<number> (optional).
-     *
-     * Damage is scaled by the provider's level property if present, otherwise defaults to 1.
-     */
-    private fireWeapon(transform: TransformComponent, weapon: WeaponComponent): void {
-        weapon.fire();
-        const sprite = transform.sprite;
-
-        // Get bullet from pool using dynamic sprite key
-        const bullet = weapon.bullets.get(sprite.x, sprite.y, weapon.bulletSpriteKey) as Phaser.Physics.Arcade.Sprite;
-
-        // Explicitly set the texture to ensure it's correct (Phaser pool reuse can cause issues)
-        bullet.setTexture(weapon.bulletSpriteKey);
-        bullet.setActive(true);
-        bullet.setVisible(true);
-
-        // Rotate bullet to match ship direction (add 90° offset since bullet sprite points up)
-        bullet.setRotation(sprite.rotation + Math.PI / 2);
-
-        // Set bullet velocity based on ship rotation
-        this.scene.physics.velocityFromRotation(sprite.rotation, weapon.getAmmoSpeed(), bullet.body!.velocity);
-
-        // No need to assign a custom update function; cleanup is handled centrally.
     }
 }

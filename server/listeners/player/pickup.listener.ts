@@ -1,13 +1,16 @@
 import { createListener } from '../createListener';
 import { Events } from '@shared/events';
-import { PickupType, PickupDTO, AmmoPickupDTO, HealthPickupDTO } from '@shared/dto/Pickup.dto';
+import { PickupType, PickupDTO, AmmoPickupDTO, HealthPickupDTO, CoinPickupDTO } from '@shared/dto/Pickup.dto';
+import { ProjectileType } from '@shared/types';
+import { SocketResponseDTOSuccess } from '@shared/dto/SocketResponse.dto';
+import { GameServerContext } from '../../GameServerContext';
 
 /**
  * Listener for player pickup events.
  * Validates incoming requests and responses using Zod schemas, then broadcasts the pickup event to all other clients.
  * @see createListener
  */
-export const PickupListener = createListener<AmmoPickupDTO | HealthPickupDTO, PickupDTO>({
+export const PickupListener = createListener<AmmoPickupDTO | HealthPickupDTO | CoinPickupDTO, PickupDTO>({
     event: Events.Player.pickup,
     log: true,
 
@@ -18,10 +21,13 @@ export const PickupListener = createListener<AmmoPickupDTO | HealthPickupDTO, Pi
      * @param request - The validated request DTO containing the player data.
      * @returns The response DTO, also broadcast to other clients.
      */
-    async handle(socket, request) {
+    async handle(_socket, request) {
+
         const pickup = request.dto;
+        
+        let response: SocketResponseDTOSuccess<PickupDTO>;
         if (pickup.type === PickupType.AMMO) {
-            const response = {
+            response = {
                 ok: true,
                 dto: {
                     id: pickup.id,
@@ -29,15 +35,11 @@ export const PickupListener = createListener<AmmoPickupDTO | HealthPickupDTO, Pi
                     amount: pickup.amount,
                     x: pickup.x,
                     y: pickup.y,
-                    ammoType: pickup.ammoType ?? 'bullet',
+                    ammoType: pickup.ammoType ?? ProjectileType.BULLET,
                 } as AmmoPickupDTO,
             };
-            socket.broadcast.emit(this.event, response);
-            return response;
-        }
-
-        if (pickup.type === PickupType.HEALTH) {
-            const response = {
+        } else if (pickup.type === PickupType.HEALTH) {
+            response = {
                 ok: true,
                 dto: {
                     id: pickup.id,
@@ -47,10 +49,23 @@ export const PickupListener = createListener<AmmoPickupDTO | HealthPickupDTO, Pi
                     y: pickup.y,
                 } as HealthPickupDTO,
             };
-            socket.broadcast.emit(this.event, response);
-            return response;
+        } else if (pickup.type === PickupType.COIN) {
+            response = {
+                ok: true,
+                dto: {
+                    id: pickup.id,
+                    type: PickupType.COIN,
+                    x: pickup.x,
+                    y: pickup.y,
+                    points: (pickup as CoinPickupDTO).points ?? 50,
+                } as CoinPickupDTO,
+            };
+        } else {
+            throw new Error('Invalid pickup type');
         }
-
-        throw new Error('Invalid pickup type');
+        
+        const server = GameServerContext.get();
+        server.broadcastPlayerPickup(response);
+        return response;
     },
 });

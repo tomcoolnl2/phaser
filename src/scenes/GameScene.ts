@@ -3,12 +3,14 @@ import { Socket } from 'socket.io-client';
 
 import { Events } from '@shared/events';
 import { GameConfig } from '@shared/config';
+import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
 import { PlayerDTO } from '@shared/dto/Player.dto';
 import { PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
 import { AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
-import { SocketRequestSchema } from '@shared/dto/Socket.schema';
+import { SocketRequestSchema } from '@shared/schema/Socket.schema';
 import { SignOnDTO } from '@shared/dto/SignOn.dto';
 import { CoordinatesDTO } from '@shared/dto/Coordinates.dto';
+import { WeaponDTO } from '@shared/dto/Weapon.dto';
 
 import { Entity } from '@/ecs/core/Entity';
 import { EntityManager } from '@/ecs/core/EntityManager';
@@ -22,6 +24,7 @@ import { RenderSystem } from '@/ecs/systems/RenderSystem';
 import { AsteroidSystem } from '@/ecs/systems/AsteroidSystem';
 import { PickupSystem } from '@/ecs/systems/PickupSystem';
 import { PlayerSystem } from '@/ecs/systems/PlayerSystem';
+import { ProjectileSystem } from '@/ecs/systems/ProjectileSystem';
 import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
 
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
@@ -31,7 +34,7 @@ import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 import { AsteroidComponent } from '@/ecs/components/AsteroidComponent';
 import { createFeatureListeners } from '@/listeners';
-import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
+
 
 /**
  * Main gameplay scene that manages all game entities and ECS systems.
@@ -62,18 +65,18 @@ export class GameScene extends Phaser.Scene {
     private socket!: Socket;
 
     /**
-     * Map of player entities by player ID.
-     * Used for quick lookup and management of all player ECS entities.
-     * @private
-     */
-    private playerEntities: Map<string, Entity> = new Map();
-
-    /**
      * The ID of the local player entity, or null if not set.
      * Used to distinguish the local player from remote players.
      * @private
      */
     private localPlayerId: string | null = null;
+
+    /**
+     * Map of player entities by player ID.
+     * Used for quick lookup and management of all player ECS entities.
+     * @private
+     */
+    private playerEntities: Map<string, Entity> = new Map();
 
     /**
      * Map of all asteroid entities by asteroid ID.
@@ -88,6 +91,13 @@ export class GameScene extends Phaser.Scene {
      * @private
      */
     private pickupEntities: Map<string, Entity> = new Map();
+
+    /**
+     * Map of all projectile entities by projectile ID.
+     * Used for projectile management and ECS updates.
+     * @private
+     */
+    private projectileEntities: Map<string, Entity> = new Map();
 
     // ECS System Components
 
@@ -145,6 +155,12 @@ export class GameScene extends Phaser.Scene {
      * @private
      */
     private pickupSystem!: PickupSystem;
+
+    /**
+     * System handling projectile animations and logic.
+     * @private
+     */
+    private projectileSystem!: ProjectileSystem;
 
     /**
      * System handling player score and HUD updates.
@@ -277,84 +293,103 @@ export class GameScene extends Phaser.Scene {
                 // Optionally show user feedback
             }
 
-            // Check pickup collisions (support multiple pickups)
-            this.pickupEntities.forEach((pickupEntity, pickupId) => {
-                const pickupTransform = pickupEntity.getComponent(TransformComponent);
-                if (pickupTransform && pickupTransform.sprite.active) {
-                    const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, pickupTransform.sprite.x, pickupTransform.sprite.y);
-                    if (distance < GameConfig.pickup.collisionRadius) {
-                        // Player collected the pickup
-                        const pickupComp = pickupEntity.getComponent(PickupComponent);
-                        const type = pickupComp?.type;
-                        if (type === PickupType.COIN) {
-                            this.playerSystem.handleCoinPickup(localEntity, pickupEntity, this);
-                        } else if (type === PickupType.AMMO) {
-                            this.playerSystem.handleAmmoPickup(localEntity, pickupEntity, this);
-                        } else if (type === PickupType.HEALTH) {
-                            this.playerSystem.handleHealthPickup(localEntity, pickupEntity, this);
-                        }
-                        // Remove the pickup locally
-                        this.destroyPickupEntity(pickupId);
-                    }
-                }
-            });
+            this.detectCollisionWitAsteroids(transform, localEntity);
+            this.detectCollisionWithPickups(transform, localEntity);
+            this.detectCollisionWithProjectiles(weapon, localEntity);
+        }
+    }
 
-            // Check asteroid collisions with local player
+    private detectCollisionWitAsteroids(transform: TransformComponent, localEntity: Entity): void {
+        // Check asteroid collisions with local player
             this.asteroidEntities.forEach(asteroidEntity => {
                 const asteroidTransform = asteroidEntity.getComponent(TransformComponent);
                 if (!asteroidTransform || !asteroidTransform.sprite.active) {
                     return;
                 }
                 const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, asteroidTransform.sprite.x, asteroidTransform.sprite.y);
-                if (distance < GameConfig.asteroid.collisionRadius) {
+                if (distance < GameConfig.asteroid.collisionRadius) {// TODO implement ColliderComponent
                     // Player hit by asteroid - game over
                     const playerDTO = PlayerEntityFactory.toDTO(localEntity);
                     const hitRequest = { ok: true, dto: playerDTO };
                     try {
                         SocketRequestSchema.parse(hitRequest);
                         this.socket.emit(Events.Player.hit, hitRequest);
-                        this.handlePlayerDeath(playerDTO);
+                        this.handlePlayerDeath(playerDTO); // TODO only on Events.Player.destroy
                     } catch (error: Error | unknown) {
                         return this.handleSocketError(Events.Player.hit, error);
                     }
                 }
             });
+    }
 
-            // Check bullet collisions with asteroids
-            if (weapon && weapon.bullets) {
-                this.asteroidEntities.forEach(asteroidEntity => {
-                    const asteroidTransform = asteroidEntity.getComponent(TransformComponent);
-                    const asteroidComponent = asteroidEntity.getComponent(AsteroidComponent);
-                    if (!asteroidTransform || !asteroidTransform.sprite.active || !asteroidComponent) {
+    private detectCollisionWithPickups(transform: TransformComponent, localEntity: Entity): void {
+        // Check pickup collisions (support multiple pickups)
+        for (const entity of this.getPickupEntities().values()) {
+            const pickupTransform = entity.getComponent(TransformComponent);
+            if (pickupTransform && pickupTransform.sprite.active) {
+                // TODO: ColliderComponent => server side check
+                const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, pickupTransform.sprite.x, pickupTransform.sprite.y);
+                if (distance < GameConfig.pickup.collisionRadius) { // TODO: ColliderComponent => server side check
+                    // Player collected the pickup: emit to server only, let server event handle removal
+                    const pickupComp = entity.getComponent(PickupComponent);
+                    const type = pickupComp?.type;
+                    if (type === PickupType.COIN) {
+                        this.playerSystem.handleCoinPickup(localEntity, entity, this);
+                    } else if (type === PickupType.AMMO) {
+                        this.playerSystem.handleAmmoPickup(localEntity, entity, this);
+                    } else if (type === PickupType.HEALTH) {
+                        this.playerSystem.handleHealthPickup(localEntity, entity, this);
+                    }
+                }
+            }
+        };
+    }
+
+    private detectCollisionWithProjectiles(weapon: WeaponComponent, localEntity: Entity): void {
+        // Check projctiles collisions with asteroids
+        if (this.projectileEntities.size > 0) {
+            for (const asteroidEntity of this.asteroidEntities.values()) {
+                
+                const asteroidTransform = asteroidEntity.getComponent(TransformComponent);
+                const asteroidComponent = asteroidEntity.getComponent(AsteroidComponent);
+                
+                if (!asteroidTransform || !asteroidTransform.sprite.active || !asteroidComponent) {
+                    return;
+                }
+                
+                for (const projectileEntity of this.projectileEntities.values()) {
+
+                    const projectileTransform = projectileEntity.getComponent(TransformComponent);
+                    
+                    if (!projectileTransform?.sprite.active) {
+                        continue;
+                    }
+                    
+                    const distance = Phaser.Math.Distance.Between(
+                        projectileTransform.sprite.x, 
+                        projectileTransform.sprite.y, 
+                        asteroidTransform.sprite.x, 
+                        asteroidTransform.sprite.y
+                    );
+
+                    if (distance < GameConfig.asteroid.ammoCollisionRadius) {
+                        // Projectile hit asteroid
+                        projectileTransform.sprite.setActive(false);
+                        projectileTransform.sprite.setVisible(false);
+                        const damage = weapon.getDamage();
+                        // Add score to local player for asteroid hit
+                        const scoreComponent = localEntity.getComponent(ScoreComponent);
+                        if (scoreComponent) {
+                            scoreComponent.add(damage);
+                        }
+                        const request = { ok: true, dto: new AsteroidHitDTO(asteroidComponent.id, damage) };
+                        this.socket.emit(Events.Asteroid.hit, request);
+                        this.asteroidSystem.flashAsteroid(asteroidTransform.sprite);
+                        // Exit loop after hit
                         return;
                     }
-                    const bullets = weapon.bullets.children.getArray() as Phaser.GameObjects.Sprite[];
-                    for (const bullet of bullets) {
-                        if (!bullet.active) {
-                            continue;
-                        }
-                        const distance = Phaser.Math.Distance.Between(bullet.x, bullet.y, asteroidTransform.sprite.x, asteroidTransform.sprite.y);
-                        if (distance < GameConfig.asteroid.ammoCollisionRadius) {
-                            bullet.setActive(false);
-                            bullet.setVisible(false);
-                            const damage = weapon.getDamage();
-                            // Add score to local player for asteroid hit
-                            const scoreComponent = localEntity.getComponent(ScoreComponent);
-                            if (scoreComponent) {
-                                scoreComponent.add(damage);
-                            }
-                            const hitRequest = { ok: true, dto: new AsteroidHitDTO(asteroidComponent.id, damage) };
-                            try {
-                                SocketRequestSchema.parse(hitRequest);
-                                this.socket.emit(Events.Asteroid.hit, hitRequest);
-                                this.asteroidSystem.flashAsteroid(asteroidTransform.sprite);
-                            } catch (error: Error | unknown) {
-                                return this.handleSocketError(Events.Asteroid.hit, error);
-                            }
-                        }
-                    }
-                });
             }
+            };
         }
     }
 
@@ -366,6 +401,19 @@ export class GameScene extends Phaser.Scene {
      */
     public emitPlayerPickup(request: SocketResponseDTO<PickupDTO>): void {
         this.socket.emit(Events.Player.pickup, request);
+    }
+
+    /**
+     * Emits a player shoot event to the server.
+     * @param weaponDTO - The WeaponDTO describing the shoot event
+     * @public
+     */
+    public emitPlayerShoot(weaponDTO: WeaponDTO): void {
+        const entity = this.playerEntities.get(this.localPlayerId!);
+        const playerDTO = PlayerEntityFactory.toDTO(entity!);
+        const transform = entity!.getComponent(TransformComponent)!;
+        playerDTO.angle = transform.sprite.rotation;
+        this.socket.emit(Events.Player.shoot, { ok: true, dto: [playerDTO, weaponDTO.toJSON()] });
     }
 
     /**
@@ -455,14 +503,39 @@ export class GameScene extends Phaser.Scene {
      * @public
      */
     public destroyPickupEntity(id: string): void {
-        const pickupEntity = this.pickupEntities.get(id);
-        if (!pickupEntity) return;
-        const pickupTransform = pickupEntity.getComponent(TransformComponent);
-        if (pickupTransform) {
-            pickupTransform.sprite.destroy();
+        const entities = this.getPickupEntities();
+        const entity = entities.get(id);
+        if (!entity) {
+            console.warn(`[GameScene] Tried to destroy missing pickup entity with id: ${id}`);
+            return;
         }
-        this.entityManager.removeEntity(pickupEntity.id);
-        this.pickupEntities.delete(id);
+        const transform = entity.getComponent(TransformComponent);
+        if (transform) {
+            transform.sprite.destroy();
+        }
+        this.entityManager.removeEntity(entity.id);
+        entities.delete(id);
+    }
+
+        /**
+     * Removes and destroys a pickup entity by its ID.
+     *
+     * Destroys the pickup's sprite, removes the entity from the ECS, and deletes it from the pickupEntities map.
+     *
+     * @param id - The pickup entity ID
+     * @public
+     */
+    public destroyProjectileEntity(id: string): void {
+        const entity = this.projectileEntities.get(id);
+        if (!entity) {
+            return;
+        }
+        const transform = entity.getComponent(TransformComponent);
+        if (transform) {
+            transform.sprite.destroy();
+        }
+        this.entityManager.removeEntity(entity.id);
+        this.projectileEntities.delete(id);
     }
 
     /**
@@ -526,6 +599,24 @@ export class GameScene extends Phaser.Scene {
      */
     public getPickupEntities(): Map<string, Entity> {
         return this.pickupEntities;
+    }
+
+    /**
+     * Gets the ProjectileSystem instance.
+     * @returns The ProjectileSystem instance
+     * @public
+     */
+    public getProjectileSystem(): ProjectileSystem {
+        return this.projectileSystem;
+    }
+
+    /**
+     * Gets the map of projectile entities.
+     * @returns - Map of projectile entities by projectile ID
+     * @public
+     */
+    public getProjectileEntities(): Map<string, Entity> {
+        return this.projectileEntities;
     }
 
     /**

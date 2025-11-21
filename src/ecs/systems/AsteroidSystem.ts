@@ -73,6 +73,7 @@ export class AsteroidSystem extends System {
      * @param _deltaTime - Time elapsed since last frame (unused)
      */
     public update(entity: Entity, _deltaTime: number): void {
+        // Get required components
         const transform = entity.getComponent(TransformComponent)!;
         const { id } = entity.getComponent(AsteroidComponent)!;
         const health = entity.getComponent(HealthComponent)!;

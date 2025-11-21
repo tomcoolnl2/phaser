@@ -8,5 +8,5 @@ export class MockWeaponDTO {
     _ammoType = 0;
     getAmmo = vi.fn(() => 10);
     addAmmo = vi.fn();
-    switchAmmoType = vi.fn();
+    switchProjectileType = vi.fn();
 }

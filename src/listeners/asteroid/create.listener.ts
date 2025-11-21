@@ -53,7 +53,7 @@ export class AsteroidCreateListener extends BaseListener<AsteroidDTO> {
      */
     protected override handle(response: SocketResponseDTOSuccess<AsteroidDTO>) {
         const asteroidDTO = response.dto;
-        const factory = new AsteroidEntityFactory(this.scene, this.scene.entityManager);
+        const factory = new AsteroidEntityFactory(this.scene);
         const entity = factory.create(asteroidDTO);
         // Set HP and maxHp if HealthComponent exists
         const health = entity.getComponent(HealthComponent);

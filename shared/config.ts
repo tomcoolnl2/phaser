@@ -3,7 +3,7 @@
  * Centralized settings for the entire game
  */
 
-import { AmmoAmount, AmmoType } from './types';
+import { ProjectileRefillAmount, ProjectileType } from './types';
 
 /**
  * Helper function to read boolean environment variables
@@ -40,8 +40,8 @@ export const GameConfig = {
     },
     weapon: {
         baseFireRate: 400, // milliseconds between shots
-        startingAmmo: AmmoAmount.BULLET,
-        startingAmmoType: AmmoType.BULLET,
+        startingAmmo: ProjectileRefillAmount.BULLET,
+        startingProjectileType: ProjectileType.BULLET,
     },
     asteroid: {
         health: 10,
@@ -51,6 +51,9 @@ export const GameConfig = {
     },
     pickup: {
         collisionRadius: 40,
+    },
+    projectile: {
+        collisionRaduis: 10,
     },
     server: {
         asteroidSpeed: 2, // pixels per update

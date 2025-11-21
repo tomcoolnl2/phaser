@@ -4,6 +4,9 @@ import { PlayerSchema } from './Player.schema';
 import { AsteroidSchema, AsteroidHitSchema } from './Asteroid.schema';
 import { PickupSchema } from './Pickup.schema';
 import { CoordinatesSchema } from './Coordinates.schema';
+import { ProjectileSchema } from './Projectile.schema';
+import { WeaponSchema } from './Weapon.schema';
+
 
 export const DtoSchema = z.union([
     SignOnSchema,
@@ -12,12 +15,16 @@ export const DtoSchema = z.union([
     PickupSchema,
     CoordinatesSchema,
     AsteroidHitSchema,
+    ProjectileSchema,
+    WeaponSchema,
     z.array(SignOnSchema),
     z.array(PlayerSchema),
     z.array(AsteroidSchema),
     z.array(PickupSchema),
     z.array(CoordinatesSchema),
     z.array(AsteroidHitSchema),
+    z.array(ProjectileSchema),
+    z.array(WeaponSchema),
 ]);
 
 const SocketSchema = z.discriminatedUnion('ok', [

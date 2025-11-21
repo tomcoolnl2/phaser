@@ -24,7 +24,7 @@ export const PlayerHitListener = createListener<PlayerDTO, PlayerDTO>({
         // request already validated by BaseListener
         const player = request.dto;
         const response = { ok: true, dto: player };
-        // broadcast to everyone except the sender (same behavior as socket.broadcast.emit)
+        // broadcast to everyone except the sender
         socket.broadcast.emit(this.event, response);
 
         const server = GameServerContext.get();

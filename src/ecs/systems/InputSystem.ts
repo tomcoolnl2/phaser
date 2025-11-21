@@ -63,42 +63,45 @@ export class InputSystem extends System {
      * Only processes entities where PlayerComponent.isLocal = true.
      */
     public update(entity: Entity, _deltaTime: number): void {
-        const playerComp = entity.getComponent(PlayerComponent);
-        if (!playerComp || !playerComp.isLocal) {
+        //
+        const playerComponent = entity.getComponent(PlayerComponent);
+        if (!playerComponent || !playerComponent.isLocal) {
             return;
         }
 
-        const movementComp = entity.getComponent(MovementComponent);
-        const weaponComp = entity.getComponent(WeaponComponent);
+        const movementComponent = entity.getComponent(MovementComponent);
+        const weaponComponent = entity.getComponent(WeaponComponent);
 
-        if (!this.cursors) return;
+        if (!this.cursors) {
+            return;
+        }
 
         // Handle rotation input
-        if (movementComp) {
-            movementComp.rotationInput = 0;
+        if (movementComponent) {
+            movementComponent.rotationInput = 0;
             if (this.cursors.left?.isDown) {
-                movementComp.rotationInput = -1;
+                movementComponent.rotationInput = -1;
             }
             if (this.cursors.right?.isDown) {
-                movementComp.rotationInput = 1;
+                movementComponent.rotationInput = 1;
             }
 
             // Handle thrust/brake input
-            movementComp.thrustInput = 0;
-            movementComp.brakeInput = false;
+            movementComponent.thrustInput = 0;
+            movementComponent.brakeInput = false;
 
             if (this.cursors.up?.isDown) {
-                movementComp.thrustInput = 1;
+                movementComponent.thrustInput = 1;
             } else if (this.cursors.down?.isDown) {
-                movementComp.brakeInput = true;
+                movementComponent.brakeInput = true;
             }
         }
 
         // Handle weapon input
-        if (weaponComp && this.fireKey?.isDown) {
-            weaponComp.triggerPulled = true;
-        } else if (weaponComp) {
-            weaponComp.triggerPulled = false;
+        if (weaponComponent && this.fireKey?.isDown) {
+            weaponComponent.triggerPulled = true;
+        } else if (weaponComponent) {
+            weaponComponent.triggerPulled = false;
         }
     }
 }

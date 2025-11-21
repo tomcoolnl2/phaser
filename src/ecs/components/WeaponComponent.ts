@@ -1,4 +1,3 @@
-import Phaser from 'phaser';
 import { Component } from '@/ecs/core/Component';
 import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { PlayerLevel } from '@shared/model';
@@ -15,7 +14,7 @@ import { PlayerLevel } from '@shared/model';
  * const weapon = new WeaponComponent(
  *     bulletGroup,        // Phaser bullet pool
  *     dto,                // WeaponDTO instance
- *     'laser-level-1'     // bullet sprite key
+ *     'projectile-1'      // bullet sprite key
  * );
  *
  * if (weapon.canFire()) {
@@ -25,21 +24,22 @@ import { PlayerLevel } from '@shared/model';
  * ```
  */
 export class WeaponComponent extends Component {
+    
+    /**
+     * Timestamp of the last fired shot (in milliseconds since epoch)
+     */
     public lastFired: number = 0;
 
+    /**
+     * Indicates if the weapon trigger is currently pulled through keyboard input
+     */
     public triggerPulled: boolean = false;
 
     /**
      * Creates a new WeaponComponent.
-     * @param bullets - Phaser group for bullet pooling
      * @param dto - local state DTO for weapon configuration
-     * @param bulletSpriteKey - Texture key for bullet sprite
      */
-    constructor(
-        public bullets: Phaser.Physics.Arcade.Group,
-        public readonly dto: WeaponDTO,
-        public bulletSpriteKey: string
-    ) {
+    constructor(public readonly dto: WeaponDTO) {
         super();
     }
 
@@ -52,15 +52,15 @@ export class WeaponComponent extends Component {
         return this.dto.ammo > 0 && now - this.lastFired >= this.dto.fireRate;
     }
 
-    /**
-     * Records a shot being fired, updating timestamp and consuming ammo.
-     */
-    public fire(): void {
-        this.lastFired = Date.now();
-        if (this.dto.ammo > 0) {
-            this.dto.ammo--;
-        }
-    }
+    // /**
+    //  * Records a shot being fired, updating timestamp and consuming ammo.
+    //  */
+    // public fire(): void {
+    //     this.lastFired = Date.now();
+    //     if (this.dto.ammo > 0) {
+    //         this.dto.ammo--;
+    //     }
+    // }
 
     /**
      * Gets the current ammo count.

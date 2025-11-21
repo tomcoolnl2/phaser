@@ -53,7 +53,7 @@ export class BootScene extends Phaser.Scene {
         });
 
         for (let i = 1; i <= 5; i++) {
-            this.load.image(`laser-level-${i}`, `assets/bullet/bullet${i}.png`);
+            this.load.image(`projectile-${i}`, `assets/bullet/bullet${i}.png`);
         }
 
         this.load.image('pickup-ammo', 'assets/pickup/pickup-ammo.png');
