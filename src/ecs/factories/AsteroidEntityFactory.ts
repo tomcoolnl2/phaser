@@ -23,7 +23,6 @@ import { GameScene } from '@/scenes/GameScene';
  * - AsteroidComponent: Asteroid metadata (id)
  */
 export class AsteroidEntityFactory {
-
     /**
      * Constructs a new AsteroidEntityFactory.
      *

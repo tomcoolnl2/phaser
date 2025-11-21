@@ -4,26 +4,28 @@ import express, { Express, Request, Response } from 'express';
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
-import { PlayerDTO } from '@shared/dto/Player.dto';
-import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO, AsteroidSize } from '@shared/dto/Asteroid.dto';
-import { AmmoPickupDTO, CoinPickupDTO, HealthPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
-import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
-import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
-import { SocketResponseSchema } from '@shared/schema/Socket.schema';
 import { Coordinates } from '@shared/model';
 import { GameConfig } from '@shared/config';
+import { PlayerDTO } from '@shared/dto/Player.dto';
+import { AsteroidCauseOfDeath, AsteroidDTO, AsteroidHitDTO } from '@shared/dto/Asteroid.dto';
+import { AmmoPickupDTO, CoinPickupDTO, HealthPickupDTO, PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
+import { ProjectileDTO } from '@shared/dto/Projectile.dto';
+import { SocketRequestDTO } from '@shared/dto/SocketRequest.dto';
+import { SocketResponseDTO } from '@shared/dto/SocketResponse.dto';
+import { WeaponDTO } from '@shared/dto/Weapon.dto';
+import { SocketResponseSchema } from '@shared/schema/Socket.schema';
 import { Events } from '@shared/events';
 import { ProjectileRefillAmount } from '@shared/types';
 import * as Utils from '@shared/utils';
 
 import { playerFeatureListeners } from './listeners/player';
 import { asteroidFeatureListeners } from './listeners/asteroid';
+
 import { GameSocket } from './model';
-import { logger } from './logger';
-import { HealthManager } from './HealthManager';
+import { GameServerUtils } from './GameServerUtils';
 import { GameServerContext } from './GameServerContext';
-import { ProjectileDTO } from '@shared/dto/Projectile.dto';
-import { WeaponDTO } from '@shared/dto/Weapon.dto';
+import { HealthManager } from './HealthManager';
+import { logger } from './logger';
 
 /**
  * GameServer is the authoritative multiplayer game server for Phaser ECS.
@@ -49,46 +51,39 @@ export class GameServer {
 
     /** Express app instance for HTTP server. */
     private readonly app: Express;
+
     /** Node HTTP server instance. */
     private readonly httpServer: HttpServer;
+
     /** Socket.IO server instance. */
     private readonly io: Server;
 
     /** Combined feature listeners for player and asteroid events. */
     private featureListeners = [...playerFeatureListeners, ...asteroidFeatureListeners];
 
-    // --- Game Lifecycle & Player Management ---
-
     /** Indicates if the game has started. */
     private gameHasStarted: boolean = false;
 
-    // --- Asteroid Lifecycle ---
-
-    /**
-     * Returns all currently active projectiles.
-     */
-    public getAllProjectiles(): ProjectileDTO[] {
-        return Array.from(this.projectileMap.values());
-    }
-
-    // --- Projectile Lifecycle ---
     /** Map of projectile IDs to their DTOs. */
     private projectileMap: Map<string, ProjectileDTO> = new Map();
+
     /** Set of destroyed projectile IDs to prevent duplicate events. */
     private destroyedProjectiles: Set<string> = new Set();
 
     /** True if an asteroid is currently active in the game. */
     private hasAsteroid: boolean = false;
+
     /** Map of asteroid IDs to their DTOs. */
     private asteroidMap: Map<string, AsteroidDTO> = new Map();
     /** Set of destroyed asteroid IDs to prevent duplicate events. */
+
     private destroyedAsteroids: Set<string> = new Set();
     /** Manages health state for all asteroids. */
+
     private healthManager = new HealthManager();
+
     /** Manages health state for all asteroids. */
     private playerScoreManager = new HealthManager();
-
-    // --- Constructor ---
 
     /**
      * Constructs a new GameServer instance, sets up Express, HTTP, and Socket.IO, and registers listeners.
@@ -96,9 +91,7 @@ export class GameServer {
     constructor() {
         this.app = express();
         this.httpServer = createServer(this.app);
-        this.io = new Server(this.httpServer, {
-            cors: { origin: '*', methods: ['GET', 'POST'] },
-        });
+        this.io = new Server(this.httpServer, { cors: { origin: '*', methods: ['GET', 'POST'] } });
         // Initialize GameServerContext with the current instance
         GameServerContext.initialize(this);
         this.setupExpress();
@@ -137,16 +130,11 @@ export class GameServer {
      * @param windowSize - The game window size
      */
     public createPlayer(socket: GameSocket, playerName: string, windowSize: Coordinates): void {
-        const id = uuidv4();
         const name = playerName || `Player ${Math.floor(Math.random() * 1000)}`;
         const x = Utils.randomInt(100, windowSize.x - 100);
         const y = Utils.randomInt(100, windowSize.y - 100);
-        const spriteKey = 'shooter-sprite-enemy';
-        const isLocal = false;
-        const level = GameConfig.player.startingLevel;
-        const angle = 0;
-        socket.player = new PlayerDTO(id, name, x, y, spriteKey, isLocal, level, angle);
-        this.healthManager.setHealth(id, socket.player.maxHealth, socket.player.maxHealth);
+        socket.player = new PlayerDTO({ name, x, y, spriteKey: 'shooter-sprite-enemy', isLocal: false });
+        this.healthManager.setHealth(socket.player.id, socket.player.maxHealth, socket.player.maxHealth);
     }
 
     /**
@@ -218,14 +206,11 @@ export class GameServer {
      * @param weapon - The weapon DTO (for type, speed, damage)
      * @param target - The target position { x, y }
      */
-    public createProjectile({ id: ownerId, x, y, level, angle }: PlayerDTO, { ammoType, damage, speed }: WeaponDTO): ProjectileDTO {
+    public createProjectile({ id: ownerId, x, y, level, angle }: PlayerDTO, { ammoType: projectileType, damage, speed }: WeaponDTO): ProjectileDTO {
         const collisionRadius = GameConfig.projectile.collisionRaduis; // TODO: adjust per ammoType if needed
-        const spritekey = `projectile-${level - 1}`;
-        // Calculate direction vector from angle
-        const dx = Math.cos(angle);
-        const dy = Math.sin(angle);
-        // Create the projectile DTO with speed, dx, dy as last arguments
-        const projectile = new ProjectileDTO(ownerId, spritekey, ammoType, collisionRadius, damage, x, y, dx, dy, speed);
+        const spriteKey = `projectile-${level}`;
+        const { dx, dy } = GameServerUtils.directionFromAngle(angle);
+        const projectile = new ProjectileDTO({ ownerId, spriteKey, projectileType, collisionRadius, damage, x, y, dx, dy, speed });
         this.projectileMap.set(projectile.id, projectile);
         this.updateProjectile(projectile);
         return projectile;
@@ -252,7 +237,7 @@ export class GameServer {
                 if (Utils.isOutOfBounds({ x: projectile.x, y: projectile.y, threshold: 64 }) && !this.destroyedProjectiles.has(projectile.id)) {
                     this.destroyedProjectiles.add(projectile.id);
                     this.projectileMap.delete(projectile.id);
-                     logger.debug({ projectileId: projectile.id }, 'projectile out of bounds');
+                    logger.debug({ projectileId: projectile.id }, 'projectile out of bounds');
                     clearInterval(update);
                     // Optionally emit a destroy event
                     this.io.emit(Events.Projectile.destroy, { ok: true, dto: projectile });
@@ -265,6 +250,13 @@ export class GameServer {
         }, intervalMs);
     }
 
+    /**
+     * Returns all currently active projectiles.
+     */
+    public getAllProjectiles(): ProjectileDTO[] {
+        return Array.from(this.projectileMap.values());
+    }
+
     // --- Asteroid Lifecycle ---
     /**
      * Spawns a new asteroid at a random edge and starts its movement.
@@ -275,74 +267,28 @@ export class GameServer {
         // TODO: clear interval when game is paused or ended
         // TODO: resume interval when game is resumed
         setInterval(() => {
-            if (!this.hasAsteroid) {
-                // TODO: allow more asteroids at the same time
-                const initialAsteroidHealth = GameConfig.asteroid.health;
-                const asteroidId = uuidv4();
-                socket.asteroid = new AsteroidDTO(asteroidId, 0, 0, initialAsteroidHealth, initialAsteroidHealth);
-                this.hasAsteroid = true;
-                this.healthManager.setHealth(asteroidId, initialAsteroidHealth, initialAsteroidHealth);
-                this.destroyedAsteroids.delete(asteroidId); // ensure not marked destroyed
+            // TODO: allow more asteroids at the same time
+            if (this.hasAsteroid) {
+                return;
+            }
 
-                logger.debug({ asteroidId }, 'Spawning asteroid');
+            const asteroidDTO = GameServerUtils.createAsteroidDTO();
 
-                // Randomize spawn edge and direction
-                const { width, height } = GameConfig.playArea;
-                const { asteroidSpeed } = GameConfig.server;
-                const threshold = 32;
+            this.hasAsteroid = true;
+            this.healthManager.setHealth(asteroidDTO.id, asteroidDTO.health, asteroidDTO.maxHealth);
+            this.destroyedAsteroids.delete(asteroidDTO.id); // ensure not marked destroyed
+            this.asteroidMap.set(asteroidDTO.id, asteroidDTO);
 
-                // Pick a random edge: 0=top, 1=bottom, 2=left, 3=right
-                const edge = Math.floor(Math.random() * 4);
-                let x = 0,
-                    y = 0,
-                    dx = 0,
-                    dy = 0;
+            logger.debug({ asteroidId: asteroidDTO.id }, 'Spawning asteroid');
 
-                switch (edge) {
-                    case 0: // top
-                        x = Math.random() * width;
-                        y = -threshold;
-                        dx = (Math.random() - 0.5) * asteroidSpeed;
-                        dy = asteroidSpeed;
-                        break;
-                    case 1: // bottom
-                        x = Math.random() * width;
-                        y = height + threshold;
-                        dx = (Math.random() - 0.5) * asteroidSpeed;
-                        dy = -asteroidSpeed;
-                        break;
-                    case 2: // left
-                        x = -threshold;
-                        y = Math.random() * height;
-                        dx = asteroidSpeed;
-                        dy = (Math.random() - 0.5) * asteroidSpeed;
-                        break;
-                    case 3: // right
-                    default:
-                        x = width + threshold;
-                        y = Math.random() * height;
-                        dx = -asteroidSpeed;
-                        dy = (Math.random() - 0.5) * asteroidSpeed;
-                        break;
-                }
-
-                // Normalize direction to ensure it crosses the play area
-                const norm = Math.sqrt(dx * dx + dy * dy);
-                dx = (dx / norm) * asteroidSpeed;
-                dy = (dy / norm) * asteroidSpeed;
-
-                const asteroidDTO = new AsteroidDTO(asteroidId, x, y, initialAsteroidHealth, initialAsteroidHealth, AsteroidSize.LARGE, dx, dy);
-                this.asteroidMap.set(asteroidId, asteroidDTO);
-
-                try {
-                    const response: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
-                    SocketResponseSchema.parse(response);
-                    this.io.emit(Events.Asteroid.create, response);
-                    this.updateAsteroid(socket, asteroidDTO);
-                } catch (e) {
-                    const message = e instanceof Error ? e.message : e.toString();
-                    logger.error({ error: message }, 'Failed to spawn pickup due to invalid coordinates');
-                }
+            try {
+                const response: SocketResponseDTO<AsteroidDTO> = { ok: true, dto: asteroidDTO };
+                SocketResponseSchema.parse(response);
+                this.io.emit(Events.Asteroid.create, response);
+                this.updateAsteroid(socket, asteroidDTO);
+            } catch (e) {
+                const message = e instanceof Error ? e.message : e.toString();
+                logger.error({ error: message }, 'Failed to spawn pickup due to invalid coordinates');
             }
         }, interval);
     }
@@ -496,7 +442,7 @@ export class GameServer {
                 const pickupTypes = [PickupType.AMMO, PickupType.HEALTH, PickupType.COIN];
                 const type = pickupTypes[Math.floor(Math.random() * pickupTypes.length)];
                 const { x, y } = this.generateRandomCoordinates();
-                const id =  uuidv4();
+                const id = uuidv4();
                 let dto = { type, id, x, y } as Partial<PickupDTO>;
                 switch (type) {
                     case PickupType.AMMO:

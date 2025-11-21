@@ -25,7 +25,6 @@ import { Component } from '../core/Component';
  * ```
  */
 export class MovementComponent extends Component {
-    
     /** Current velocity in pixels per second */
     public currentVelocity: number = 0;
 

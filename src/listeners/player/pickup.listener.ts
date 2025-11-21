@@ -48,7 +48,7 @@ export class PlayerPickupListener extends BaseListener<PickupDTO> {
      * @param response - The validated SocketResponseDTOSuccess containing the PickupDTO for the collected pickup.
      * @protected
      */
-    protected override handle({ dto: { id }}: SocketResponseDTOSuccess<PickupDTO>) {
+    protected override handle({ dto: { id } }: SocketResponseDTOSuccess<PickupDTO>) {
         this.scene.destroyPickupEntity(id);
     }
 }

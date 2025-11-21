@@ -44,7 +44,7 @@ export const GameConfig = {
         startingProjectileType: ProjectileType.BULLET,
     },
     asteroid: {
-        health: 10,
+        maxHealth: 10,
         maxVelocity: 100,
         collisionRadius: 70, // Distance for ship collision
         ammoCollisionRadius: 60, // Distance for ammo collision

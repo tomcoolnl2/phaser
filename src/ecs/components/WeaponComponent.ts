@@ -24,7 +24,6 @@ import { PlayerLevel } from '@shared/model';
  * ```
  */
 export class WeaponComponent extends Component {
-    
     /**
      * Timestamp of the last fired shot (in milliseconds since epoch)
      */

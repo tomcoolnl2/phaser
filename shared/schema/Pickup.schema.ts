@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { PickupType } from '@shared/dto/Pickup.dto';
 
-
 const CoordinatesSchema = {
     x: z.number(),
     y: z.number(),

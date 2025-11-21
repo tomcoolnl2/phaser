@@ -14,7 +14,6 @@ import { ProjectileType } from '@shared/types';
  * console.log(damageComponent.damage); // 100
  */
 export class ProjectileDamageComponent extends Component {
-
     /**
      * Map of damage values for each projectile type.
      * @private

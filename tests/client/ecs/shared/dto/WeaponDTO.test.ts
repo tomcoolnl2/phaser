@@ -6,7 +6,7 @@ describe('WeaponDTO', () => {
     let dto: WeaponDTO;
 
     beforeEach(() => {
-        dto = new WeaponDTO('id', 1, ProjectileType.BULLET, 100);
+        dto = new WeaponDTO({ id: 'id', ownerId: 'player1', level: 1, ammoType: ProjectileType.BULLET, fireRate: 100 });
     });
 
     it('constructs with correct defaults', () => {

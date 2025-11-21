@@ -6,14 +6,15 @@ import { ProjectileEntityFactory } from '@/ecs/factories/ProjectileEntityFactory
 import { GameScene } from '@/scenes/GameScene';
 import { BaseListener } from '../BaseListener';
 
-
 export class ProjectileCreateListener extends BaseListener<ProjectileDTO> {
-    
     protected static event: string = Events.Projectile.create;
 
     protected static log: boolean = false;
 
-    constructor(public readonly socket: Socket, private scene: GameScene) {
+    constructor(
+        public readonly socket: Socket,
+        private scene: GameScene
+    ) {
         super(socket);
     }
 

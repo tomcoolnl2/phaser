@@ -31,7 +31,6 @@ export function createListener<TReq, TRes>(config: {
     const responseSchema = config.responseSchema === undefined ? SocketResponseSchema : config.responseSchema;
     const log = config.log ?? false;
     return new (class extends BaseListener<TReq, TRes> {
-        
         constructor() {
             super(config.event, requestSchema, responseSchema, log);
         }

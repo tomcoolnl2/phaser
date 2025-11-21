@@ -6,7 +6,6 @@ import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { GameScene } from '@/scenes/GameScene';
 import { BaseListener } from '../BaseListener';
 
-
 export class ProjectileCoordinatesListener extends BaseListener<ProjectileDTO> {
     /**
      * The event name this listener handles (`asteroid:coordinates`).

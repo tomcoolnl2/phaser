@@ -5,16 +5,17 @@ import { SocketResponseDTOSuccess } from '@shared/dto/SocketResponse.dto';
 import { GameScene } from '@/scenes/GameScene';
 import { BaseListener } from '../BaseListener';
 
-
 export class ProjectileDestroyListener extends BaseListener<ProjectileDTO> {
-
     protected static event: string = Events.Projectile.destroy;
 
-    constructor(public readonly socket: Socket, private scene: GameScene) {
+    constructor(
+        public readonly socket: Socket,
+        private scene: GameScene
+    ) {
         super(socket);
     }
 
-    protected override handle({ dto: { id }}: SocketResponseDTOSuccess<ProjectileDTO>) {
+    protected override handle({ dto: { id } }: SocketResponseDTOSuccess<ProjectileDTO>) {
         const projectileSystem = this.scene.getProjectileSystem();
         const asteroidEntities = this.scene.getProjectileEntities();
         projectileSystem.destroyProjectileById(id);

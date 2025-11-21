@@ -49,7 +49,7 @@ describe('PlayerEntityFactory', () => {
     });
 
     it('creates a player entity for a local player (with WeaponComponent)', () => {
-        const dto = new PlayerDTO('id', 'name', 1, 2, 'sprite', true);
+        const dto = new PlayerDTO({ id: 'id', name: 'name', x: 1, y: 2, spriteKey: 'sprite', isLocal: true });
         const entity = factory.fromDTO(dto);
         expect(entity).toBeDefined();
         expect(mockPhysics.add.sprite).toHaveBeenCalledWith(1, 2, 'sprite');
@@ -58,7 +58,7 @@ describe('PlayerEntityFactory', () => {
     });
 
     it('creates a player entity for a remote player (no WeaponComponent)', () => {
-        const dto = new PlayerDTO('id', 'name', 1, 2, 'sprite', false);
+        const dto = new PlayerDTO({ id: 'id', name: 'name', x: 1, y: 2, spriteKey: 'sprite', isLocal: false });
         const entity = factory.fromDTO(dto);
         expect(entity).toBeDefined();
         expect(entity.getComponent(PlayerComponent)).toBeDefined();
@@ -67,7 +67,7 @@ describe('PlayerEntityFactory', () => {
 
     describe('toDTO', () => {
         it('converts a player entity to PlayerDTO', () => {
-            const dto = new PlayerDTO('id', 'name', 1, 2, 'sprite', true, 3, 1, 1);
+            const dto = new PlayerDTO({ id: 'id', name: 'name', x: 1, y: 2, spriteKey: 'sprite', isLocal: true, level: 1, maxHealth: 1, health: 1 });
             const entity = factory.fromDTO(dto);
             const result = PlayerEntityFactory.toDTO(entity);
             expect(result).toBeInstanceOf(PlayerDTO);
@@ -77,9 +77,10 @@ describe('PlayerEntityFactory', () => {
             expect(result.y).toBe(2);
             expect(result.spriteKey).toBe('sprite');
             expect(result.isLocal).toBe(true);
-            expect(result.level).toBe(3);
+            expect(result.level).toBe(1);
             expect(result.health).toBe(1);
             expect(result.maxHealth).toBe(1);
+            expect(result.angle).toBe(0);
         });
 
         it('throws if missing components', () => {

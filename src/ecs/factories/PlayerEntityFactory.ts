@@ -91,7 +91,7 @@ export class PlayerEntityFactory {
 
         // Weapon component - only for local players
         if (isLocal) {
-            const dto = new WeaponDTO(id + '-weapon');
+            const dto = new WeaponDTO({ ownerId: player.id, level });
             // Pass the bulletGroup directly; use getArray() where needed for iteration
             const weapon = new WeaponComponent(dto);
             entity.addComponent(weapon);
@@ -129,11 +129,10 @@ export class PlayerEntityFactory {
         if (!player || !health || !transform) {
             throw new Error('Entity missing PlayerComponent or TransformComponent');
         }
-        // spriteKey is not on PlayerComponent, so we must infer it from the sprite texture key
-        const spriteKey = transform.sprite.texture.key;
+        const spriteKey = transform.sprite.texture.key; // spriteKey is not on PlayerComponent, so we must infer it from the sprite texture key
         const { id, name, isLocal, level } = player;
         const { x, y, rotation } = transform;
         const { currentHealth, maxHealth } = health;
-        return new PlayerDTO(id, name, x, y, spriteKey, isLocal, level, currentHealth, maxHealth, rotation);
+        return new PlayerDTO({ id, name, x, y, spriteKey, isLocal, level, health: currentHealth, maxHealth, angle: rotation });
     }
 }
