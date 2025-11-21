@@ -9,9 +9,6 @@ export class PlayerDTO {
     //
     public readonly type: string = 'player';
 
-    // Backing field for level property
-    private _level: number;
-
     /**
      * @param id - Unique identifier for the player
      * @param name - Player's display name
@@ -22,6 +19,7 @@ export class PlayerDTO {
      * @param level - Initial level of the player (default: starting level from GameConfig)
      * @param health - Current health of the player (default: starting health from GameConfig)
      * @param maxHealth - Maximum health of the player (default: starting max health from GameConfig)
+     * @param angle - The current facing direction of the player in radians (Phaser uses radians for rotation)
      */
     constructor(
         public id: string,
@@ -30,28 +28,11 @@ export class PlayerDTO {
         public y: number,
         public spriteKey: string,
         public isLocal: boolean,
-        level = GameConfig.player.startingLevel,
+        public level = GameConfig.player.startingLevel,
         public health = GameConfig.player.startingMaxHealth,
-        public maxHealth = GameConfig.player.startingMaxHealth
-    ) {
-        this._level = level;
-    }
-
-    /**
-     * The player's current level.
-     * @returns {PlayerLevel}
-     */
-    public get level(): PlayerLevel {
-        return this._level as PlayerLevel;
-    }
-
-    /**
-     * Sets the player's level, clamped to the maximum allowed level.
-     * @param {PlayerLevel} val - The new level to set
-     */
-    public set level(val: PlayerLevel) {
-        this._level = Math.max(0, Math.min(val, GameConfig.player.playerMaxLevel)) as PlayerLevel;
-    }
+        public maxHealth = GameConfig.player.startingMaxHealth,
+        public angle: number = 0
+    ) {}
 
     /**
      * The player's current position as coordinates.

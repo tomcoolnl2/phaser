@@ -72,7 +72,9 @@ export class InputSystem extends System {
         const movementComponent = entity.getComponent(MovementComponent);
         const weaponComponent = entity.getComponent(WeaponComponent);
 
-        if (!this.cursors) return;
+        if (!this.cursors) {
+            return;
+        }
 
         // Handle rotation input
         if (movementComponent) {

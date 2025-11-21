@@ -9,33 +9,19 @@ import { BaseListener } from '../BaseListener';
 
 export class ProjectileCreateListener extends BaseListener<ProjectileDTO> {
     
-    protected static event: string = Events.Asteroid.create;
+    protected static event: string = Events.Projectile.create;
 
-    /**
-     * Constructs a new ProjectileCreateListener.
-     *
-     * @param socket - The Socket.IO client instance to listen on.
-     * @param scene - The current GameScene instance (used for ECS entity management).
-     */
+    protected static log: boolean = false;
+
     constructor(public readonly socket: Socket, private scene: GameScene) {
         super(socket);
     }
 
-    /**
-     * Handles a validated `asteroid:create` event response from the server.
-     *
-     * This method creates a new asteroid entity using the provided AsteroidDTO, sets its health values,
-     * and registers it in the ECS and asteroidEntities map.
-     *
-     * @param response - The validated SocketResponseDTOSuccess containing the AsteroidDTO for the new asteroid.
-     * @protected
-     */
-    protected override handle(response: SocketResponseDTOSuccess<ProjectileDTO>) {
-        const projectileDTO = response.dto;
+    protected override handle({ dto }: SocketResponseDTOSuccess<ProjectileDTO>) {
         const factory = new ProjectileEntityFactory(this.scene);
-        const entity = factory.create(projectileDTO);
+        const entity = factory.create(dto);
         const projectileEntities = this.scene.getProjectileEntities();
-        console.log('Projectile created:', projectileDTO);
-        projectileEntities.set(projectileDTO.id, entity);
+        projectileEntities.set(dto.id, entity);
+        this.scene.entityManager.addEntity(entity);
     }
 }

@@ -14,6 +14,9 @@ import { AsteroidCreateListener } from './asteroid/create.listener';
 import { AsteroidCoordinatesListener } from './asteroid/coordinates.listener';
 import { AsteroidHitListener } from './asteroid/hit.listener';
 import { AsteroidDestroyListener } from './asteroid/destroy.listener';
+import { ProjectileCreateListener } from './projectile/create.listener';
+import { ProjectileCoordinatesListener } from './projectile/coordinates.listener';
+import { ProjectileDestroyListener } from './projectile/destroy.listener';
 
 /**
  * List of all feature listener classes to be registered for Socket.IO events.
@@ -33,6 +36,9 @@ const listenerClasses = [
     AsteroidCoordinatesListener,
     AsteroidHitListener,
     AsteroidDestroyListener,
+    ProjectileCreateListener,
+    ProjectileCoordinatesListener,
+    ProjectileDestroyListener,
 ];
 
 /**

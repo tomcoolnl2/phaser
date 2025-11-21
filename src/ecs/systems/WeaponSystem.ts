@@ -52,6 +52,10 @@ export class WeaponSystem extends System {
         }
 
         if (weapon.canFire()) {
+            weapon.lastFired = Date.now();
+            weapon.dto.ammo = Math.max(weapon.dto.ammo - 1, 0);
+            console.log(`Firing weapon. Ammo left: ${weapon.dto.ammo}`);
+            // Emit shooting event to server
             this.scene.emitPlayerShoot(weapon.dto);
         }
     }

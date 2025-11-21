@@ -22,6 +22,7 @@ export class ProjectileDTO {
      * Creates a new ProjectileDTO instance.
      *
      * @param ownerId - The ID of the player/entity that fired or owns this projectile.
+     * @param spriteKey - Key for the player's sprite asset
      * @param projectileType - The type of projectile (bullet, rocket, laser, etc.).
      * @param collisionRadius - The collision radius for hit detection.
      * @param damage - The damage this projectile deals on impact.
@@ -31,11 +32,14 @@ export class ProjectileDTO {
      */
     constructor(
         public readonly ownerId: string,
+        public readonly spriteKey: string,
         public readonly projectileType: ProjectileType,
         public readonly collisionRadius: number,
         public readonly damage: number,
         public x: number,
         public y: number,
+        public dx: number,
+        public dy: number,
         public speed: number,
     ) {
         this.id = uuidv4();

@@ -64,6 +64,19 @@ export class GameServer {
 
     // --- Asteroid Lifecycle ---
 
+    /**
+     * Returns all currently active projectiles.
+     */
+    public getAllProjectiles(): ProjectileDTO[] {
+        return Array.from(this.projectileMap.values());
+    }
+
+    // --- Projectile Lifecycle ---
+    /** Map of projectile IDs to their DTOs. */
+    private projectileMap: Map<string, ProjectileDTO> = new Map();
+    /** Set of destroyed projectile IDs to prevent duplicate events. */
+    private destroyedProjectiles: Set<string> = new Set();
+
     /** True if an asteroid is currently active in the game. */
     private hasAsteroid: boolean = false;
     /** Map of asteroid IDs to their DTOs. */
@@ -131,7 +144,8 @@ export class GameServer {
         const spriteKey = 'shooter-sprite-enemy';
         const isLocal = false;
         const level = GameConfig.player.startingLevel;
-        socket.player = new PlayerDTO(id, name, x, y, spriteKey, isLocal, level);
+        const angle = 0;
+        socket.player = new PlayerDTO(id, name, x, y, spriteKey, isLocal, level, angle);
         this.healthManager.setHealth(id, socket.player.maxHealth, socket.player.maxHealth);
     }
 
@@ -181,10 +195,10 @@ export class GameServer {
         this.io.emit(Events.Player.destroy, payload);
     }
 
-    /**
-     * Broadcasts when a player dies  event to all clients.
-     * @param payload - The SocketResponseDTO containing the destroyed player data
-     */
+    public broadcastPlayerShoot(payload: SocketResponseDTO<ProjectileDTO>): void {
+        this.io.emit(Events.Projectile.create, payload);
+    }
+
     public broadcastPlayerPickup(payload: SocketResponseDTO<PickupDTO>): void {
         this.io.emit(Events.Player.pickup, payload);
     }
@@ -198,10 +212,57 @@ export class GameServer {
         return sockets.filter(s => s.player).map(s => s.player!);
     }
 
-    public createProjectile({ id, x, y }: PlayerDTO, { ammoType, damage, speed }: WeaponDTO): ProjectileDTO {
+    /**
+     * Creates a new projectile DTO, calculates direction, adds it to the projectile map, and starts updating its position.
+     * @param player - The player DTO (for position and ownerId)
+     * @param weapon - The weapon DTO (for type, speed, damage)
+     * @param target - The target position { x, y }
+     */
+    public createProjectile({ id: ownerId, x, y, level, angle }: PlayerDTO, { ammoType, damage, speed }: WeaponDTO): ProjectileDTO {
         const collisionRadius = GameConfig.projectile.collisionRaduis; // TODO: adjust per ammoType if needed
-        const projectile = new ProjectileDTO(id, ammoType, collisionRadius, damage, x, y, speed);
+        const spritekey = `projectile-${level - 1}`;
+        // Calculate direction vector from angle
+        const dx = Math.cos(angle);
+        const dy = Math.sin(angle);
+        // Create the projectile DTO with speed, dx, dy as last arguments
+        const projectile = new ProjectileDTO(ownerId, spritekey, ammoType, collisionRadius, damage, x, y, dx, dy, speed);
+        this.projectileMap.set(projectile.id, projectile);
+        this.updateProjectile(projectile);
         return projectile;
+    }
+
+    /**
+     * Updates projectile position at a fixed interval and broadcasts to clients.
+     * Removes projectile if it goes off screen.
+     * @param projectile - The projectile DTO to update
+     */
+    private updateProjectile(projectile: ProjectileDTO): void {
+        const intervalMs = 25;
+        const deltaTime = intervalMs / 1000; // seconds
+        const update = setInterval(() => {
+            try {
+                projectile.x += projectile.dx * projectile.speed * deltaTime;
+                projectile.y += projectile.dy * projectile.speed * deltaTime;
+                this.projectileMap.set(projectile.id, projectile);
+                const response = { ok: true, dto: projectile };
+                SocketResponseSchema.parse(response);
+                this.io.emit(Events.Projectile.coordinates, response);
+
+                // Remove projectile if off screen
+                if (Utils.isOutOfBounds({ x: projectile.x, y: projectile.y, threshold: 64 }) && !this.destroyedProjectiles.has(projectile.id)) {
+                    this.destroyedProjectiles.add(projectile.id);
+                    this.projectileMap.delete(projectile.id);
+                     logger.debug({ projectileId: projectile.id }, 'projectile out of bounds');
+                    clearInterval(update);
+                    // Optionally emit a destroy event
+                    this.io.emit(Events.Projectile.destroy, { ok: true, dto: projectile });
+                }
+            } catch (e) {
+                const message = e instanceof Error ? e.message : e.toString();
+                this.io.emit(Events.Projectile.destroy, { ok: false, message, dto: projectile });
+                clearInterval(update);
+            }
+        }, intervalMs);
     }
 
     // --- Asteroid Lifecycle ---

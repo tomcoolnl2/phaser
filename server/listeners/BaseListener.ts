@@ -29,9 +29,15 @@ export abstract class BaseListener<TReq, TRes> {
      * @param responseSchema - Zod schema to validate the response payload, or null to skip validation.
      * @param log - Whether to enable logging for this listener.
      */
+    /**
+     * @param event - The event name to listen for.
+     * @param requestSchema - Zod schema (or array of schemas for tuple DTOs) to validate the request payload, or null to skip validation.
+     * @param responseSchema - Zod schema to validate the response payload, or null to skip validation.
+     * @param log - Whether to enable logging for this listener.
+     */
     protected constructor(
         public readonly event: EventName,
-        private readonly requestSchema: ZodType | null,
+        private readonly requestSchema: ZodType | ZodType[] | null,
         private readonly responseSchema: ZodType | null,
         private readonly log: boolean
     ) {
@@ -53,7 +59,37 @@ export abstract class BaseListener<TReq, TRes> {
 
         // Validate input if schema is provided
         if (this.requestSchema) {
-            this.requestSchema.parse(request);
+            if (Array.isArray(request.dto)) {
+                logger.debug({ event: this.event, count: request.dto.length }, `Validating array request with ${request.dto.length} entries for event: ${this.event}`);
+                if (Array.isArray(this.requestSchema)) {
+                    // Tuple: validate each entry with its corresponding schema
+                    for (let i = 0; i < request.dto.length; i++) {
+                        const schema = this.requestSchema[i];
+                        if (schema) {
+                            schema.parse(request.dto[i]);
+                        } else {
+                            throw new Error(`No schema provided for tuple index ${i} in event: ${this.event}`);
+                        }
+                    }
+                } else {
+                    // Single schema: validate each entry with the same schema
+                    for (const entry of request.dto) {
+                        this.requestSchema.parse(entry);
+                    }
+                }
+            } else {
+                if (Array.isArray(this.requestSchema)) {
+                    // Defensive: if requestSchema is an array but request.dto is not, validate with the first schema
+                    const schema = this.requestSchema[0];
+                    if (schema) {
+                        schema.parse(request);
+                    } else {
+                        throw new Error(`No schema provided for single request in event: ${this.event}`);
+                    }
+                } else {
+                    this.requestSchema.parse(request);
+                }
+            }
         }
 
         // Execute actual handler

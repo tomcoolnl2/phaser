@@ -132,8 +132,8 @@ export class PlayerEntityFactory {
         // spriteKey is not on PlayerComponent, so we must infer it from the sprite texture key
         const spriteKey = transform.sprite.texture.key;
         const { id, name, isLocal, level } = player;
-        const { x, y } = transform;
+        const { x, y, rotation } = transform;
         const { currentHealth, maxHealth } = health;
-        return new PlayerDTO(id, name, x, y, spriteKey, isLocal, level, currentHealth, maxHealth);
+        return new PlayerDTO(id, name, x, y, spriteKey, isLocal, level, currentHealth, maxHealth, rotation);
     }
 }

@@ -51,8 +51,7 @@ export class GameDropListener extends BaseListener<PickupDTO> {
      * @param response - The validated SocketResponseDTOSuccess containing the PickupDTO for the dropped pickup.
      * @protected
      */
-    protected override handle(response: SocketResponseDTOSuccess<PickupDTO>) {
-        const dto = response.dto;
+    protected override handle({ dto }: SocketResponseDTOSuccess<PickupDTO>) {
         const pickupEntities = this.scene.getPickupEntities();
         if (pickupEntities.has(dto.id)) {
             const existing = pickupEntities.get(dto.id);

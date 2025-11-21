@@ -34,34 +34,69 @@ const AMMO_DAMAGE: Record<ProjectileType, number> = {
     [ProjectileType.MINE]: 6,
 };
 
+
 /**
  * WeaponDTO - Data Transfer Object for weapon state and configuration.
  *
- * Tracks ammo for each ammo type, weapon level, fire rate, and current selected ammo type.
- * Provides safe methods for switching ammo types and clamping ammo values.
+ * Represents a weapon's state, configuration, and ammo for a player.
+ * Used for network transfer and validation. Compatible with discriminated unions via the `type` property.
+ *
+ * @property {string} type - DTO type identifier, always 'weapon'.
+ * @property {string} id - Unique weapon identifier.
+ * @property {number} level - Weapon level (upgrade/progression).
+ * @property {ProjectileType} ammoType - Currently selected ammo type.
+ * @property {number} fireRate - Weapon fire rate (shots per second or ms between shots).
+ * @property {Record<ProjectileType, number>} _speed - Bullet speed for each ammo type (internal).
+ * @property {Record<ProjectileType, number>} _ammo - Current ammo count for each ammo type (internal).
+ * @property {Record<ProjectileType, number>} _maxAmmo - Maximum ammo allowed for each ammo type (internal).
+ * @property {Record<ProjectileType, number>} _damage - Damage for each ammo type (internal).
  */
 export class WeaponDTO {
-    /** Unique weapon identifier */
+    /**
+     * DTO type identifier for discriminated unions.
+     * Always 'weapon'.
+     */
+    public readonly type: string = 'weapon';
+
+    /**
+     * Unique weapon identifier.
+     */
     public readonly id: string;
 
-    /** Weapon level (upgrade/progression) */
+    /**
+     * Weapon level (upgrade/progression).
+     */
     public level: number;
 
-    /** Currently selected ammo type */
+    /**
+     * Currently selected ammo type.
+     * (Internal, use ammoType getter for public access)
+     */
     private _ammoType: ProjectileType;
 
-    /** Weapon fire rate (shots per second or ms between shots) */
+    /**
+     * Weapon fire rate (shots per second or ms between shots).
+     */
     public fireRate: number;
 
-    /** Bullet speed for each ammo type */
+    /**
+     * Bullet speed for each ammo type (internal).
+     */
     private _speed: Record<ProjectileType, number>;
 
-    /** Current ammo count for each ammo type */
+    /**
+     * Current ammo count for each ammo type (internal).
+     */
     private _ammo: Record<ProjectileType, number>;
 
-    /** Maximum ammo allowed for each ammo type */
+    /**
+     * Maximum ammo allowed for each ammo type (internal).
+     */
     private readonly _maxAmmo: Record<ProjectileType, number>;
 
+    /**
+     * Damage for each ammo type (internal).
+     */
     private _damage: Record<ProjectileType, number>;
 
     /**
@@ -70,7 +105,6 @@ export class WeaponDTO {
      * @param level - Weapon level (default: startingLevel)
      * @param ammoType - Initial selected ammo type (default: startingProjectileType)
      * @param fireRate - Weapon fire rate (default: baseFireRate)
-     * @param speed - Initial bullet speed for the selected ammo type
      * @param ammoOverride - Optional override for starting ammo of the selected type
      */
     constructor(
@@ -207,5 +241,19 @@ export class WeaponDTO {
      */
     private clampAmmo(type: ProjectileType, value: number): number {
         return Math.max(0, Math.min(this._maxAmmo[type], value));
+    }
+
+    public toJSON() {
+        return {
+            type: this.type,
+            id: this.id,
+            level: this.level,
+            fireRate: this.fireRate,
+            ammo: this.ammo,
+            ammoType: this.ammoType,
+            damage: this.damage,
+            maxAmmo: this.maxAmmo,
+            speed: this.speed,
+        };
     }
 }

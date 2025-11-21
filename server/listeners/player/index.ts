@@ -3,8 +3,9 @@ import { PlayerSignOutListener } from './signout.listener';
 import { PlayerCoordinatesListener } from './coordinates.listener';
 import { PlayerHitListener } from './hit.listener';
 import { PickupListener } from './pickup.listener';
+import { PlayerShootListener } from './shoot.listener';
 
 /**
  * Array of all player feature listeners.
  */
-export const playerFeatureListeners = [PlayerSignOnListener, PlayerSignOutListener, PlayerCoordinatesListener, PlayerHitListener, PickupListener];
+export const playerFeatureListeners = [PlayerSignOnListener, PlayerSignOutListener, PlayerCoordinatesListener, PlayerHitListener, PickupListener, PlayerShootListener];

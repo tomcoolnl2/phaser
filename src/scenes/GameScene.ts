@@ -24,6 +24,7 @@ import { RenderSystem } from '@/ecs/systems/RenderSystem';
 import { AsteroidSystem } from '@/ecs/systems/AsteroidSystem';
 import { PickupSystem } from '@/ecs/systems/PickupSystem';
 import { PlayerSystem } from '@/ecs/systems/PlayerSystem';
+import { ProjectileSystem } from '@/ecs/systems/ProjectileSystem';
 import { PlayerEntityFactory } from '@/ecs/factories/PlayerEntityFactory';
 
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
@@ -156,6 +157,12 @@ export class GameScene extends Phaser.Scene {
     private pickupSystem!: PickupSystem;
 
     /**
+     * System handling projectile animations and logic.
+     * @private
+     */
+    private projectileSystem!: ProjectileSystem;
+
+    /**
      * System handling player score and HUD updates.
      * @private
      */
@@ -286,7 +293,14 @@ export class GameScene extends Phaser.Scene {
                 // Optionally show user feedback
             }
 
-            // Check asteroid collisions with local player
+            this.detectCollisionWitAsteroids(transform, localEntity);
+            this.detectCollisionWithPickups(transform, localEntity);
+            this.detectCollisionWithProjectiles(weapon, localEntity);
+        }
+    }
+
+    private detectCollisionWitAsteroids(transform: TransformComponent, localEntity: Entity): void {
+        // Check asteroid collisions with local player
             this.asteroidEntities.forEach(asteroidEntity => {
                 const asteroidTransform = asteroidEntity.getComponent(TransformComponent);
                 if (!asteroidTransform || !asteroidTransform.sprite.active) {
@@ -306,14 +320,9 @@ export class GameScene extends Phaser.Scene {
                     }
                 }
             });
-
-            this.updatePickupEntities(transform, localEntity);
-
-            this.updateProjectileEntities(weapon, localEntity);
-        }
     }
 
-    private updatePickupEntities(transform: TransformComponent, localEntity: Entity): void {
+    private detectCollisionWithPickups(transform: TransformComponent, localEntity: Entity): void {
         // Check pickup collisions (support multiple pickups)
         for (const entity of this.getPickupEntities().values()) {
             const pickupTransform = entity.getComponent(TransformComponent);
@@ -324,9 +333,6 @@ export class GameScene extends Phaser.Scene {
                     // Player collected the pickup: emit to server only, let server event handle removal
                     const pickupComp = entity.getComponent(PickupComponent);
                     const type = pickupComp?.type;
-                    // Debug log before emitting pickup event
-                    // eslint-disable-next-line no-console
-                    console.log('[GameScene] Attempting to pick up', { pickupId: entity.id, type, playerId: localEntity.id });
                     if (type === PickupType.COIN) {
                         this.playerSystem.handleCoinPickup(localEntity, entity, this);
                     } else if (type === PickupType.AMMO) {
@@ -334,14 +340,13 @@ export class GameScene extends Phaser.Scene {
                     } else if (type === PickupType.HEALTH) {
                         this.playerSystem.handleHealthPickup(localEntity, entity, this);
                     }
-                    // Do NOT remove the pickup locally; wait for server event
                 }
             }
         };
     }
 
-    private updateProjectileEntities(weapon: WeaponComponent, localEntity: Entity): void {
-        // Check bullet collisions with asteroids
+    private detectCollisionWithProjectiles(weapon: WeaponComponent, localEntity: Entity): void {
+        // Check projctiles collisions with asteroids
         if (this.projectileEntities.size > 0) {
             for (const asteroidEntity of this.asteroidEntities.values()) {
                 
@@ -398,10 +403,17 @@ export class GameScene extends Phaser.Scene {
         this.socket.emit(Events.Player.pickup, request);
     }
 
+    /**
+     * Emits a player shoot event to the server.
+     * @param weaponDTO - The WeaponDTO describing the shoot event
+     * @public
+     */
     public emitPlayerShoot(weaponDTO: WeaponDTO): void {
         const entity = this.playerEntities.get(this.localPlayerId!);
         const playerDTO = PlayerEntityFactory.toDTO(entity!);
-        this.socket.emit(Events.Player.shoot, { ok: true, dto: [playerDTO, weaponDTO] });
+        const transform = entity!.getComponent(TransformComponent)!;
+        playerDTO.angle = transform.sprite.rotation;
+        this.socket.emit(Events.Player.shoot, { ok: true, dto: [playerDTO, weaponDTO.toJSON()] });
     }
 
     /**
@@ -587,6 +599,15 @@ export class GameScene extends Phaser.Scene {
      */
     public getPickupEntities(): Map<string, Entity> {
         return this.pickupEntities;
+    }
+
+    /**
+     * Gets the ProjectileSystem instance.
+     * @returns The ProjectileSystem instance
+     * @public
+     */
+    public getProjectileSystem(): ProjectileSystem {
+        return this.projectileSystem;
     }
 
     /**
