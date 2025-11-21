@@ -35,7 +35,7 @@ export const AsteroidHitListener = createListener<AsteroidHitDTO, AsteroidDTO>({
         }
 
         // Broadcast the hit to all clients
-        server.broadcastAsteroidHit({ ok: true, dto: new AsteroidHitDTO(asteroidId, damage) });
+        server.broadcastAsteroidHit({ ok: true, dto: new AsteroidHitDTO({ asteroidId, damage }) });
 
         // If asteroid is dead, destroy it and broadcast
         if (asteroid.health <= 0) {

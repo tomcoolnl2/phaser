@@ -1,6 +1,7 @@
+import { v4 as uuidv4 } from 'uuid';
 import { GameConfig } from '../../shared/config';
 import { ProjectileRefillAmount, ProjectileMaxAmount, ProjectileType, ProjectileSpeed } from '../types';
-
+import { PlayerDTO } from './Player.dto';
 
 const MAX_AMMO: Record<ProjectileType, ProjectileMaxAmount> = {
     [ProjectileType.BULLET]: ProjectileMaxAmount.BULLET,
@@ -34,22 +35,29 @@ const AMMO_DAMAGE: Record<ProjectileType, number> = {
     [ProjectileType.MINE]: 6,
 };
 
+/**
+ * Configuration object for creating a WeaponDTO.
+ */
+export interface WeaponDTOConfig {
+    /** Unique weapon identifier. */
+    id?: string;
+    /** Owner ID (player/entity that owns this weapon). */
+    ownerId: string;
+    /** Weapon level (upgrade/progression). */
+    level?: number;
+    /** Initial selected ammo type. */
+    ammoType?: ProjectileType;
+    /** Weapon fire rate. */
+    fireRate?: number;
+    /** Optional override for starting ammo of the selected type. */
+    ammoOverride?: number;
+}
 
 /**
  * WeaponDTO - Data Transfer Object for weapon state and configuration.
  *
  * Represents a weapon's state, configuration, and ammo for a player.
  * Used for network transfer and validation. Compatible with discriminated unions via the `type` property.
- *
- * @property {string} type - DTO type identifier, always 'weapon'.
- * @property {string} id - Unique weapon identifier.
- * @property {number} level - Weapon level (upgrade/progression).
- * @property {ProjectileType} ammoType - Currently selected ammo type.
- * @property {number} fireRate - Weapon fire rate (shots per second or ms between shots).
- * @property {Record<ProjectileType, number>} _speed - Bullet speed for each ammo type (internal).
- * @property {Record<ProjectileType, number>} _ammo - Current ammo count for each ammo type (internal).
- * @property {Record<ProjectileType, number>} _maxAmmo - Maximum ammo allowed for each ammo type (internal).
- * @property {Record<ProjectileType, number>} _damage - Damage for each ammo type (internal).
  */
 export class WeaponDTO {
     /**
@@ -58,10 +66,11 @@ export class WeaponDTO {
      */
     public readonly type: string = 'weapon';
 
-    /**
-     * Unique weapon identifier.
-     */
+    /** Unique weapon identifier. */
     public readonly id: string;
+
+    /** Owner ID (player/entity that owns this weapon). */
+    public readonly ownerId: PlayerDTO['id'];
 
     /**
      * Weapon level (upgrade/progression).
@@ -101,23 +110,14 @@ export class WeaponDTO {
 
     /**
      * Create a new WeaponDTO.
-     * @param id - Unique weapon identifier
-     * @param level - Weapon level (default: startingLevel)
-     * @param ammoType - Initial selected ammo type (default: startingProjectileType)
-     * @param fireRate - Weapon fire rate (default: baseFireRate)
-     * @param ammoOverride - Optional override for starting ammo of the selected type
+     * @param {WeaponDTOConfig} config - Configuration object for weapon properties
      */
-    constructor(
-        id: string,
-        level: number = GameConfig.player.startingLevel,
-        ammoType: ProjectileType = GameConfig.weapon.startingProjectileType,
-        fireRate: number = GameConfig.weapon.baseFireRate,
-        ammoOverride?: number
-    ) {
-        this.id = id;
-        this.level = level;
-        this.fireRate = fireRate;
-        this._ammoType = ammoType;
+    constructor(config: WeaponDTOConfig) {
+        this.id = config.id ?? uuidv4();
+        this.ownerId = config.ownerId;
+        this.level = config.level ?? GameConfig.player.startingLevel;
+        this.fireRate = config.fireRate ?? GameConfig.weapon.baseFireRate;
+        this._ammoType = config.ammoType ?? GameConfig.weapon.startingProjectileType;
 
         // Defensive copies so nothing external mutates data
         this._ammo = { ...DEFAULT_AMMO };
@@ -126,8 +126,8 @@ export class WeaponDTO {
         this._maxAmmo = { ...MAX_AMMO };
 
         // Override starting ammo only for the active ammoType
-        if (ammoOverride != null) {
-            this._ammo[ammoType] = this.clampAmmo(ammoType, ammoOverride);
+        if (config.ammoOverride != null) {
+            this._ammo[this._ammoType] = this.clampAmmo(this._ammoType, config.ammoOverride);
         }
     }
 
@@ -247,6 +247,7 @@ export class WeaponDTO {
         return {
             type: this.type,
             id: this.id,
+            ownerId: this.ownerId,
             level: this.level,
             fireRate: this.fireRate,
             ammo: this.ammo,

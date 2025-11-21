@@ -22,9 +22,8 @@ export const PickupListener = createListener<AmmoPickupDTO | HealthPickupDTO | C
      * @returns The response DTO, also broadcast to other clients.
      */
     async handle(_socket, request) {
-
         const pickup = request.dto;
-        
+
         let response: SocketResponseDTOSuccess<PickupDTO>;
         if (pickup.type === PickupType.AMMO) {
             response = {
@@ -63,7 +62,7 @@ export const PickupListener = createListener<AmmoPickupDTO | HealthPickupDTO | C
         } else {
             throw new Error('Invalid pickup type');
         }
-        
+
         const server = GameServerContext.get();
         server.broadcastPlayerPickup(response);
         return response;

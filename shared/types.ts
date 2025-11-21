@@ -5,7 +5,7 @@ export enum ProjectileLevel {
     ROCKET,
     LASER,
     PLASMA,
-    MINE
+    MINE,
 }
 
 export enum ProjectileType {

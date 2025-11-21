@@ -19,10 +19,9 @@ export const PlayerCoordinatesListener = createListener<CoordinatesDTO, PlayerDT
      * @param request - The validated request DTO containing the coordinates.
      * @returns The response DTO with updated player data.
      */
-    async handle(socket, request) {
-        const { x, y } = request.dto;
-        const { id, name, spriteKey, isLocal, level } = socket.player;
-        const dto = new PlayerDTO(id, name, x, y, spriteKey, isLocal, level);
-        return { ok: true, dto };
+    async handle(socket, { dto: { x, y } }) {
+        socket.player.x = x;
+        socket.player.y = y;
+        return { ok: true, dto: socket.player };
     },
 });

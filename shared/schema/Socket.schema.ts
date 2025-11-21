@@ -7,7 +7,6 @@ import { CoordinatesSchema } from './Coordinates.schema';
 import { ProjectileSchema } from './Projectile.schema';
 import { WeaponSchema } from './Weapon.schema';
 
-
 export const DtoSchema = z.union([
     SignOnSchema,
     PlayerSchema,

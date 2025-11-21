@@ -93,7 +93,6 @@ export class PlayerSystem extends System {
      * @param scene - The current GameScene (for socket, entityManager, etc.)
      */
     public handleCoinPickup(playerEntity: Entity, pickupEntity: Entity, scene: GameScene): void {
-        
         const playerComponent = playerEntity.getComponent(PlayerComponent);
         if (!playerComponent) {
             return;
@@ -164,7 +163,7 @@ export class PlayerSystem extends System {
         const request = { ok: true, dto: ammoPickupDTO as PickupDTO };
         try {
             scene.emitPlayerPickup(request);
-                // Removal is now server-authoritative; do not remove locally
+            // Removal is now server-authoritative; do not remove locally
         } catch (error) {
             if (scene.handleSocketError) {
                 scene.handleSocketError(Events.Player.pickup, error);
@@ -203,7 +202,7 @@ export class PlayerSystem extends System {
         const request = { ok: true, dto: healthPickupDTO as PickupDTO };
         try {
             scene.emitPlayerPickup(request);
-                // Removal is now server-authoritative; do not remove locally
+            // Removal is now server-authoritative; do not remove locally
         } catch (error) {
             if (scene.handleSocketError) scene.handleSocketError(Events.Player.pickup, error);
         }

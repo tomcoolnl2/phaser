@@ -6,7 +6,6 @@ import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
 import { PickupType } from '@shared/dto/Pickup.dto';
 
-
 /**
  * System that manages pickup animations.
  *
@@ -27,8 +26,8 @@ import { PickupType } from '@shared/dto/Pickup.dto';
  * ```
  */
 export class PickupSystem extends System {
-    /** 
-     * Track tweens for cleanup 
+    /**
+     * Track tweens for cleanup
      */
     private tweens: Map<Entity, Phaser.Tweens.Tween[]> = new Map();
 

@@ -4,7 +4,6 @@ import { ComponentClass, Component } from '@/ecs/core/Component';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { ProjectileComponent } from '../components/ProjectileComponent';
 
-
 export class ProjectileSystem extends System {
     /**
      *  Specifies required components: PlayerComponent, TransformComponent and WeaponComponent.
@@ -26,7 +25,6 @@ export class ProjectileSystem extends System {
         if (!transform || !projectile) {
             return;
         }
-
     }
 
     public destroyProjectileById(projectileId: string): void {

@@ -31,8 +31,8 @@ import { GameScene } from '@/scenes/GameScene';
  * ```
  */
 export abstract class System {
-    /** 
-     * Whether this system is currently enabled and should process entities 
+    /**
+     * Whether this system is currently enabled and should process entities
      */
     public enabled: boolean = true;
 

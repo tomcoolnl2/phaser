@@ -1,4 +1,3 @@
-
 /**
  * Defines the event names used for communication between the server and clients.
  */
@@ -32,7 +31,7 @@ export const Events = {
         create: 'projectile:create',
         coordinates: 'projectile:coordinates',
         destroy: 'projectile:destroy',
-    }
+    },
 } as const;
 
 export type EventTree = typeof Events;

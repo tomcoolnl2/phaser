@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-
 export type ProjectileSchemaType = z.infer<typeof ProjectileSchema>;
 
 export const ProjectileSchema = z.object({
