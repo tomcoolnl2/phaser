@@ -273,7 +273,6 @@ export class GameServer {
             }
 
             const asteroidDTO = GameServerUtils.createAsteroidDTO();
-            console.error('AAAAH Spawning asteroid DTO:', asteroidDTO);
             this.hasAsteroid = true;
             this.healthManager.setHealth(asteroidDTO.id, asteroidDTO.health, asteroidDTO.maxHealth);
             this.destroyedAsteroids.delete(asteroidDTO.id); // ensure not marked destroyed

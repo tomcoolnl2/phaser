@@ -16,7 +16,6 @@ import { GameScene } from '@/scenes/GameScene';
  * The created entity includes:
  * - TransformComponent: Manages the asteroid sprite
  * - HealthComponent: Asteroid health (from DTO)
- * - ColliderComponent: Collision detection
  * - AsteroidComponent: Asteroid metadata (id)
  */
 export class AsteroidEntityFactory {
@@ -52,7 +51,6 @@ export class AsteroidEntityFactory {
      * Creates an asteroid entity with all necessary ECS components:
      * - TransformComponent: Manages the asteroid sprite
      * - HealthComponent: Asteroid health (from DTO)
-     * - ColliderComponent: Collision detection
      * - AsteroidComponent: Asteroid metadata (id)
      *
      * @param dto - AsteroidDTO containing id, x, y, and hp
@@ -74,7 +72,6 @@ export class AsteroidEntityFactory {
 
         entity.addComponent(new TransformComponent(sprite));
         entity.addComponent(new HealthComponent(dto.health));
-        // entity.addComponent(new ColliderComponent(collisionRadius, CollisionLayer.ASTEROID));
         entity.addComponent(new AsteroidComponent(dto.id));
 
         return entity;

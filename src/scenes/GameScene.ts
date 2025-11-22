@@ -299,7 +299,6 @@ export class GameScene extends Phaser.Scene {
             }
             const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, asteroidTransform.sprite.x, asteroidTransform.sprite.y);
             if (distance < GameConfig.asteroid.collisionRadius) {
-                // TODO implement ColliderComponent
                 // Player hit by asteroid - game over
                 const playerDTO = PlayerEntityFactory.toDTO(localEntity);
                 const hitRequest = { ok: true, dto: playerDTO };
@@ -319,10 +318,8 @@ export class GameScene extends Phaser.Scene {
         for (const entity of this.getPickupEntities().values()) {
             const pickupTransform = entity.getComponent(TransformComponent);
             if (pickupTransform && pickupTransform.sprite.active) {
-                // TODO: ColliderComponent => server side check
                 const distance = Phaser.Math.Distance.Between(transform.sprite.x, transform.sprite.y, pickupTransform.sprite.x, pickupTransform.sprite.y);
                 if (distance < GameConfig.pickup.collisionRadius) {
-                    // TODO: ColliderComponent => server side check
                     // Player collected the pickup: emit to server only, let server event handle removal
                     const pickupComp = entity.getComponent(PickupComponent);
                     const type = pickupComp?.type;

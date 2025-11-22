@@ -1,5 +1,4 @@
 import { GameConfig } from '@shared/config';
-import { CollisionLayer } from '@shared/types';
 import { PlayerDTO } from '@shared/dto/Player.dto';
 import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { Entity } from '@/ecs/core/Entity';
@@ -8,7 +7,6 @@ import { MovementComponent } from '@/ecs/components/MovementComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
-import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
 import { ScoreComponent } from '@/ecs/components/ScoreComponent';
 import { GameScene } from '@/scenes/GameScene';
@@ -26,7 +24,6 @@ import { GameScene } from '@/scenes/GameScene';
  * - WeaponComponent: Shooting and ammo (local players only)
  * - PlayerComponent: Player metadata and level
  * - HealthComponent: HP tracking
- * - ColliderComponent: Collision detection
  * - UpgradesComponent: Stat progression
  */
 export class PlayerEntityFactory {
@@ -40,7 +37,6 @@ export class PlayerEntityFactory {
      * - WeaponComponent: Shooting and ammo (local players only)
      * - PlayerComponent: Player metadata and level
      * - HealthComponent: HP tracking
-     * - ColliderComponent: Collision detection
      * - UpgradesComponent: Stat progression
      *
      * @param playerDTO - PlayerDTO instance containing player initialization data (id, name, position, level, ammo)
@@ -94,11 +90,6 @@ export class PlayerEntityFactory {
         // Health component
         const health = new HealthComponent(maxHealth);
         entity.addComponent(health);
-
-        // Collider component
-        const collider = new ColliderComponent(maxVelocity / 2, CollisionLayer.PLAYER);
-        entity.addComponent(collider);
-
         // Upgrades component
         const upgrades = new UpgradesComponent();
         entity.addComponent(upgrades);
@@ -116,6 +107,7 @@ export class PlayerEntityFactory {
      * @returns PlayerDTO
      */
     public static toDTO(entity: Entity): PlayerDTO {
+        
         const player = entity.getComponent(PlayerComponent);
         const transform = entity.getComponent(TransformComponent);
         const health = entity.getComponent(HealthComponent);
