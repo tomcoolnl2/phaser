@@ -7,9 +7,15 @@ import { CoordinatesDTO } from './Coordinates.dto';
  * Values correspond to short string identifiers used for serialization.
  */
 export enum AsteroidSize {
-    SMALL = 's',
-    MEDIUM = 'm',
-    LARGE = 'l',
+    SMALL = 'SMALL',
+    MEDIUM = 'MEDIUM',
+    LARGE = 'LARGE',
+}
+
+export enum AsteroidCollisionRadius {
+    SMALL = 15,
+    MEDIUM = 25,
+    LARGE = 40,
 }
 
 /**
@@ -38,6 +44,9 @@ export interface AsteroidDTOConfig {
 
     /** Maximum health value of the asteroid. */
     maxHealth: number;
+
+    /** Collision radius of the asteroid. */
+    collisionRadius?: AsteroidCollisionRadius;
 
     /** Size classification of the asteroid. */
     size?: AsteroidSize;
@@ -69,8 +78,11 @@ export class AsteroidDTO extends CoordinatesDTO implements EntityWithHealthDTO {
     /** Maximum health of the asteroid. */
     public maxHealth: number;
 
+    /** Collision radius of the asteroid. */
+    public collisionRadius: AsteroidCollisionRadius;
+
     /** Size classification of the asteroid. */
-    public size?: AsteroidSize;
+    public size: AsteroidSize;
 
     /** Horizontal velocity. */
     public dx?: number;
@@ -91,7 +103,8 @@ export class AsteroidDTO extends CoordinatesDTO implements EntityWithHealthDTO {
         this.id = uuidv4();
         this.health = config.maxHealth;
         this.maxHealth = config.maxHealth;
-        this.size = config.size;
+        this.collisionRadius = config.collisionRadius ?? AsteroidCollisionRadius.MEDIUM;
+        this.size = config.size ?? AsteroidSize.MEDIUM;
         this.dx = config.dx;
         this.dy = config.dy;
         this.causeOfDeath = config.causeOfDeath;

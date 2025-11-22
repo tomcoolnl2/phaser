@@ -1,11 +1,9 @@
 import Phaser from 'phaser';
-import { z, ZodSafeParseResult } from 'zod';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
 import { MovementComponent } from '@/ecs/components/MovementComponent';
 import { PickupComponent } from '@/ecs/components/PickupComponent';
 import { PickupDTO, PickupType } from '@shared/dto/Pickup.dto';
-import { PickupSchema } from '@shared/schema/Pickup.schema';
 import { GameScene } from '@/scenes/GameScene';
 
 /**
@@ -29,11 +27,6 @@ export class PickupEntityFactory {
      * @returns The newly created pickup entity
      */
     public create(dto: PickupDTO): Entity {
-        // Validate the PickupDTO using Zod schema
-        const result: ZodSafeParseResult<z.infer<typeof PickupSchema>> = PickupSchema.safeParse(dto);
-        if (!result.success) {
-            throw new Error('Invalid PickupDTO: ' + result.error.message);
-        }
 
         const entity = this.scene.entityManager.createEntity(dto.id);
 

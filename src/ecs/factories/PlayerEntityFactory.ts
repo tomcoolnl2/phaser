@@ -1,7 +1,6 @@
 import { GameConfig } from '@shared/config';
 import { CollisionLayer } from '@shared/types';
 import { PlayerDTO } from '@shared/dto/Player.dto';
-import { PlayerSchema } from '@shared/schema/Player.schema';
 import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
@@ -48,11 +47,6 @@ export class PlayerEntityFactory {
      * @returns The newly created player entity
      */
     public fromDTO(playerDTO: PlayerDTO): Entity {
-        // Validate the PlayerDTO using Zod schema
-        const result = PlayerSchema.safeParse(playerDTO);
-        if (!result.success) {
-            throw new Error('Invalid PlayerDTO: ' + result.error.message);
-        }
 
         // Create the entity
         const entity = this.scene.entityManager.createEntity();

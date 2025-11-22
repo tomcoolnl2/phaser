@@ -12,6 +12,7 @@
  *   healthManager.remove('asteroid-1');
  */
 export class HealthManager {
+    
     /** Map of entity IDs to current health values */
     private healthMap = new Map<string, number>();
 
