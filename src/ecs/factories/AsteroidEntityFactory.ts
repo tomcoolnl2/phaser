@@ -58,7 +58,6 @@ export class AsteroidEntityFactory {
      * @returns The newly created asteroid entity
      */
     public create(dto: AsteroidDTO): Entity {
-
         const entity = this.scene.entityManager.createEntity();
         const sprite = this.scene.physics.add.sprite(dto.x, dto.y, 'asteroid').setOrigin(0.5, 0.5);
         sprite.setCollideWorldBounds(false);

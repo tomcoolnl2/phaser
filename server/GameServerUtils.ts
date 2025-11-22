@@ -1,6 +1,5 @@
 import { GameConfig } from '@shared/config';
 import { AsteroidSize, AsteroidDTO, AsteroidCollisionRadius } from '../shared/dto/Asteroid.dto';
-import { GameServer } from './GameServer';
 
 /**
  * Utility class for common GameServer logic (spawning, math, logging, etc).
@@ -109,7 +108,7 @@ export class GameServerUtils {
                 dy = (Math.random() - 0.5) * speed;
                 break;
         }
-        
+
         const size = GameServerUtils.getRandomAsteroidSize();
         const direction = GameServerUtils.normalizeDirection(dx, dy, speed);
         const maxHealth = GameServerUtils.getMaxHealthForSize(size);

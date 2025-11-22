@@ -69,7 +69,7 @@ playerEntity
     .addComponent(new WeaponComponent(bullets, 10, 50, 250, 400, 1))
     .addComponent(new MovementComponent(300, 200, 0.97, 0.03))
     .addComponent(new PlayerComponent('uuid123', 'PlayerName', true))
-    .addComponent(new UpgradesComponent())
+    .addComponent(new UpgradesComponent());
 ```
 
 ### Adding Systems

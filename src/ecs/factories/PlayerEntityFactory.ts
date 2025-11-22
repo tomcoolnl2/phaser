@@ -43,7 +43,6 @@ export class PlayerEntityFactory {
      * @returns The newly created player entity
      */
     public fromDTO(playerDTO: PlayerDTO): Entity {
-
         // Create the entity
         const entity = this.scene.entityManager.createEntity();
         const { id, name, x, y, spriteKey, isLocal, level, maxHealth } = playerDTO;
@@ -107,7 +106,6 @@ export class PlayerEntityFactory {
      * @returns PlayerDTO
      */
     public static toDTO(entity: Entity): PlayerDTO {
-        
         const player = entity.getComponent(PlayerComponent);
         const transform = entity.getComponent(TransformComponent);
         const health = entity.getComponent(HealthComponent);

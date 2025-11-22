@@ -27,7 +27,6 @@ export class PickupEntityFactory {
      * @returns The newly created pickup entity
      */
     public create(dto: PickupDTO): Entity {
-
         const entity = this.scene.entityManager.createEntity(dto.id);
 
         // Choose sprite key based on pickup type

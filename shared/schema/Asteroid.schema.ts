@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { AsteroidCauseOfDeath, AsteroidSize } from '@shared/dto/Asteroid.dto';
 
-
 export type AsteroidSchemaType = z.infer<typeof AsteroidSchema>;
 
 export const AsteroidSchema = z.object({
