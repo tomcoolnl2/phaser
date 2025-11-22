@@ -1,7 +1,5 @@
 import { GameConfig } from '@shared/config';
-import { CollisionLayer } from '@shared/types';
 import { PlayerDTO } from '@shared/dto/Player.dto';
-import { PlayerSchema } from '@shared/schema/Player.schema';
 import { WeaponDTO } from '@shared/dto/Weapon.dto';
 import { Entity } from '@/ecs/core/Entity';
 import { TransformComponent } from '@/ecs/components/TransformComponent';
@@ -9,7 +7,6 @@ import { MovementComponent } from '@/ecs/components/MovementComponent';
 import { WeaponComponent } from '@/ecs/components/WeaponComponent';
 import { PlayerComponent } from '@/ecs/components/PlayerComponent';
 import { HealthComponent } from '@/ecs/components/HealthComponent';
-import { ColliderComponent } from '@/ecs/components/ColliderComponent';
 import { UpgradesComponent } from '@/ecs/components/UpgradesComponent';
 import { ScoreComponent } from '@/ecs/components/ScoreComponent';
 import { GameScene } from '@/scenes/GameScene';
@@ -27,7 +24,6 @@ import { GameScene } from '@/scenes/GameScene';
  * - WeaponComponent: Shooting and ammo (local players only)
  * - PlayerComponent: Player metadata and level
  * - HealthComponent: HP tracking
- * - ColliderComponent: Collision detection
  * - UpgradesComponent: Stat progression
  */
 export class PlayerEntityFactory {
@@ -41,19 +37,12 @@ export class PlayerEntityFactory {
      * - WeaponComponent: Shooting and ammo (local players only)
      * - PlayerComponent: Player metadata and level
      * - HealthComponent: HP tracking
-     * - ColliderComponent: Collision detection
      * - UpgradesComponent: Stat progression
      *
      * @param playerDTO - PlayerDTO instance containing player initialization data (id, name, position, level, ammo)
      * @returns The newly created player entity
      */
     public fromDTO(playerDTO: PlayerDTO): Entity {
-        // Validate the PlayerDTO using Zod schema
-        const result = PlayerSchema.safeParse(playerDTO);
-        if (!result.success) {
-            throw new Error('Invalid PlayerDTO: ' + result.error.message);
-        }
-
         // Create the entity
         const entity = this.scene.entityManager.createEntity();
         const { id, name, x, y, spriteKey, isLocal, level, maxHealth } = playerDTO;
@@ -100,11 +89,6 @@ export class PlayerEntityFactory {
         // Health component
         const health = new HealthComponent(maxHealth);
         entity.addComponent(health);
-
-        // Collider component
-        const collider = new ColliderComponent(maxVelocity / 2, CollisionLayer.PLAYER);
-        entity.addComponent(collider);
-
         // Upgrades component
         const upgrades = new UpgradesComponent();
         entity.addComponent(upgrades);

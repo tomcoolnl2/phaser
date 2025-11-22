@@ -52,10 +52,6 @@ upgrades.canUpgrade(UpgradeType.FIRE_RATE); // true
 upgrades.upgrade(UpgradeType.FIRE_RATE);
 ```
 
-### ColliderComponent
-
-Defines collision radius and layers.
-
 ## Usage Example
 
 ### Creating an Entity with Components
@@ -73,8 +69,7 @@ playerEntity
     .addComponent(new WeaponComponent(bullets, 10, 50, 250, 400, 1))
     .addComponent(new MovementComponent(300, 200, 0.97, 0.03))
     .addComponent(new PlayerComponent('uuid123', 'PlayerName', true))
-    .addComponent(new UpgradesComponent())
-    .addComponent(new ColliderComponent(30, 'player', ['asteroid', 'enemy']));
+    .addComponent(new UpgradesComponent());
 ```
 
 ### Adding Systems

@@ -273,7 +273,6 @@ export class GameServer {
             }
 
             const asteroidDTO = GameServerUtils.createAsteroidDTO();
-
             this.hasAsteroid = true;
             this.healthManager.setHealth(asteroidDTO.id, asteroidDTO.health, asteroidDTO.maxHealth);
             this.destroyedAsteroids.delete(asteroidDTO.id); // ensure not marked destroyed

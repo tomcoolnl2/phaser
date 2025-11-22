@@ -1,5 +1,5 @@
 import { GameConfig } from '@shared/config';
-import { AsteroidSize, AsteroidDTO } from '../shared/dto/Asteroid.dto';
+import { AsteroidSize, AsteroidDTO, AsteroidCollisionRadius } from '../shared/dto/Asteroid.dto';
 
 /**
  * Utility class for common GameServer logic (spawning, math, logging, etc).
@@ -17,13 +17,61 @@ export class GameServerUtils {
     }
 
     /**
+     * Normalizes a direction vector and scales it to the given speed.
+     * @param dx - X direction
+     * @param dy - Y direction
+     * @param speed - Desired speed
+     * @returns Object with normalized and scaled dx and dy
+     */
+    public static normalizeDirection(dx: number, dy: number, speed: number) {
+        const norm = Math.sqrt(dx * dx + dy * dy);
+        if (norm === 0) {
+            return { dx: 0, dy: 0 };
+        }
+        return { dx: (dx / norm) * speed, dy: (dy / norm) * speed };
+    }
+
+    /**
+     * Returns a random AsteroidSize based on predefined probabilities.
+     * Probabilities: SMALL = 0.5, MEDIUM = 0.3, LARGE = 0.2
+     * @returns Random AsteroidSize
+     */
+    private static getRandomAsteroidSize(): AsteroidSize {
+        const rand = Math.random();
+        if (rand < 0.5) {
+            return AsteroidSize.SMALL;
+        } else if (rand < 0.8) {
+            return AsteroidSize.MEDIUM;
+        } else {
+            return AsteroidSize.LARGE;
+        }
+    }
+
+    /**
+     * Returns the maximum health for an asteroid based on its size.
+     * @param size - AsteroidSize
+     * @returns Maximum health value
+     */
+    private static getMaxHealthForSize(size: AsteroidSize): number {
+        switch (size) {
+            case AsteroidSize.SMALL:
+                return 6;
+            case AsteroidSize.MEDIUM:
+                return 8;
+            case AsteroidSize.LARGE:
+            default:
+                return 10;
+        }
+    }
+
+    /**
      * Returns random spawn position and velocity for an asteroid at the edge of the play area.
      * @param width - Play area width
      * @param height - Play area height
      * @param threshold - Spawn offset from edge
      * @returns Object with x, y, dx, dy properties
      */
-    public static getRandomAsteroidSpawn(threshold: number = 32) {
+    private static getRandomAsteroidSpawn(threshold: number = 32) {
         const { width, height } = GameConfig.playArea;
         const speed = GameConfig.server.asteroidSpeed;
 
@@ -61,32 +109,19 @@ export class GameServerUtils {
                 break;
         }
 
-        return { x, y, ...GameServerUtils.normalizeDirection(dx, dy, speed) };
-    }
-
-    /**
-     * Normalizes a direction vector and scales it to the given speed.
-     * @param dx - X direction
-     * @param dy - Y direction
-     * @param speed - Desired speed
-     * @returns Object with normalized and scaled dx and dy
-     */
-    public static normalizeDirection(dx: number, dy: number, speed: number) {
-        const norm = Math.sqrt(dx * dx + dy * dy);
-        if (norm === 0) {
-            return { dx: 0, dy: 0 };
-        }
-        return { dx: (dx / norm) * speed, dy: (dy / norm) * speed };
+        const size = GameServerUtils.getRandomAsteroidSize();
+        const direction = GameServerUtils.normalizeDirection(dx, dy, speed);
+        const maxHealth = GameServerUtils.getMaxHealthForSize(size);
+        const collisionRadius = AsteroidCollisionRadius[size];
+        return { x, y, ...direction, size, collisionRadius, maxHealth };
     }
 
     /**
      * Factory for creating an AsteroidDTO with all required properties.
-     * @param config - AsteroidDTOConfig
      * @returns New AsteroidDTO instance
      */
     public static createAsteroidDTO(): AsteroidDTO {
-        const { maxHealth } = GameConfig.asteroid;
-        const { x, y, dx, dy } = GameServerUtils.getRandomAsteroidSpawn();
-        return new AsteroidDTO({ x, y, dx, dy, size: AsteroidSize.LARGE, maxHealth });
+        const asteroidSpawn = GameServerUtils.getRandomAsteroidSpawn();
+        return new AsteroidDTO({ ...asteroidSpawn });
     }
 }

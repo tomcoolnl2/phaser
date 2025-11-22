@@ -28,6 +28,7 @@ class MockSprite {
     setMaxVelocity = vi.fn(() => this);
     setData = vi.fn(() => this);
     play = vi.fn(() => this);
+    setScale = vi.fn(() => this);
 }
 
 class MockPhysics {

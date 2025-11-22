@@ -6,6 +6,6 @@ import { z } from 'zod';
 export const SignOnSchema = z.object({
     type: z.literal('sign-on'),
     name: z.string().min(1),
-    x: z.number(),
-    y: z.number(),
+    width: z.number(),
+    height: z.number(),
 });
