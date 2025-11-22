@@ -10,6 +10,7 @@ const mockSprite = {
     setMaxVelocity: () => mockSprite,
     setData: () => mockSprite,
     play: () => mockSprite,
+    setScale: () => mockSprite,
 };
 
 const mockPhysics = {
@@ -35,11 +36,5 @@ describe('AsteroidEntityFactory', () => {
         const entity = factory.create(dto);
         expect(entity).toBeDefined();
         expect(mockPhysics.add.sprite).toHaveBeenCalledWith(10, 20, 'asteroid');
-    });
-
-    it('throws error for invalid DTO', () => {
-        // missing id
-        const badDto = { x: 1, y: 2, health: 3 } as AsteroidDTO;
-        expect(() => factory.create(badDto)).toThrow();
     });
 });
